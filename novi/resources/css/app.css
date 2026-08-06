@@ -37,4 +37,11 @@ select:focus {
     --tw-ring-shadow: 0 0 0 1px var(--brand-primary) !important;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+    -webkit-text-fill-color: #111827 !important;
+}
+
 }

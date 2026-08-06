@@ -33,4 +33,19 @@ final class BrandManager
     {
         return data_get($this->current(), $key, $default);
     }
+public function company(): array
+{
+    $brandFile = config('branding.sources.website');
+
+    $companyFile = dirname($brandFile) . '/company.php';
+
+    if (! file_exists($companyFile)) {
+        return [];
+    }
+
+    $company = require $companyFile;
+
+    return is_array($company) ? $company : [];
+}
+
 }

@@ -10,7 +10,7 @@ return [
 
     'name' => 'Eläinten hoitola Liperi',
 
-    'logo' => 'logo.svg',
+    'logo' => null,
 
     'logo_light' => 'logo-light.svg',
 

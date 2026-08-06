@@ -19,6 +19,8 @@ class ShareCompanyBranding
     {
         View::share('brand', $this->brandManager->current());
 
+        View::share('company', $this->brandManager->company());
+
         return $next($request);
     }
 }

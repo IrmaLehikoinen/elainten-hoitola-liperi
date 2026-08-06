@@ -1,16 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <p class="text-sm text-gray-500">Hallintapaneeli</p>
+    <div>
+        <h1
+            class="text-2xl font-semibold"
+            style="color: var(--brand-text); font-family: var(--brand-heading-font);"
+        >
+            Etusivu
+        </h1>
 
-            <h1
-                class="text-2xl font-semibold"
-                style="color: var(--brand-text); font-family: var(--brand-heading-font);"
-            >
-                {{ $brand['name'] ?? 'Yrityksen hallinta' }}
-            </h1>
-        </div>
-    </x-slot>
+        <p class="mt-1 text-sm text-gray-500">
+            Tärkeimmät tiedot ja pikatoiminnot
+        </p>
+    </div>
+</x-slot>
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
