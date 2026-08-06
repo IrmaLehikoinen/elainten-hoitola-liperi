@@ -7,6 +7,24 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <style>
+    :root {
+        --brand-primary: {{ $brand['primary_color'] ?? '#4F46E5' }};
+        --brand-secondary: {{ $brand['secondary_color'] ?? '#111827' }};
+        --brand-accent: {{ $brand['accent_color'] ?? '#111827' }};
+        --brand-background: {{ $brand['background_color'] ?? '#F8F6F2' }};
+        --brand-text: {{ $brand['text_color'] ?? '#111827' }};
+        --brand-heading-font: '{{ $brand['font_heading'] ?? 'Figtree' }}', serif;
+        --brand-body-font: '{{ $brand['font_body'] ?? 'Figtree' }}', sans-serif;
+    }
+
+    body {
+        font-family: var(--brand-body-font);
+        color: var(--brand-text);
+        background-color: var(--brand-background);
+    }
+</style>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -15,7 +33,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0" style="background-color: var(--brand-background);">
             <div>
                 <a href="/">
                     <x-application-logo class="w-20 h-20 fill-current text-gray-500" />

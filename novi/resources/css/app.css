@@ -26,4 +26,15 @@
         opacity: .9;
     }
 
+   input:focus,
+textarea:focus,
+select:focus {
+    outline: none !important;
+    border-color: var(--brand-primary) !important;
+    box-shadow: 0 0 0 1px var(--brand-primary) !important;
+    --tw-ring-color: var(--brand-primary) !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-ring-shadow: 0 0 0 1px var(--brand-primary) !important;
+}
+
 }
