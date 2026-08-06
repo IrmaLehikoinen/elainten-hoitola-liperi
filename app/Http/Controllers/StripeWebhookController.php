@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Stripe\Webhook;
+use App\Mail\BookingConfirmed;
+use Illuminate\Support\Facades\Mail;
 
 class StripeWebhookController extends Controller
 {
@@ -31,6 +33,7 @@ class StripeWebhookController extends Controller
                     $booking->deposit_paid_at = now();
                     $booking->status = 'confirmed';
                     $booking->save();
+                 Mail::to($booking->customer->email)->send(new BookingConfirmed($booking));   
                 }
             }
         }
