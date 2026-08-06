@@ -44,4 +44,8 @@ input:-webkit-autofill:focus {
     -webkit-text-fill-color: #111827 !important;
 }
 
+[x-cloak] {
+    display: none !important;
+}
+
 }

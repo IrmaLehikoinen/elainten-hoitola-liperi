@@ -7,4 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Customer extends Model
 {
     protected $fillable = ['company_id', 'name', 'email', 'phone', 'address', 'notes'];
+
+public function pets()
+{
+    return $this->hasMany(Pet::class);
+}
 }

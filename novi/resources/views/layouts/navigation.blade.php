@@ -94,7 +94,7 @@
                 </a>
 
                 <a
-                    href="#"
+                    href="{{ route('calendar.index') }}"
                     class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-gray-100"
                     style="color: var(--brand-text);"
                 >
