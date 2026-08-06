@@ -7,6 +7,16 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+       <style>
+    :root {
+        --brand-primary: {{ $currentCompany->primary_color ?? '#4F46E5' }};
+        --brand-font: '{{ $currentCompany->font_family ?? 'Figtree' }}', sans-serif;
+    }
+    body {
+        font-family: var(--brand-font), sans-serif;
+    }
+</style> 
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
