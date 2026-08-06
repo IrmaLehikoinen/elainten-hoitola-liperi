@@ -10,12 +10,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ShareCompanyBranding
 {
-    public function handle(
-        Request $request,
-        Closure $next,
-        BrandManager $brandManager
-    ): Response {
-        View::share('brand', $brandManager->current());
+    public function __construct(
+        private BrandManager $brandManager
+    ) {
+    }
+
+    public function handle(Request $request, Closure $next): Response
+    {
+        View::share('brand', $this->brandManager->current());
 
         return $next($request);
     }
