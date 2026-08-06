@@ -12,14 +12,14 @@ return [
     |
     */
 
-    'source' => env('NOVI_BRAND_SOURCE', 'shared'),
+    'source' => env('NOVI_BRAND_SOURCE', 'website'),
 
-    'sources' => [
+'sources' => [
 
-        'shared' => base_path('../project/brand.php'),
+    'website' => base_path('../project/brand.php'),
 
-        'local' => base_path('project/brand.php'),
+    'wordpress' => base_path('project/brand.php'),
 
-    ],
+],
 
 ];
