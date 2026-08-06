@@ -18,3 +18,15 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+use App\Http\Controllers\PaymentController;
+
+Route::get('/varaukset/{booking}/maksa', [PaymentController::class, 'checkout']);
+
+Route::get('/maksu/onnistui', function () {
+    return 'Maksu onnistui! Kiitos varauksestasi.';
+});
+
+Route::get('/maksu/peruttu', function () {
+    return 'Maksu peruttiin.';
+});
