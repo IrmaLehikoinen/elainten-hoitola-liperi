@@ -1,3 +1,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+
+    .bg-brand {
+        background-color: var(--brand-primary);
+    }
+
+    .text-brand {
+        color: var(--brand-primary);
+    }
+
+    .border-brand {
+        border-color: var(--brand-primary);
+    }
+
+    .btn-brand {
+        background-color: var(--brand-primary);
+        color: white;
+        transition: opacity .2s ease;
+    }
+
+    .btn-brand:hover {
+        opacity: .9;
+    }
+
+}
