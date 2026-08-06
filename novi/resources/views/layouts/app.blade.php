@@ -9,13 +9,21 @@
 
        <style>
     :root {
-        --brand-primary: {{ $currentCompany->primary_color ?? '#4F46E5' }};
-        --brand-font: '{{ $currentCompany->font_family ?? 'Figtree' }}', sans-serif;
+        --brand-primary: {{ $brand['primary_color'] ?? '#4F46E5' }};
+        --brand-secondary: {{ $brand['secondary_color'] ?? '#111827' }};
+        --brand-accent: {{ $brand['accent_color'] ?? '#111827' }};
+        --brand-background: {{ $brand['background_color'] ?? '#F8F6F2' }};
+        --brand-text: {{ $brand['text_color'] ?? '#111827' }};
+        --brand-heading-font: '{{ $brand['font_heading'] ?? 'Figtree' }}', serif;
+        --brand-body-font: '{{ $brand['font_body'] ?? 'Figtree' }}', sans-serif;
     }
+
     body {
-        font-family: var(--brand-font), sans-serif;
+        font-family: var(--brand-body-font);
+        color: var(--brand-text);
+        background-color: var(--brand-background);
     }
-</style> 
+</style>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
