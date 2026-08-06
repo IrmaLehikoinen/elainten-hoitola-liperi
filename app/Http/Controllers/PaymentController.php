@@ -24,6 +24,9 @@ class PaymentController extends Controller
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
+            'metadata' => [
+    'booking_id' => $booking->id,
+],
             'success_url' => url('/maksu/onnistui'),
             'cancel_url' => url('/maksu/peruttu'),
         ]);

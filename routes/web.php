@@ -30,3 +30,7 @@ Route::get('/maksu/onnistui', function () {
 Route::get('/maksu/peruttu', function () {
     return 'Maksu peruttiin.';
 });
+
+use App\Http\Controllers\StripeWebhookController;
+
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
