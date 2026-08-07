@@ -7,6 +7,36 @@ use Illuminate\Http\Request;
 
 class PetController extends Controller
 {
+    /**
+     * Uuden eläimen pikaluonti varausvelhon vaiheesta 5, kun
+     * asiakkaalla ei vielä ole sopivaa eläinkorttia.
+     */
+   public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_id' => ['required', 'exists:customers,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'species' => ['required', 'string', 'max:255'],
+            'breed' => ['nullable', 'string', 'max:255'],
+            'birth_date' => ['nullable', 'date'],
+            'sex' => ['nullable', 'string', 'max:50'],
+            'weight' => ['nullable', 'numeric', 'min:0'],
+            'microchip_number' => ['nullable', 'string', 'max:255'],
+            'vaccinations' => ['nullable', 'string'],
+            'allergies' => ['nullable', 'string'],
+            'medications' => ['nullable', 'string'],
+            'feeding_instructions' => ['nullable', 'string'],
+            'behaviour_notes' => ['nullable', 'string'],
+            'veterinarian_name' => ['nullable', 'string', 'max:255'],
+            'veterinarian_phone' => ['nullable', 'string', 'max:50'],
+            'emergency_notes' => ['nullable', 'string'],
+        ]);
+
+        $pet = Pet::create($validated);
+
+        return response()->json($pet, 201);
+    }
+
     public function show(Pet $pet)
     {
         $pet->load([

@@ -8,6 +8,40 @@ use Illuminate\Support\Carbon;
 class CalendarController extends Controller
 {
     /**
+     * Kalenterisivun kuukausinäkymä - sama oikea data kuin etusivulla,
+     * ei enää kovakoodattua testidataa.
+     */
+    public function index()
+    {
+        $monthStart = today()->startOfMonth();
+        $monthEnd = $monthStart->copy()->endOfMonth();
+
+        $participants = BookingParticipant::with(['pet', 'booking'])
+            ->whereDate('start_date', '<=', $monthEnd)
+            ->whereDate('end_date', '>=', $monthStart)
+            ->get();
+
+        $days = [];
+
+        for ($date = $monthStart->copy(); $date->lte($monthEnd); $date->addDay()) {
+            $dayParticipants = $participants->filter(
+                fn ($p) => $p->start_date->lte($date) && $p->end_date->gte($date)
+            )->values();
+
+            $days[] = [
+                'date' => $date->copy(),
+                'count' => $dayParticipants->count(),
+                'participants' => $dayParticipants,
+            ];
+        }
+
+        return view('calendar.index', [
+            'calendarMonth' => $monthStart,
+            'calendarDays' => $days,
+        ]);
+    }
+
+    /**
      * Päivänäkymä: kaikki kyseisen päivän varaukset ryhmiteltynä
      * varauksen mukaan. Yhden eläimen varaus linkittää suoraan
      * eläinkorttiin, useamman eläimen varaus (sama asiakas) linkittää

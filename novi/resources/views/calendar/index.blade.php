@@ -79,7 +79,7 @@
                             font-family: var(--brand-heading-font);
                         "
                     >
-                        Elokuu 2026
+                        {{ ucfirst($calendarMonth->translatedFormat('F Y')) }}
                     </h2>
 
                     <div class="flex items-center gap-2">
@@ -123,53 +123,43 @@
                     <div class="min-w-[760px]">
                         <div class="grid grid-cols-7 border-l border-t border-gray-200">
 
-                            @foreach (['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'] as $weekday)
-                                <div
-                                    class="border-b border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold text-gray-500"
-                                >
+          @foreach (['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'] as $weekday)
+                                <div class="border-b border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold text-gray-500">
                                     {{ $weekday }}
                                 </div>
                             @endforeach
 
-                            @for ($day = 1; $day <= 35; $day++)
-                                @if ($day <= 31)
-                                    <div
-                                        class="min-h-28 border-b border-r border-gray-200 p-2"
-                                    >
-                                        <div
-                                            class="text-sm font-medium"
-                                            style="color: var(--brand-text);"
-                                        >
-                                            {{ $day }}
-                                        </div>
-
-                                        @if ($day === 8)
-                                            <div
-                                                class="mt-2 rounded-md px-2 py-1 text-xs font-medium"
-                                                style="
-                                                    background-color: var(--brand-secondary);
-                                                    color: var(--brand-text);
-                                                "
-                                            >
-                                                10.00 Koira
-                                            </div>
-                                        @endif
-
-                                        @if ($day === 12)
-                                            <div
-                                                class="mt-2 rounded-md px-2 py-1 text-xs font-medium text-white"
-                                                style="background-color: var(--brand-primary);"
-                                            >
-                                                14.30 Kissa
-                                            </div>
-                                        @endif
-                                    </div>
-                                @else
-                                    <div
-                                        class="min-h-28 border-b border-r border-gray-200 bg-gray-50"
-                                    ></div>
-                                @endif
+                            @php $leadingBlanks = $calendarMonth->copy()->startOfMonth()->dayOfWeekIso - 1; @endphp
+                            @for ($i = 0; $i < $leadingBlanks; $i++)
+                                <div class="min-h-28 border-b border-r border-gray-200 bg-gray-50"></div>
                             @endfor
+
+                            @foreach ($calendarDays as $day)
+                                @php
+                                    $dayHref = $day['count'] > 0
+                                        ? route('admin.calendar.day', $day['date']->format('Y-m-d'))
+                                        : null;
+                                @endphp
+
+                                <a href="{{ $dayHref ?? '#' }}" @unless ($dayHref) onclick="return false;" @endunless class="block min-h-28 border-b border-r border-gray-200 p-2 {{ $dayHref ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default' }}">
+                                    <div class="text-sm font-medium" style="color: var(--brand-text);">
+                                        {{ $day['date']->day }}
+                                    </div>
+
+                                    @if ($day['count'] === 1)
+                                        @php $p = $day['participants']->first(); @endphp
+                                        <div class="mt-2 truncate rounded-md px-2 py-1 text-xs font-medium" style="background-color: var(--brand-secondary); color: var(--brand-text);">
+                                            {{ optional($p->booking)->arrival_at?->format('H:i') }} {{ $p->name }}
+                                        </div>
+                                    @elseif ($day['count'] > 1)
+                                        @foreach ($day['participants']->groupBy('species') as $species => $group)
+                                            <div class="mt-2 truncate rounded-md px-2 py-1 text-xs font-medium text-white" style="background-color: var(--brand-primary);">
+                                                {{ $group->count() }} {{ $species }}
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                </a>
+                            @endforeach
 
                         </div>
                     </div>

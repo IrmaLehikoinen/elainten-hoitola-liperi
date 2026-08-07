@@ -64,16 +64,17 @@
 
                 <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @forelse ($customer->pets as $pet)
-                        <div class="rounded-lg border p-4" style="border-color: var(--brand-secondary);">
-                            @if (Route::has('admin.pets.show'))
-                                <a href="{{ route('admin.pets.show', $pet->id) }}" class="font-semibold" style="color: var(--brand-primary);">
-                                    {{ $pet->name }}
-                                </a>
-                            @else
+                        @if (Route::has('admin.pets.show'))
+                            <a href="{{ route('admin.pets.show', $pet->id) }}" class="block rounded-lg border p-4 transition hover:shadow-md" style="border-color: var(--brand-secondary);">
+                                <p class="font-semibold" style="color: var(--brand-primary);">{{ $pet->name }}</p>
+                                <p class="text-sm text-gray-500">{{ $pet->species }}{{ $pet->breed ? ' · '.$pet->breed : '' }}</p>
+                            </a>
+                        @else
+                            <div class="rounded-lg border p-4" style="border-color: var(--brand-secondary);">
                                 <p class="font-semibold" style="color: var(--brand-text);">{{ $pet->name }}</p>
-                            @endif
-                            <p class="text-sm text-gray-500">{{ $pet->species }}{{ $pet->breed ? ' · '.$pet->breed : '' }}</p>
-                        </div>
+                                <p class="text-sm text-gray-500">{{ $pet->species }}{{ $pet->breed ? ' · '.$pet->breed : '' }}</p>
+                            </div>
+                        @endif
                     @empty
                         <p class="text-sm text-gray-500">Ei vielä eläinkortteja.</p>
                     @endforelse

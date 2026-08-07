@@ -260,7 +260,7 @@
 
                <div class="mt-6 text-center">
     
-        <a href="{{ route('calendar.index') }}"
+        <a href="{{ route('admin.bookings.create') }}"
         class="btn-brand inline-block rounded-md px-8 py-4 text-base font-semibold"
     >
         Varaa hoitoaika

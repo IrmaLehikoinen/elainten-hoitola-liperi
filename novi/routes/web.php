@@ -8,6 +8,7 @@ use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\BookingWizardController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -72,6 +73,41 @@ Route::post(
     ->middleware(['auth', 'verified'])
     ->name('admin.reminders.store');
 
+Route::post(
+    '/admin/customers',
+    [CustomerController::class, 'store']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.customers.store');
+
+Route::post(
+    '/admin/pets',
+    [PetController::class, 'store']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.pets.store');
+
+Route::get(
+    '/admin/bookings/uusi',
+    [BookingWizardController::class, 'create']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.create');
+
+Route::post(
+    '/admin/bookings/availability',
+    [BookingWizardController::class, 'availability']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.availability');
+
+Route::post(
+    '/admin/bookings/wizard',
+    [BookingWizardController::class, 'store']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.wizard-store');
+
     require __DIR__.'/auth.php';
 
 
@@ -87,9 +123,9 @@ Route::get('/maksu/peruttu', function () {
     return 'Maksu peruttiin.';
 });
 
-Route::get('/calendar', function () {
-    return view('calendar.index');
-})->middleware(['auth', 'verified'])->name('calendar.index');
+Route::get('/calendar', [CalendarController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('calendar.index');
 
 Route::get('/admin/calendar/{date}', [CalendarController::class, 'day'])
     ->middleware(['auth', 'verified'])
