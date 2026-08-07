@@ -217,8 +217,18 @@
                                 <div class="min-h-24 border-b border-r border-gray-200 bg-gray-50"></div>
                             @endfor
 
-                            @foreach ($calendarDays as $day)
-                                <div class="min-h-24 border-b border-r border-gray-200 p-2">
+                        @foreach ($calendarDays as $day)
+                                @php
+                                    $dayHref = ($day['count'] > 0 && Route::has('admin.calendar.day'))
+                                        ? route('admin.calendar.day', $day['date']->format('Y-m-d'))
+                                        : null;
+                                @endphp
+
+                                
+                                   <a href="{{ $dayHref ?? '#' }}"
+                                    @unless ($dayHref) onclick="return false;" @endunless
+                                    class="block min-h-24 border-b border-r border-gray-200 p-2 {{ $dayHref ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default' }}"
+                                >
                                     <div class="text-sm font-medium" style="color: var(--brand-text);">
                                         {{ $day['date']->day }}
                                     </div>
@@ -241,8 +251,8 @@
                                             </div>
                                         @endforeach
                                     @endif
-                                </div>
-                            @endforeach
+                                </a>
+                            @endforeach 
 
                         </div>
                     </div>

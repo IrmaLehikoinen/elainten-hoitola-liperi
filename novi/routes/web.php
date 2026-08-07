@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PetController;
+use App\Http\Controllers\CalendarController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -89,6 +90,11 @@ Route::get('/maksu/peruttu', function () {
 Route::get('/calendar', function () {
     return view('calendar.index');
 })->middleware(['auth', 'verified'])->name('calendar.index');
+
+Route::get('/admin/calendar/{date}', [CalendarController::class, 'day'])
+    ->middleware(['auth', 'verified'])
+    ->where('date', '\d{4}-\d{2}-\d{2}')
+    ->name('admin.calendar.day');
 
 use App\Http\Controllers\StripeWebhookController;
 
