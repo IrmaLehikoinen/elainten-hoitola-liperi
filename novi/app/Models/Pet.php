@@ -46,4 +46,9 @@ class Pet extends Model
         return $this->hasMany(PetHistoryEntry::class)
             ->latest('entry_date');
     }
+
+    public function reminders()
+    {
+        return $this->hasMany(Reminder::class);
+    }
 }

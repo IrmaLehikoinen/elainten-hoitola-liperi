@@ -40,7 +40,7 @@ class AdminBookingController extends Controller
         ]);
 
         $booking = Booking::create([
-            'company_id' => 1,
+            'company_id' => $request->user()->company_id,
             'customer_id' => $validated['customer_id'],
             'arrival_at' => $validated['arrival_at'],
             'pickup_at' => $validated['pickup_at'],

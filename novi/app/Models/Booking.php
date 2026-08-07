@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
         'company_id',
         'customer_id',
@@ -72,5 +75,20 @@ class Booking extends Model
     public function historyEntries()
     {
         return $this->hasMany(PetHistoryEntry::class);
+    }
+
+    public function reminders()
+    {
+        return $this->hasManyThrough(
+            Reminder::class,
+            BookingParticipant::class,
+            'booking_id',
+            'booking_participant_id'
+        );
+    }
+
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class);
     }
 }
