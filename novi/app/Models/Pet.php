@@ -24,6 +24,7 @@ class Pet extends Model
         'veterinarian_phone',
         'emergency_notes',
         'general_notes',
+        'internal_notes',
     ];
 
     protected $casts = [

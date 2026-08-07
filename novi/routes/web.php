@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReminderController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\PetController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -40,6 +42,34 @@ Route::post(
 )
     ->middleware(['auth', 'verified'])
     ->name('admin.reminders.toggle');
+
+Route::get(
+    '/admin/customers/{customer}',
+    [CustomerController::class, 'show']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.customers.show');
+
+Route::get(
+    '/admin/pets/{pet}',
+    [PetController::class, 'show']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.pets.show');
+
+Route::patch(
+    '/admin/pets/{pet}',
+    [PetController::class, 'update']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.pets.update');
+
+Route::post(
+    '/admin/reminders',
+    [ReminderController::class, 'store']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.reminders.store');
 
     require __DIR__.'/auth.php';
 
