@@ -3,14 +3,16 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminBookingController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReminderController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -31,6 +33,13 @@ Route::post(
 )
     ->middleware(['auth', 'verified'])
     ->name('admin.bookings.store');
+
+Route::post(
+    '/admin/reminders/{reminder}/toggle',
+    [ReminderController::class, 'toggle']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.reminders.toggle');
 
     require __DIR__.'/auth.php';
 
