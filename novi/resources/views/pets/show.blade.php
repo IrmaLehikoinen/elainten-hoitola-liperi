@@ -162,7 +162,7 @@
 
                 <div class="mt-4 divide-y">
                     @forelse ($pet->reminders as $reminder)
-                        <div class="flex items-center gap-4 py-3">
+                        <div class="flex items-center gap-4 py-3" x-show="!removedState[{{ $reminder->id }}]" x-cloak>
                             <button
                                 type="button"
                                 class="flex h-5 w-5 shrink-0 items-center justify-center rounded border"
@@ -179,6 +179,14 @@
                                 </p>
                                 <p class="text-xs text-gray-500">{{ $reminder->due_at->format('d.m.Y H:i') }}</p>
                             </div>
+
+                           <button
+                                type="button"
+                                class="btn-brand rounded-md px-4 py-2 text-sm font-semibold"
+                                @click="remove({{ $reminder->id }})"
+                            >
+                                Poista
+                            </button>
                         </div>
                     @empty
                         <p class="py-4 text-sm text-gray-500">Ei vielä muistutuksia tälle hoitojaksolle.</p>
@@ -237,6 +245,27 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('petReminders', () => ({
                 doneState: @json($pet->reminders->pluck('done_at', 'id')->map(fn ($v) => $v !== null)),
+                removedState: {},
+
+                async remove(id) {
+                    if (!confirm('Poistetaanko muistutus?')) {
+                        return;
+                    }
+
+                    try {
+                        await fetch(`/admin/reminders/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': @json(csrf_token()),
+                            },
+                        });
+
+                        this.removedState[id] = true;
+                    } catch (error) {
+                        // Ei tehty mitään, rivi jää näkyviin jos pyyntö epäonnistui.
+                    }
+                },
 
                 async toggle(id) {
                     this.doneState[id] = !this.doneState[id];

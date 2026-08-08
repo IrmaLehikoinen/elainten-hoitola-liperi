@@ -26,31 +26,44 @@
                     Perustiedot
                 </h2>
 
-                <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Nimi</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $customer->name }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Puhelin</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $customer->phone ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Sähköposti</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $customer->email ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Osoite</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $customer->address ?: '—' }}</dd>
-                    </div>
-                </dl>
-
-                @if ($customer->notes)
-                    <div class="mt-4 rounded-md bg-gray-50 p-4">
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Muistiinpanot</dt>
-                        <dd class="mt-1 text-sm whitespace-pre-line" style="color: var(--brand-text);">{{ $customer->notes }}</dd>
+                @if (session('status'))
+                    <div class="mt-4 rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">
+                        {{ session('status') }}
                     </div>
                 @endif
+
+                <form method="POST" action="{{ route('admin.customers.update', $customer) }}" class="mt-4 space-y-4">
+                    @csrf
+                    @method('PATCH')
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Nimi</label>
+                            <input type="text" name="name" value="{{ old('name', $customer->name) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Puhelin</label>
+                            <input type="text" name="phone" value="{{ old('phone', $customer->phone) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Sähköposti</label>
+                            <input type="email" name="email" value="{{ old('email', $customer->email) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Osoite</label>
+                            <input type="text" name="address" value="{{ old('address', $customer->address) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Muistiinpanot</label>
+                        <textarea name="notes" rows="3" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('notes', $customer->notes) }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                        Tallenna tiedot
+                    </button>
+                </form>
             </section>
 
             {{-- Eläimet --}}

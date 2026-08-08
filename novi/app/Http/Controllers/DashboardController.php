@@ -16,7 +16,8 @@ class DashboardController extends Controller
 
         return view('dashboard', [
             'today' => $today,
-            'todayItems' => $this->buildTodayList($today),
+            'todayEvents' => $this->buildTodayEvents($today),
+            'todayReminders' => $this->buildTodayReminders($today),
             'inCareToday' => $this->participantsInCareOn($today),
             'arrivingTomorrow' => $this->participantsArrivingOn($tomorrow),
             'calendarMonth' => $monthStart,
@@ -44,11 +45,10 @@ class DashboardController extends Controller
     }
 
     /**
-     * "Tänään huomioitavaa" - yhdistää saapumiset, lähdöt ja
-     * muistutukset-taulun rivit yhdeksi kellonajan mukaan
-     * järjestetyksi listaksi.
+     * "Saapuvat ja lähtevät tänään" - pelkät saapumiset ja lähdöt,
+     * ei muistutuksia. Pelkkä tietolista, ei rastitusta.
      */
-    private function buildTodayList(Carbon $today)
+    private function buildTodayEvents(Carbon $today)
     {
         $items = collect();
 
@@ -58,10 +58,7 @@ class DashboardController extends Controller
                 'label' => 'Saapuu tänään',
                 'name' => $participant->name,
                 'customer' => optional(optional($participant->booking)->customer)->name,
-                'customer_id' => optional($participant->booking)->customer_id,
                 'pet_id' => $participant->pet_id,
-                'reminder_id' => null,
-                'done' => false,
             ]);
         }
 
@@ -75,35 +72,37 @@ class DashboardController extends Controller
                 'label' => 'Lähtee tänään',
                 'name' => $participant->name,
                 'customer' => optional(optional($participant->booking)->customer)->name,
-                'customer_id' => optional($participant->booking)->customer_id,
                 'pet_id' => $participant->pet_id,
-                'reminder_id' => null,
-                'done' => false,
             ]);
         }
 
+        return $items->sortBy('time')->values();
+    }
+
+    /**
+     * "Muistutukset" - tämän päivän avoimet (ei vielä tehdyt) muistutukset.
+     * Kun rasti laitetaan, rivi poistuu listalta (ei vain harmaannu).
+     */
+    private function buildTodayReminders(Carbon $today)
+    {
         $reminders = Reminder::with(['pet', 'bookingParticipant.booking.customer', 'customer'])
             ->forDate($today)
+            ->open()
             ->get();
 
-        foreach ($reminders as $reminder) {
-            $items->push([
+        return $reminders->map(function ($reminder) {
+            return [
+                'id' => $reminder->id,
                 'time' => $reminder->due_at->format('H:i'),
                 'label' => $reminder->title ?: self::typeLabel($reminder->type),
                 'name' => optional($reminder->pet)->name
                     ?? optional($reminder->bookingParticipant)->name,
                 'customer' => optional($reminder->customer)->name
                     ?? optional(optional(optional($reminder->bookingParticipant)->booking)->customer)->name,
-                'customer_id' => optional($reminder->customer)->id
-                    ?? optional(optional($reminder->bookingParticipant)->booking)->customer_id,
                 'pet_id' => $reminder->pet_id
                     ?? optional($reminder->bookingParticipant)->pet_id,
-                'reminder_id' => $reminder->id,
-                'done' => $reminder->isDone(),
-            ]);
-        }
-
-        return $items->sortBy('time')->values();
+            ];
+        })->sortBy('time')->values();
     }
 
     public static function typeLabel(string $type): string
@@ -119,11 +118,6 @@ class DashboardController extends Controller
         };
     }
 
-    /**
-     * Kuukausikalenterin päivät + kyseisenä päivänä hoidossa
-     * olevat eläimet (päivänäkymä ja klikattavuus lisätään
-     * omana vaiheenaan myöhemmin).
-     */
     private function buildCalendarDays(Carbon $monthStart)
     {
         $start = $monthStart->copy()->startOfMonth();

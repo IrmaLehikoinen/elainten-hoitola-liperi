@@ -14,46 +14,26 @@
         </div>
     </x-slot>
 
-    <div class="py-8" x-data="todayList">
+    <div class="py-8" x-data="todayReminders">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-            {{-- 1. Tänään huomioitavaa --}}
+            {{-- 1a. Saapuvat ja lähtevät tänään --}}
             <section class="bg-white p-6 shadow-sm rounded-lg">
                 <h2
                     class="text-xl font-semibold"
                     style="font-family: var(--brand-heading-font); color: var(--brand-text);"
                 >
-                    Tänään huomioitavaa
+                    Saapuvat ja lähtevät tänään
                 </h2>
 
                 <div class="mt-4 divide-y">
-                    @forelse ($todayItems as $item)
+                    @forelse ($todayEvents as $item)
                         <div class="flex items-center gap-4 py-3">
-
                             <span class="w-14 shrink-0 text-sm font-semibold" style="color: var(--brand-primary);">
                                 {{ $item['time'] }}
                             </span>
 
-                            @if ($item['reminder_id'])
-                                <button
-                                    type="button"
-                                    class="flex h-5 w-5 shrink-0 items-center justify-center rounded border"
-                                    :class="doneState[{{ $item['reminder_id'] }}] ? 'border-green-500 bg-green-500 text-white' : 'border-gray-300'"
-                                    @click="toggle({{ $item['reminder_id'] }})"
-                                    aria-label="Merkitse tehdyksi"
-                                >
-                                    <span x-show="doneState[{{ $item['reminder_id'] }}]" x-cloak class="text-xs">✓</span>
-                                </button>
-                            @else
-                                <span class="w-5 shrink-0"></span>
-                            @endif
-
-                            <div
-                                class="flex-1"
-                                @if ($item['reminder_id'])
-                                    :class="doneState[{{ $item['reminder_id'] }}] ? 'opacity-40 line-through' : ''"
-                                @endif
-                            >
+                            <div class="flex-1">
                                 <p class="text-sm font-medium" style="color: var(--brand-text);">
                                     {{ $item['label'] }}{{ $item['name'] ? ' – '.$item['name'] : '' }}
                                 </p>
@@ -71,13 +51,12 @@
                         </div>
                     @empty
                         <p class="py-6 text-center text-sm text-gray-500">
-                            Ei tämän päivän huomioita.
+                            Ei tämän päivän saapumisia tai lähtöjä.
                         </p>
                     @endforelse
                 </div>
             </section>
-
-            {{-- 2. Hoidossa tänään --}}
+{{-- 1b. Hoidossa tänään --}}
             <section class="bg-white p-6 shadow-sm rounded-lg">
                 <h2
                     class="text-xl font-semibold"
@@ -100,7 +79,7 @@
                         <tbody class="divide-y">
                             @forelse ($inCareToday as $participant)
                                 @php $customer = optional($participant->booking)->customer; @endphp
-                                <tr @class(['bg-amber-50' => $participant->end_date?->isToday()])>
+                                <<tr @if ($participant->end_date?->isToday()) style="background-color: var(--brand-secondary);" @endif>
                                     <td class="py-2 pr-4 font-medium">
                                         @if ($participant->pet_id && Route::has('admin.pets.show'))
                                             <a href="{{ route('admin.pets.show', $participant->pet_id) }}" style="color: var(--brand-primary);">
@@ -132,6 +111,44 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+            </section>
+
+            {{-- 1c. Muistutukset --}}
+            <section class="bg-white p-6 shadow-sm rounded-lg">
+                <h2
+                    class="text-xl font-semibold"
+                    style="font-family: var(--brand-heading-font); color: var(--brand-text);"
+                >
+                    Muistutukset
+                </h2>
+
+                <div class="mt-4 divide-y">
+                    <template x-for="item in reminders" :key="item.id">
+                        <div class="flex items-center gap-4 py-3">
+                            <span class="w-14 shrink-0 text-sm font-semibold" style="color: var(--brand-primary);" x-text="item.time"></span>
+
+                            <button
+                                type="button"
+                                class="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-gray-300"
+                                @click="toggle(item.id)"
+                                aria-label="Merkitse tehdyksi"
+                            ></button>
+
+                            <div class="flex-1">
+                                <p class="text-sm font-medium" style="color: var(--brand-text);" x-text="item.label + (item.name ? ' – ' + item.name : '')"></p>
+                                <p class="text-xs text-gray-500" x-show="item.customer" x-text="item.customer"></p>
+                            </div>
+
+                            <a :href="'/admin/pets/' + item.pet_id" x-show="item.pet_id" class="text-sm font-medium" style="color: var(--brand-primary);">
+                                Avaa →
+                            </a>
+                        </div>
+                    </template>
+
+                    <p x-show="reminders.length === 0" class="py-6 text-center text-sm text-gray-500">
+                        Ei avoimia muistutuksia tänään.
+                    </p>
                 </div>
             </section>
 
@@ -217,18 +234,14 @@
                                 <div class="min-h-24 border-b border-r border-gray-200 bg-gray-50"></div>
                             @endfor
 
-                        @foreach ($calendarDays as $day)
+                            @foreach ($calendarDays as $day)
                                 @php
-                                    $dayHref = ($day['count'] > 0 && Route::has('admin.calendar.day'))
+                                    $dayHref = $day['count'] > 0
                                         ? route('admin.calendar.day', $day['date']->format('Y-m-d'))
                                         : null;
                                 @endphp
 
-                                
-                                   <a href="{{ $dayHref ?? '#' }}"
-                                    @unless ($dayHref) onclick="return false;" @endunless
-                                    class="block min-h-24 border-b border-r border-gray-200 p-2 {{ $dayHref ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default' }}"
-                                >
+                                <a href="{{ $dayHref ?? '#' }}" @unless ($dayHref) onclick="return false;" @endunless class="block min-h-24 border-b border-r border-gray-200 p-2 {{ $dayHref ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default' }}">
                                     <div class="text-sm font-medium" style="color: var(--brand-text);">
                                         {{ $day['date']->day }}
                                     </div>
@@ -252,20 +265,18 @@
                                         @endforeach
                                     @endif
                                 </a>
-                            @endforeach 
+                            @endforeach
 
                         </div>
                     </div>
                 </div>
 
-               <div class="mt-6 text-center">
-    
-        <a href="{{ route('admin.bookings.create') }}"
-        class="btn-brand inline-block rounded-md px-8 py-4 text-base font-semibold"
-    >
-        Varaa hoitoaika
-    </a>
-</div>
+                <div class="mt-6 text-center">
+                    
+                        <a href="{{ route('calendar.index') }}" class="btn-brand inline-block rounded-md px-8 py-4 text-base font-semibold">
+                        Varaa hoitoaika
+                    </a>
+                </div>
             </section>
 
         </div>
@@ -273,12 +284,10 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('todayList', () => ({
-                doneState: @json(collect($todayItems)->filter(fn ($i) => $i['reminder_id'])->pluck('done', 'reminder_id')),
+            Alpine.data('todayReminders', () => ({
+                reminders: @json($todayReminders),
 
                 async toggle(id) {
-                    this.doneState[id] = !this.doneState[id];
-
                     try {
                         const response = await fetch(`/admin/reminders/${id}/toggle`, {
                             method: 'POST',
@@ -290,9 +299,12 @@
                         });
 
                         const data = await response.json();
-                        this.doneState[id] = data.done;
+
+                        if (data.done) {
+                            this.reminders = this.reminders.filter(r => r.id !== id);
+                        }
                     } catch (error) {
-                        this.doneState[id] = !this.doneState[id];
+                        // Ei tehty mitään, rivi jää näkyviin jos pyyntö epäonnistui.
                     }
                 },
             }));

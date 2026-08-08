@@ -9,9 +9,9 @@ class ReminderController extends Controller
 {
     /**
      * Lisää uuden muistutuksen eläinkortin "Hoitojakson muistutukset"
-     * -osiosta. Sama rivi näkyy automaattisesti myös kalenterissa ja
-     * etusivun "Tänään huomioitavaa" -listalla, koska kaikki lukevat
-     * samaa reminders-taulua.
+     * -osiosta. Sama rivi näkyy automaattisesti myös etusivun
+     * "Muistutukset" -listalla, koska molemmat lukevat samaa
+     * reminders-taulua.
      */
     public function store(Request $request)
     {
@@ -52,5 +52,16 @@ class ReminderController extends Controller
         return response()->json([
             'done' => $reminder->isDone(),
         ]);
+    }
+
+    /**
+     * Poistaa muistutuksen kokonaan eläinkortilta (AJAX, ei sivun
+     * uudelleenlatausta, jotta vieritys pysyy paikallaan).
+     */
+    public function destroy(Reminder $reminder)
+    {
+        $reminder->delete();
+
+        return response()->json(['deleted' => true]);
     }
 }

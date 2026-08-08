@@ -45,12 +45,33 @@ Route::post(
     ->middleware(['auth', 'verified'])
     ->name('admin.reminders.toggle');
 
+Route::delete(
+    '/admin/reminders/{reminder}',
+    [ReminderController::class, 'destroy']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.reminders.destroy');
+
+Route::get(
+    '/admin/customers',
+    [CustomerController::class, 'index']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.customers.index');
+
 Route::get(
     '/admin/customers/{customer}',
     [CustomerController::class, 'show']
 )
     ->middleware(['auth', 'verified'])
     ->name('admin.customers.show');
+
+Route::patch(
+    '/admin/customers/{customer}',
+    [CustomerController::class, 'update']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.customers.update');
 
 Route::get(
     '/admin/pets/{pet}',

@@ -11,7 +11,7 @@ class PetController extends Controller
      * Uuden eläimen pikaluonti varausvelhon vaiheesta 5, kun
      * asiakkaalla ei vielä ole sopivaa eläinkorttia.
      */
-   public function store(Request $request)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
@@ -51,13 +51,28 @@ class PetController extends Controller
     }
 
     /**
-     * Päivittää eläinkortin kaksi muistiinpanokenttää.
+     * Päivittää eläinkortin kaikki tiedot: perustiedot,
+     * terveys-/hoitotiedot, ja kaksi muistiinpanokenttää.
      * general_notes = asiakkaan tiedot (asiakas voisi muokata jatkossa).
      * internal_notes = hoitolan sisäiset, asiakas ei näe koskaan.
      */
     public function update(Request $request, Pet $pet)
     {
         $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'species' => ['required', 'string', 'max:255'],
+            'breed' => ['nullable', 'string', 'max:255'],
+            'birth_date' => ['nullable', 'date'],
+            'sex' => ['nullable', 'string', 'max:50'],
+            'weight' => ['nullable', 'numeric', 'min:0'],
+            'microchip_number' => ['nullable', 'string', 'max:255'],
+            'allergies' => ['nullable', 'string'],
+            'medications' => ['nullable', 'string'],
+            'feeding_instructions' => ['nullable', 'string'],
+            'behaviour_notes' => ['nullable', 'string'],
+            'veterinarian_name' => ['nullable', 'string', 'max:255'],
+            'veterinarian_phone' => ['nullable', 'string', 'max:50'],
+            'emergency_notes' => ['nullable', 'string'],
             'general_notes' => ['nullable', 'string'],
             'internal_notes' => ['nullable', 'string'],
         ]);
@@ -66,6 +81,6 @@ class PetController extends Controller
 
         return redirect()
             ->route('admin.pets.show', $pet)
-            ->with('status', 'Muistiinpanot tallennettu.');
+            ->with('status', 'Eläinkortti tallennettu.');
     }
 }
