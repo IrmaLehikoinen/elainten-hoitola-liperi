@@ -77,9 +77,8 @@ class CustomerController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string'],
         ]);
-
         $customer = Customer::create([
-            'name' => $validated['name'] ?: 'Uusi asiakas',
+            'name' => $validated['name'] ?? '',
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,
             'address' => $validated['address'] ?? null,
@@ -90,7 +89,7 @@ class CustomerController extends Controller
         return response()->json($customer, 201);
     }
 
-    public function show(Customer $customer)
+    public function show(Request $request, Customer $customer)
     {
         $customer->load([
             'pets',
@@ -110,10 +109,33 @@ class CustomerController extends Controller
             ->sortByDesc('start_date')
             ->values();
 
+        $requiredSpecies = collect(explode(',', (string) $request->get('species')))
+            ->map(fn ($species) => trim($species))
+            ->filter()
+            ->values();
+
+        $remainingCounts = $customer->pets
+            ->groupBy(fn ($pet) => strtolower(trim($pet->species)))
+            ->map(fn ($group) => $group->count())
+            ->toArray();
+
+        $pendingSpecies = collect();
+
+        foreach ($requiredSpecies as $species) {
+            $key = strtolower(trim($species));
+
+            if (($remainingCounts[$key] ?? 0) > 0) {
+                $remainingCounts[$key]--;
+            } else {
+                $pendingSpecies->push($species);
+            }
+        }
+
         return view('customers.show', [
             'customer' => $customer,
             'upcomingBookings' => $upcomingBookings,
             'pastBookings' => $pastBookings,
+            'pendingSpecies' => $pendingSpecies,
         ]);
     }
 
@@ -130,10 +152,14 @@ class CustomerController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        $customer->update($validated);
+      $customer->update($validated);
 
         return redirect()
-            ->route('admin.customers.show', $customer)
+            ->route('admin.customers.show', [
+                'customer' => $customer->id,
+                'fromBooking' => $request->boolean('from_booking') ? 1 : null,
+                'species' => $request->get('species') ?: null,
+            ])
             ->with('status', 'Asiakastiedot tallennettu.');
     }
 }

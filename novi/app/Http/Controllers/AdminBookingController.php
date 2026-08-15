@@ -11,10 +11,10 @@ class AdminBookingController extends Controller
 {
     public function searchCustomer(Request $request)
     {
-        $query = trim((string) $request->get('q'));
+    $query = trim((string) $request->get('q'));
 
         if ($query === '') {
-            return response()->json(null);
+            return response()->json(['found' => false], 404);
         }
 
         $digitsOnly = preg_replace('/[\s\-]+/', '', $query);
@@ -31,6 +31,10 @@ class AdminBookingController extends Controller
                 }
             })
             ->first();
+
+        if (!$customer) {
+            return response()->json(['found' => false], 404);
+        }
 
         return response()->json($customer);
     }

@@ -26,15 +26,29 @@
                     Perustiedot
                 </h2>
 
+                @if (request('fromBooking'))
+                    <div class="mt-4 rounded-md p-4" style="background-color: var(--brand-secondary);">
+                        <button
+                            type="button"
+                            onclick="handleBackToBooking()"
+                            class="btn-brand rounded-md px-4 py-2 text-sm font-semibold"
+                        >
+                            ← Takaisin ajanvaraukseen (sulje tämä välilehti)
+                        </button>
+                    </div>
+                @endif
+
                 @if (session('status'))
                     <div class="mt-4 rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">
                         {{ session('status') }}
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('admin.customers.update', $customer) }}" class="mt-4 space-y-4">
+                <form method="POST" action="{{ route('admin.customers.update', $customer) }}" class="mt-4 space-y-4" id="customer-update-form">
                     @csrf
                     @method('PATCH')
+                    <input type="hidden" name="from_booking" value="{{ request('fromBooking') ? '1' : '' }}">
+                    <input type="hidden" name="species" value="{{ request('species') }}">
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
@@ -75,7 +89,7 @@
                     Eläimet
                 </h2>
 
-                <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @forelse ($customer->pets as $pet)
                         @if (Route::has('admin.pets.show'))
                             <a href="{{ route('admin.pets.show', $pet->id) }}" class="block rounded-lg border p-4 transition hover:shadow-md" style="border-color: var(--brand-secondary);">
@@ -89,9 +103,22 @@
                             </div>
                         @endif
                     @empty
-                        <p class="text-sm text-gray-500">Ei vielä eläinkortteja.</p>
+                        @if ($pendingSpecies->isEmpty())
+                            <p class="text-sm text-gray-500">Ei vielä eläinkortteja.</p>
+                        @endif
                     @endforelse
-                </div>
+
+                    @foreach ($pendingSpecies as $species)
+                        <div
+                            onclick="createAndOpenNewPetFor('{{ $species }}')"
+                            class="cursor-pointer rounded-lg border border-dashed p-4 transition hover:shadow-md"
+                            style="border-color: var(--brand-primary);"
+                        >
+                            <p class="font-semibold" style="color: var(--brand-primary);">+ Uusi lemmikki</p>
+                            <p class="text-sm text-gray-500">{{ $species }}</p>
+                        </div>
+                    @endforeach
+                </div>   
             </section>
 
             {{-- Tulevat varaukset --}}
@@ -183,4 +210,77 @@
 
         </div>
     </div>
+
+<script>
+        (function () {
+            var form = document.getElementById('customer-update-form');
+            var formDirty = false;
+            var pendingSpeciesCount = {{ $pendingSpecies->count() }};
+            var customerId = {{ $customer->id }};
+            var petsStoreUrl = @json(route('admin.pets.store'));
+            var petsUpdateUrlBase = @json(url('/admin/pets'));
+            var csrfToken = @json(csrf_token());
+
+            if (form) {
+                form.addEventListener('input', function () {
+                    formDirty = true;
+                });
+
+                form.addEventListener('change', function () {
+                    formDirty = true;
+                });
+
+                form.addEventListener('submit', function () {
+                    formDirty = false;
+                });
+            }
+
+            window.createAndOpenNewPetFor = function (species) {
+                fetch(petsStoreUrl, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                    },
+                    body: JSON.stringify({
+                        customer_id: customerId,
+                        name: '',
+                        species: species,
+                    }),
+                })
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (createdPet) {
+                        if (!createdPet || !createdPet.id) {
+                            alert('Lemmikin luonti epäonnistui.');
+                            return;
+                        }
+
+                        window.open(petsUpdateUrlBase + '/' + createdPet.id + '?fromBooking=1', '_blank');
+                    })
+                    .catch(function () {
+                        alert('Lemmikin luonti epäonnistui.');
+                    });
+            };
+           window.handleBackToBooking = function () {
+                if (formDirty) {
+                    alert('Tallenna muutokset ensin ennen kuin palaat varaukseen.');
+                    return;
+                }
+
+                if (pendingSpeciesCount > 0) {
+                    alert('Täytä ensin kaikki lemmikkikortit ennen kuin palaat varaukseen.');
+                    return;
+                }
+
+                if (window.opener && !window.opener.closed && typeof window.opener.refreshBookingCustomer === 'function') {
+                    window.opener.refreshBookingCustomer();
+                }
+
+                window.close();
+            }; 
+        })();
+    </script>    
 </x-app-layout>

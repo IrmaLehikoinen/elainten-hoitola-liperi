@@ -11,11 +11,11 @@ class PetController extends Controller
      * Uuden eläimen pikaluonti varausvelhon vaiheesta 5, kun
      * asiakkaalla ei vielä ole sopivaa eläinkorttia.
      */
-    public function store(Request $request)
+        public function store(Request $request)
     {
         $validated = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'species' => ['required', 'string', 'max:255'],
             'breed' => ['nullable', 'string', 'max:255'],
             'birth_date' => ['nullable', 'date'],
@@ -31,6 +31,8 @@ class PetController extends Controller
             'veterinarian_phone' => ['nullable', 'string', 'max:50'],
             'emergency_notes' => ['nullable', 'string'],
         ]);
+
+        $validated['name'] = $validated['name'] ?? '';
 
         $pet = Pet::create($validated);
 
@@ -80,9 +82,25 @@ class PetController extends Controller
 
         $pet->update($validated);
 
+      return redirect()
+            ->route('admin.pets.show', [
+                'pet' => $pet->id,
+                'fromBooking' => $request->boolean('from_booking') ? 1 : null,
+            ])
+            ->with('status', 'Eläinkortti tallennettu.');
+    }
+
+    /**
+     * Poistaa lemmikkikortin kokonaan (esim. lemmikin kuoltua).
+     */
+    public function destroy(Pet $pet)
+    {
+        $customer = $pet->customer;
+
+        $pet->delete();
+
         return redirect()
-            ->route('admin.pets.show', $pet)
-            ->with('status', 'Eläinkortti tallennettu.')
-            ->with('fromBooking', $request->boolean('from_booking'));
+            ->route('admin.customers.show', $customer)
+            ->with('status', 'Lemmikkikortti poistettu.');
     }
 }

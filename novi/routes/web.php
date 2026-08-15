@@ -103,6 +103,13 @@ Route::patch(
     ->middleware(['auth', 'verified'])
     ->name('admin.pets.update');
 
+Route::delete(
+    '/admin/pets/{pet}',
+    [PetController::class, 'destroy']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.pets.destroy');
+
 Route::post(
     '/admin/reminders',
     [ReminderController::class, 'store']

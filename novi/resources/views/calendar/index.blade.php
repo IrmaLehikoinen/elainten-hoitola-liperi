@@ -27,7 +27,8 @@
         </div>
     </x-slot>
 
-    <div
+        <div
+        id="booking-calendar-root"
         class="py-8"
         x-data="bookingCalendar"
         x-init="if (new URLSearchParams(window.location.search).get('varaa') === '1') { openRequirementModal() }"
@@ -462,12 +463,8 @@
                         class="rounded-lg border p-4"
                         style="border-color: var(--brand-secondary);"
                     >
-                        <p class="text-xs text-gray-500">
-                            Asiakas löytyi
-                        </p>
-
-                        <p
-                            class="mt-1 font-semibold"
+                    <p
+                            class="font-semibold"
                             style="color: var(--brand-text);"
                             x-text="customer ? customer.name : ''"
                         ></p>
@@ -478,22 +475,6 @@
                                 ? [customer.phone, customer.email].filter(Boolean).join(' · ')
                                 : ''"
                         ></p>
-                    </div>
-
-                    <div
-                        x-show="customerNotFound"
-                        x-cloak
-                    >
-                        <button
-                            type="button"
-                            class="rounded-md border px-4 py-2 text-sm font-semibold"
-                            style="
-                                border-color: var(--brand-primary);
-                                color: var(--brand-primary);
-                            "
-                        >
-                            + Luo uusi asiakaskortti
-                        </button>
                     </div>
 
                     <div
@@ -707,8 +688,14 @@
                 petsStoreUrl:
                     @json(route('admin.pets.store')),
 
-             petsUpdateUrlBase:
+                petsUpdateUrlBase:
                     @json(url('/admin/pets')),
+
+                customersStoreUrl:
+                    @json(route('admin.customers.store')),
+
+                customersUpdateUrlBase:
+                    @json(url('/admin/customers')),
 
                 holdStoreUrl:
                     @json(route('admin.bookings.hold.store')),
@@ -1019,11 +1006,6 @@
 
                 async createAndOpenNewPet(index) {
                     const animal = this.bookingAnimals[index];
-                    const name = window.prompt('Lemmikin nimi?');
-
-                    if (!name || !name.trim()) {
-                        return;
-                    }
 
                     try {
                         const response = await fetch(this.petsStoreUrl, {
@@ -1033,11 +1015,11 @@
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': this.csrfToken,
                             },
-                            body: JSON.stringify({
+                        body: JSON.stringify({
                                 customer_id: this.customer.id,
-                                name: name.trim(),
+                                name: '',
                                 species: animal.species,
-                            }),
+                            }),    
                         });
 
                         const createdPet = await response.json();
@@ -1055,14 +1037,57 @@
                             isNew: false,
                         };
 
-                        this.pets.push(createdPet);
+                     this.pets.push(createdPet);
 
-     window.open(this.petsUpdateUrlBase + '/' + createdPet.id + '?fromBooking=1', '_blank');
+                        window.open(this.petsUpdateUrlBase + '/' + createdPet.id + '?fromBooking=1', '_blank');
                     } catch (error) {
                         this.saveMessage = 'Lemmikin luonti epäonnistui.';
                     }
                 },
-                async searchCustomer() {
+
+                async createAndOpenNewCustomer() {
+                    const query = this.customerSearch.trim();
+                    const isEmail = query.includes('@');
+
+                    try {
+                        const response = await fetch(this.customersStoreUrl, {
+                            method: 'POST',
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                            },
+                            body: JSON.stringify({
+                                phone: isEmail ? null : query,
+                                email: isEmail ? query : null,
+                            }),
+                        });
+
+                        const createdCustomer = await response.json();
+
+                        if (!response.ok) {
+                            this.searchMessage = 'Asiakkaan luonti epäonnistui.';
+                            return;
+                        }
+
+                    this.customer = createdCustomer;
+                        this.customerNotFound = false;
+                        this.pets = [];
+                        this.buildBookingAnimals();
+
+                        const speciesParam = this.animals.map((a) => a.species).join(',');
+
+                        window.open(
+                            this.customersUpdateUrlBase + '/' + createdCustomer.id
+                                + '?fromBooking=1&species=' + encodeURIComponent(speciesParam),
+                            '_blank'
+                        );
+                    } catch (error) {
+                        this.searchMessage = 'Asiakkaan luonti epäonnistui.';
+                    }
+                },
+
+                async searchCustomer() {   
                     this.customer = null;
                     this.customerNotFound = false;
                     this.pets = [];
@@ -1082,22 +1107,20 @@
                         const url = new URL(this.customerSearchUrl, window.location.origin);
                         url.searchParams.set('q', query);
 
-                        const response = await fetch(url, {
+                    const response = await fetch(url, {
                             headers: { Accept: 'application/json' },
                         });
+
+                    if (response.status === 404) {
+                            await this.createAndOpenNewCustomer();
+                            return;
+                        }
 
                         if (!response.ok) {
                             throw new Error('Asiakashaku epäonnistui.');
                         }
 
                         const data = await response.json();
-
-                        if (!data) {
-                            this.customerNotFound = true;
-                            this.searchMessage = 'Asiakasta ei löytynyt.';
-                            return;
-                        }
-
                         this.customer = data;
                         this.pets = Array.isArray(data.pets) ? data.pets : [];
                         this.buildBookingAnimals();
@@ -1193,7 +1216,19 @@
                         this.saving = false;
                     }
                 }
-            }));
+           }));
         });
+
+        window.refreshBookingCustomer = function () {
+            var root = document.getElementById('booking-calendar-root');
+
+            if (root && window.Alpine) {
+                var data = window.Alpine.$data(root);
+
+                if (data && typeof data.searchCustomer === 'function') {
+                    data.searchCustomer();
+                }
+            }
+        };
     </script>
 </x-app-layout>

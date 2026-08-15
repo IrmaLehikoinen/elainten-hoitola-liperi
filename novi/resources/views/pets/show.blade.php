@@ -22,14 +22,14 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-         @if (request('fromBooking') || session('fromBooking'))
+         @if (request('fromBooking'))
                 <div class="rounded-md p-4" style="background-color: var(--brand-secondary);">
                  <button
                         type="button"
                         onclick="handleBackToBooking()"
                         class="btn-brand rounded-md px-4 py-2 text-sm font-semibold"
                     >
-                        ← Takaisin varaukseen (sulje tämä välilehti)
+                        ← Takaisin asiakaskorttiin (sulje tämä välilehti)
                     </button>  
                 </div>
             @endif
@@ -54,7 +54,7 @@
            <form method="POST" action="{{ route('admin.pets.update', $pet) }}" id="pet-update-form">
                 @csrf
                 @method('PATCH')
-                <input type="hidden" name="from_booking" value="{{ request('fromBooking') || session('fromBooking') ? '1' : '' }}">
+                <input type="hidden" name="from_booking" value="{{ request('fromBooking') ? '1' : '' }}">
 
                 {{-- Perustiedot --}}
                 <section class="bg-white p-6 shadow-sm rounded-lg">
@@ -180,11 +180,28 @@
                     </div>
                 </section>
 
-                <div class="mt-6">
+            <div class="mt-6">
                     <button type="submit" class="btn-brand rounded-md px-6 py-3 text-sm font-semibold">
                         Tallenna eläinkortti
                     </button>
                 </div>
+            </form>
+
+            <form
+                method="POST"
+                action="{{ route('admin.pets.destroy', $pet) }}"
+                onsubmit="return confirm('Poistetaanko {{ $pet->name ?: 'tämä lemmikki' }} kokonaan? Tätä ei voi perua.');"
+            >
+                @csrf
+                @method('DELETE')
+
+                <button
+                    type="submit"
+                    class="rounded-md border px-4 py-2 text-sm font-semibold"
+                    style="border-color: #b91c1c; color: #b91c1c;"
+                >
+                    Poista lemmikki
+                </button>
             </form>
 
             {{-- Hoitojakson muistutukset --}}
@@ -341,14 +358,18 @@
                 });
             }
 
-            window.handleBackToBooking = function () {
+         window.handleBackToBooking = function () {
                 if (formDirty) {
                     alert('Tallenna muutokset ensin ennen kuin palaat varaukseen.');
                     return;
                 }
 
+                if (window.opener && !window.opener.closed) {
+                    window.opener.location.reload();
+                }
+
                 window.close();
-            };
+            };   
         })();
     </script>
 </x-app-layout> 
