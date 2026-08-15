@@ -38,6 +38,7 @@ class CalendarController extends Controller
         return view('calendar.index', [
             'calendarMonth' => $monthStart,
             'calendarDays' => $days,
+            'careTypes' => \App\Models\CareType::orderBy('sort_order')->get(),
         ]);
     }
 

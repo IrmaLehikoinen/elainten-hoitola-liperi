@@ -39,10 +39,11 @@ class AdminBookingController extends Controller
     {
         $validated = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
-            'pet_id' => ['required', 'exists:pets,id'],
+            'animals' => ['required', 'array', 'min:1'],
+            'animals.*.pet_id' => ['required', 'exists:pets,id'],
             'arrival_at' => ['required', 'date'],
             'pickup_at' => ['required', 'date', 'after_or_equal:arrival_at'],
-            'care_type' => ['required', 'in:half_day,full_day,overnight'],
+            'care_type' => ['required', 'exists:care_types,slug'],
             'notes' => ['nullable', 'string'],
         ]);
 
@@ -60,15 +61,17 @@ class AdminBookingController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
-        $pet = Pet::findOrFail($validated['pet_id']);
+        foreach ($validated['animals'] as $animal) {
+            $pet = Pet::findOrFail($animal['pet_id']);
 
-        $booking->participants()->create([
-            'pet_id' => $pet->id,
-            'name' => $pet->name,
-            'species' => $pet->species,
-            'start_date' => $booking->start_date,
-            'end_date' => $booking->end_date,
-        ]);
+            $booking->participants()->create([
+                'pet_id' => $pet->id,
+                'name' => $pet->name,
+                'species' => $pet->species,
+                'start_date' => $booking->start_date,
+                'end_date' => $booking->end_date,
+            ]);
+        }
 
         return response()->json([
             'message' => 'Varaus tallennettu',

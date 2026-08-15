@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BookingHold;
 use App\Models\BookingParticipant;
 use App\Models\Resource;
 use Illuminate\Support\Carbon;
@@ -71,7 +72,7 @@ class AvailabilityService
             ->all();
     }
 
-    protected function fits(array $requirements, array $capacities, Carbon $startDate, Carbon $endDate): bool
+ protected function fits(array $requirements, array $capacities, Carbon $startDate, Carbon $endDate): bool
     {
         foreach ($requirements as $requirement) {
             $species = $requirement['species'];
@@ -88,12 +89,19 @@ class AvailabilityService
                     ->whereDate('end_date', '>=', $date)
                     ->count();
 
-                if ($booked + $needed > $capacity) {
+                $held = (int) BookingHold::query()
+                    ->whereRaw('LOWER(species) = ?', [$species])
+                    ->where('expires_at', '>', now())
+                    ->whereDate('start_date', '<=', $date)
+                    ->whereDate('end_date', '>=', $date)
+                    ->sum('quantity');
+
+                if ($booked + $held + $needed > $capacity) {
                     return false;
                 }
             }
         }
 
         return true;
-    }
+    } 
 }

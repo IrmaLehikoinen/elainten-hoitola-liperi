@@ -107,15 +107,9 @@ class DashboardController extends Controller
 
     public static function typeLabel(string $type): string
     {
-        return match ($type) {
-            'medication' => 'Lääkitys',
-            'feeding' => 'Ruokinta',
-            'vet' => 'Eläinlääkärikäynti',
-            'wash' => 'Pesu',
-            'nails' => 'Kynsien leikkaus',
-            'walk' => 'Ulkoilutus',
-            default => 'Muu tehtävä',
-        };
+        $reminderType = \App\Models\ReminderType::where('slug', $type)->first();
+
+        return $reminderType?->label ?? 'Muu tehtävä';
     }
 
     private function buildCalendarDays(Carbon $monthStart)

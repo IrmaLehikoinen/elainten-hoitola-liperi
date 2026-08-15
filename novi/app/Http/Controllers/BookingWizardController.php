@@ -48,7 +48,7 @@ class BookingWizardController extends Controller
     {
         $validated = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
-            'care_type' => ['required', 'in:half_day,full_day,overnight'],
+            'care_type' => ['required', 'exists:care_types,slug'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'animals' => ['required', 'array', 'min:1'],

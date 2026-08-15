@@ -118,12 +118,16 @@
                 </a>
 
                 <a
-                    href="#"
+                    href="{{ route('admin.settings.index') }}"
                     class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-gray-100"
-                    style="color: var(--brand-text);"
+                    @if(request()->routeIs('admin.settings.*'))
+                        style="background-color: var(--brand-secondary); color: var(--brand-text);"
+                    @else
+                        style="color: var(--brand-text);"
+                    @endif
                 >
                     <span class="text-lg">◇</span>
-                    <span>Palvelut</span>
+                    <span>Yritysasetukset</span>
                 </a>
 
                 <a

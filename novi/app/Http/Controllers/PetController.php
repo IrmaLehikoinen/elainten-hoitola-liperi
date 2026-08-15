@@ -47,6 +47,7 @@ class PetController extends Controller
 
         return view('pets.show', [
             'pet' => $pet,
+            'reminderTypes' => \App\Models\ReminderType::orderBy('sort_order')->get(),
         ]);
     }
 
@@ -81,6 +82,7 @@ class PetController extends Controller
 
         return redirect()
             ->route('admin.pets.show', $pet)
-            ->with('status', 'Eläinkortti tallennettu.');
+            ->with('status', 'Eläinkortti tallennettu.')
+            ->with('fromBooking', $request->boolean('from_booking'));
     }
 }

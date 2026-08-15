@@ -22,11 +22,23 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
+         @if (request('fromBooking') || session('fromBooking'))
+                <div class="rounded-md p-4" style="background-color: var(--brand-secondary);">
+                 <button
+                        type="button"
+                        onclick="handleBackToBooking()"
+                        class="btn-brand rounded-md px-4 py-2 text-sm font-semibold"
+                    >
+                        ← Takaisin varaukseen (sulje tämä välilehti)
+                    </button>  
+                </div>
+            @endif
+
             @if (session('status'))
                 <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">
                     {{ session('status') }}
                 </div>
-            @endif
+            @endif    
 
             @if ($errors->any())
                 <div class="rounded-md bg-red-50 p-4 text-sm font-medium text-red-700">
@@ -39,9 +51,10 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin.pets.update', $pet) }}">
+           <form method="POST" action="{{ route('admin.pets.update', $pet) }}" id="pet-update-form">
                 @csrf
                 @method('PATCH')
+                <input type="hidden" name="from_booking" value="{{ request('fromBooking') || session('fromBooking') ? '1' : '' }}">
 
                 {{-- Perustiedot --}}
                 <section class="bg-white p-6 shadow-sm rounded-lg">
@@ -224,13 +237,9 @@
                         <div>
                             <label class="block text-sm font-medium">Tyyppi</label>
                             <select name="type" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                                <option value="medication">Lääke</option>
-                                <option value="feeding">Ruokinta</option>
-                                <option value="wash">Pesu</option>
-                                <option value="nails">Kynsien leikkaus</option>
-                                <option value="vet">Eläinlääkäri</option>
-                                <option value="walk">Ulkoilutus</option>
-                                <option value="other">Muu tehtävä</option>
+                                @foreach ($reminderTypes as $reminderType)
+                                    <option value="{{ $reminderType->slug }}">{{ $reminderType->label }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -309,7 +318,37 @@
                         this.doneState[id] = !this.doneState[id];
                     }
                 },
-            }));
+           }));
         });
     </script>
-</x-app-layout>
+
+    <script>
+        (function () {
+            var form = document.getElementById('pet-update-form');
+            var formDirty = false;
+
+            if (form) {
+                form.addEventListener('input', function () {
+                    formDirty = true;
+                });
+
+                form.addEventListener('change', function () {
+                    formDirty = true;
+                });
+
+                form.addEventListener('submit', function () {
+                    formDirty = false;
+                });
+            }
+
+            window.handleBackToBooking = function () {
+                if (formDirty) {
+                    alert('Tallenna muutokset ensin ennen kuin palaat varaukseen.');
+                    return;
+                }
+
+                window.close();
+            };
+        })();
+    </script>
+</x-app-layout> 

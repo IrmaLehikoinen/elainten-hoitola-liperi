@@ -258,9 +258,9 @@
                             x-model="careType"
                             class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
                         >
-                            <option value="half_day">Puolipäivä</option>
-                            <option value="full_day">Kokopäivä</option>
-                            <option value="overnight">Yöhoito</option>
+                            @foreach ($careTypes as $careType)
+                                <option value="{{ $careType->slug }}">{{ $careType->label }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -501,42 +501,48 @@
                         x-cloak
                     >
                         <label class="block text-sm font-medium">
-                            Lemmikki
+                            Lemmikit tälle varaukselle
                         </label>
 
-                        <select
-                            x-model="selectedPetId"
-                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                        >
-                            <option value="">
-                                Valitse lemmikki
-                            </option>
-
+                        <div class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <template
-                                x-for="pet in pets"
-                                :key="pet.id"
+                                x-for="(animal, index) in bookingAnimals"
+                                :key="index"
                             >
-                                <option
-                                    :value="pet.id"
-                                    x-text="pet.name + ' – ' + pet.species"
-                                ></option>
+                                <div>
+                                    <template x-if="!animal.isNew">
+                                        <div
+                                            @click="window.open(petsUpdateUrlBase + '/' + animal.petId + '?fromBooking=1', '_blank')"
+                                            class="cursor-pointer rounded-lg border p-4 transition hover:shadow-md"
+                                            style="border-color: var(--brand-secondary);"
+                                        >
+                                            <p class="font-semibold" style="color: var(--brand-primary);" x-text="animal.name"></p>
+                                            <p class="text-sm text-gray-500" x-text="animal.species + (animal.breed ? ' · ' + animal.breed : '')"></p>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="animal.isNew">
+                                        <div
+                                            @click="createAndOpenNewPet(index)"
+                                            class="cursor-pointer rounded-lg border border-dashed p-4 transition hover:shadow-md"
+                                            style="border-color: var(--brand-primary);"
+                                        >
+                                            <p class="font-semibold" style="color: var(--brand-primary);">
+                                                + Uusi lemmikki
+                                            </p>
+                                            <p class="text-sm text-gray-500" x-text="animal.species"></p>
+                                        </div>
+                                    </template>
+                                </div>
                             </template>
-                        </select>
+                        </div>
 
                         <p
-                            x-show="customer && pets.length === 0"
+                            x-show="bookingAnimals.length === 0"
                             class="mt-2 text-sm text-gray-500"
                         >
-                            Asiakkaalla ei ole vielä lemmikkikorttia.
+                            Ei eläimiä valittuna.
                         </p>
-
-                        <button
-                            type="button"
-                            class="mt-3 text-sm font-semibold"
-                            style="color: var(--brand-primary);"
-                        >
-                            + Lisää uusi lemmikki
-                        </button>
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -643,7 +649,8 @@
                 </div>
             </div>
         </div>
-    </div>
+
+     </div>   
 
     <script>
         document.addEventListener('alpine:init', () => {
@@ -676,7 +683,8 @@
                 customer: null,
                 customerNotFound: false,
                 pets: [],
-                selectedPetId: '',
+                bookingAnimals: [],
+                activeHoldIds: [],
 
                 searching: false,
                 saving: false,
@@ -695,6 +703,18 @@
 
                 dashboardUrl:
                     @json(route('dashboard')),
+
+                petsStoreUrl:
+                    @json(route('admin.pets.store')),
+
+             petsUpdateUrlBase:
+                    @json(url('/admin/pets')),
+
+                holdStoreUrl:
+                    @json(route('admin.bookings.hold.store')),
+
+                holdReleaseUrl:
+                    @json(route('admin.bookings.hold.destroy')),
 
                 csrfToken:
                     @json(csrf_token()),
@@ -847,7 +867,7 @@
                     );
                 },
 
-                openBookingModal(displayDate, isoDate) {
+             openBookingModal(displayDate, isoDate) {
                     this.resetBookingForm();
 
                     this.selectedDate = displayDate;
@@ -878,6 +898,53 @@
                         ).padStart(2, '0');
 
                     this.showBookingModal = true;
+
+                    this.createHold(isoDate, durationDays);
+                },
+
+                async createHold(isoDate, durationDays) {
+                    try {
+                        const response = await fetch(this.holdStoreUrl, {
+                            method: 'POST',
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                            },
+                            body: JSON.stringify({
+                                animals: this.animals,
+                                start_date: isoDate,
+                                duration_days: durationDays,
+                            }),
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.activeHoldIds = data.hold_ids || [];
+                        }
+                    } catch (error) {
+                        this.activeHoldIds = [];
+                    }
+                },
+
+                releaseHold() {
+                    if (!this.activeHoldIds.length) {
+                        return;
+                    }
+
+                    const ids = this.activeHoldIds;
+                    this.activeHoldIds = [];
+
+                    fetch(this.holdReleaseUrl, {
+                        method: 'DELETE',
+                        headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': this.csrfToken,
+                        },
+                        body: JSON.stringify({ hold_ids: ids }),
+                    }).catch(() => {});
                 },
 
                 closeBookingModal() {
@@ -885,15 +952,17 @@
                         return;
                     }
 
+                    this.releaseHold();
                     this.showBookingModal = false;
-                },
+                },   
 
                 resetBookingForm() {
                     this.customerSearch = '';
                     this.customer = null;
                     this.customerNotFound = false;
-                    this.pets = [];
-                    this.selectedPetId = '';
+           this.pets = [];
+                    this.bookingAnimals = [];
+                    this.activeHoldIds = [];
 
                     this.selectedDate = '';
                     this.arrivalDate = '';
@@ -909,80 +978,131 @@
                     this.saveSucceeded = false;
                 },
 
+                buildBookingAnimals() {
+                    const petsBySpecies = {};
+                    const normalizeSpecies = (value) => (value || '').toString().trim().toLowerCase();
+
+                    this.pets.forEach((pet) => {
+                        const key = normalizeSpecies(pet.species);
+
+                        if (!petsBySpecies[key]) {
+                            petsBySpecies[key] = [];
+                        }
+
+                        petsBySpecies[key].push(pet);
+                    });
+
+                    this.bookingAnimals = this.animals.map((animal) => {
+                        const key = normalizeSpecies(animal.species);
+                        const candidates = petsBySpecies[key] || [];
+                        const matched = candidates.shift();
+
+                        if (matched) {
+                            return {
+                                petId: matched.id,
+                                species: animal.species,
+                                name: matched.name || '',
+                                breed: matched.breed || '',
+                                isNew: false,
+                            };
+                        }
+
+                        return {
+                            petId: null,
+                            species: animal.species,
+                            name: '',
+                            breed: '',
+                            isNew: true,
+                        };
+                    });
+                },
+
+                async createAndOpenNewPet(index) {
+                    const animal = this.bookingAnimals[index];
+                    const name = window.prompt('Lemmikin nimi?');
+
+                    if (!name || !name.trim()) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(this.petsStoreUrl, {
+                            method: 'POST',
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                            },
+                            body: JSON.stringify({
+                                customer_id: this.customer.id,
+                                name: name.trim(),
+                                species: animal.species,
+                            }),
+                        });
+
+                        const createdPet = await response.json();
+
+                        if (!response.ok) {
+                            this.saveMessage = 'Lemmikin luonti epäonnistui.';
+                            return;
+                        }
+
+                        this.bookingAnimals[index] = {
+                            petId: createdPet.id,
+                            species: createdPet.species,
+                            name: createdPet.name,
+                            breed: createdPet.breed || '',
+                            isNew: false,
+                        };
+
+                        this.pets.push(createdPet);
+
+     window.open(this.petsUpdateUrlBase + '/' + createdPet.id + '?fromBooking=1', '_blank');
+                    } catch (error) {
+                        this.saveMessage = 'Lemmikin luonti epäonnistui.';
+                    }
+                },
                 async searchCustomer() {
                     this.customer = null;
                     this.customerNotFound = false;
                     this.pets = [];
-                    this.selectedPetId = '';
+                    this.bookingAnimals = [];
                     this.searchMessage = '';
 
-                    const query =
-                        this.customerSearch.trim();
+                    const query = this.customerSearch.trim();
 
                     if (!query) {
-                        this.searchMessage =
-                            'Kirjoita puhelinnumero tai sähköposti.';
-
+                        this.searchMessage = 'Kirjoita puhelinnumero tai sähköposti.';
                         return;
                     }
 
                     this.searching = true;
 
                     try {
-                        const url = new URL(
-                            this.customerSearchUrl,
-                            window.location.origin
-                        );
+                        const url = new URL(this.customerSearchUrl, window.location.origin);
+                        url.searchParams.set('q', query);
 
-                        url.searchParams.set(
-                            'q',
-                            query
-                        );
-
-                        const response = await fetch(
-                            url,
-                            {
-                                headers: {
-                                    Accept:
-                                        'application/json'
-                                }
-                            }
-                        );
+                        const response = await fetch(url, {
+                            headers: { Accept: 'application/json' },
+                        });
 
                         if (!response.ok) {
-                            throw new Error(
-                                'Asiakashaku epäonnistui.'
-                            );
+                            throw new Error('Asiakashaku epäonnistui.');
                         }
 
-                        const data =
-                            await response.json();
+                        const data = await response.json();
 
                         if (!data) {
                             this.customerNotFound = true;
-                            this.searchMessage =
-                                'Asiakasta ei löytynyt.';
-
+                            this.searchMessage = 'Asiakasta ei löytynyt.';
                             return;
                         }
 
                         this.customer = data;
-
-                        this.pets =
-                            Array.isArray(data.pets)
-                                ? data.pets
-                                : [];
-
-                        if (this.pets.length === 1) {
-                            this.selectedPetId =
-                                String(
-                                    this.pets[0].id
-                                );
-                        }
+                        this.pets = Array.isArray(data.pets) ? data.pets : [];
+                        this.buildBookingAnimals();
                     } catch (error) {
-                        this.searchMessage =
-                            error.message ||
-                            'Asiakashaku epäonnistui.';
+                        this.searchMessage = error.message || 'Asiakashaku epäonnistui.';
                     } finally {
                         this.searching = false;
                     }
@@ -993,16 +1113,17 @@
                     this.saveSucceeded = false;
 
                     if (!this.customer) {
-                        this.saveMessage =
-                            'Hae ja valitse ensin asiakas.';
-
+                        this.saveMessage = 'Hae ja valitse ensin asiakas.';
                         return;
                     }
 
-                    if (!this.selectedPetId) {
-                        this.saveMessage =
-                            'Valitse lemmikki.';
+                    if (!this.bookingAnimals.length) {
+                        this.saveMessage = 'Ei eläimiä varaukselle.';
+                        return;
+                    }
 
+                    if (this.bookingAnimals.some((animal) => animal.isNew)) {
+                        this.saveMessage = 'Täytä ensin kaikki uudet lemmikit klikkaamalla niiden kortteja.';
                         return;
                     }
 
@@ -1012,104 +1133,62 @@
                         !this.pickupDate ||
                         !this.pickupTime
                     ) {
-                        this.saveMessage =
-                            'Täytä saapumis- ja noutoaika.';
-
+                        this.saveMessage = 'Täytä saapumis- ja noutoaika.';
                         return;
                     }
 
-                    const arrivalAt =
-                        this.arrivalDate +
-                        'T' +
-                        this.arrivalTime;
+                    const arrivalAt = this.arrivalDate + 'T' + this.arrivalTime;
+                    const pickupAt = this.pickupDate + 'T' + this.pickupTime;
 
-                    const pickupAt =
-                        this.pickupDate +
-                        'T' +
-                        this.pickupTime;
-
-                    if (
-                        new Date(pickupAt) <
-                        new Date(arrivalAt)
-                    ) {
-                        this.saveMessage =
-                            'Noutoaika ei voi olla ennen saapumisaikaa.';
-
+                    if (new Date(pickupAt) < new Date(arrivalAt)) {
+                        this.saveMessage = 'Noutoaika ei voi olla ennen saapumisaikaa.';
                         return;
                     }
 
                     this.saving = true;
 
                     try {
-                        const response = await fetch(
-                            this.bookingStoreUrl,
-                            {
-                                method: 'POST',
+                        const resolvedAnimals = this.bookingAnimals.map((animal) => ({
+                            pet_id: animal.petId,
+                        }));
 
-                                headers: {
-                                    Accept:
-                                        'application/json',
+                        const response = await fetch(this.bookingStoreUrl, {
+                            method: 'POST',
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                            },
+                            body: JSON.stringify({
+                                customer_id: this.customer.id,
+                                animals: resolvedAnimals,
+                                arrival_at: arrivalAt,
+                                pickup_at: pickupAt,
+                                care_type: this.careType,
+                                notes: this.notes,
+                            }),
+                        });
 
-                                    'Content-Type':
-                                        'application/json',
-
-                                    'X-CSRF-TOKEN':
-                                        this.csrfToken
-                                },
-
-                                body: JSON.stringify({
-                                    customer_id:
-                                        this.customer.id,
-
-                                    pet_id:
-                                        this.selectedPetId,
-
-                                    arrival_at:
-                                        arrivalAt,
-
-                                    pickup_at:
-                                        pickupAt,
-
-                                    care_type:
-                                        this.careType,
-
-                                    notes:
-                                        this.notes
-                                })
-                            }
-                        );
-
-                        const data =
-                            await response.json();
+                        const data = await response.json();
 
                         if (!response.ok) {
-                            const errors =
-                                data.errors
-                                    ? Object.values(
-                                        data.errors
-                                    )
-                                        .flat()
-                                        .join(' ')
-                                    : null;
+                            const errors = data.errors
+                                ? Object.values(data.errors).flat().join(' ')
+                                : null;
 
-                            throw new Error(
-                                errors ||
-                                data.message ||
-                                'Tallennus epäonnistui.'
-                            );
+                            throw new Error(errors || data.message || 'Tallennus epäonnistui.');
                         }
 
+         this.releaseHold();
+
                         this.saveSucceeded = true;
-                        this.saveMessage =
-                            'Varaus tallennettiin onnistuneesti.';
+                        this.saveMessage = 'Varaus tallennettiin onnistuneesti.';
 
                         window.setTimeout(() => {
                             window.location.href = this.dashboardUrl;
                         }, 900);
                     } catch (error) {
-                        this.saveMessage =
-                            error.message ||
-                            'Tallennus epäonnistui.';
+                        this.saveMessage = error.message || 'Tallennus epäonnistui.';
                     } finally {
                         this.saving = false;
                     }

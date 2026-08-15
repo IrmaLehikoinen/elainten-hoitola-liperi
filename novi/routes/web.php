@@ -9,6 +9,8 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\BookingWizardController;
+use App\Http\Controllers\CompanySettingsController;
+use App\Http\Controllers\BookingHoldController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -37,6 +39,20 @@ Route::post(
 )
     ->middleware(['auth', 'verified'])
     ->name('admin.bookings.store');
+
+Route::post(
+    '/admin/bookings/hold',
+    [BookingHoldController::class, 'store']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.hold.store');
+
+Route::delete(
+    '/admin/bookings/hold',
+    [BookingHoldController::class, 'destroy']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.hold.destroy');
 
 Route::post(
     '/admin/reminders/{reminder}/toggle',
@@ -128,6 +144,26 @@ Route::post(
 )
     ->middleware(['auth', 'verified'])
     ->name('admin.bookings.wizard-store');
+
+Route::middleware(['auth', 'verified'])->prefix('admin/settings')->name('admin.settings.')->group(function () {
+    Route::get('/', [CompanySettingsController::class, 'index'])->name('index');
+
+    Route::post('/resources', [CompanySettingsController::class, 'storeResource'])->name('resources.store');
+    Route::patch('/resources/{resource}', [CompanySettingsController::class, 'updateResource'])->name('resources.update');
+    Route::delete('/resources/{resource}', [CompanySettingsController::class, 'destroyResource'])->name('resources.destroy');
+
+    Route::post('/services', [CompanySettingsController::class, 'storeService'])->name('services.store');
+    Route::patch('/services/{service}', [CompanySettingsController::class, 'updateService'])->name('services.update');
+    Route::delete('/services/{service}', [CompanySettingsController::class, 'destroyService'])->name('services.destroy');
+
+    Route::post('/reminder-types', [CompanySettingsController::class, 'storeReminderType'])->name('reminder-types.store');
+    Route::patch('/reminder-types/{reminderType}', [CompanySettingsController::class, 'updateReminderType'])->name('reminder-types.update');
+    Route::delete('/reminder-types/{reminderType}', [CompanySettingsController::class, 'destroyReminderType'])->name('reminder-types.destroy');
+
+    Route::post('/care-types', [CompanySettingsController::class, 'storeCareType'])->name('care-types.store');
+    Route::patch('/care-types/{careType}', [CompanySettingsController::class, 'updateCareType'])->name('care-types.update');
+    Route::delete('/care-types/{careType}', [CompanySettingsController::class, 'destroyCareType'])->name('care-types.destroy');
+});
 
     require __DIR__.'/auth.php';
 
