@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between" x-data>
             <div>
                 <h1
                     class="text-2xl font-semibold"
@@ -30,6 +30,7 @@
     <div
         class="py-8"
         x-data="bookingCalendar"
+        x-init="if (new URLSearchParams(window.location.search).get('varaa') === '1') { openRequirementModal() }"
         @open-requirement-modal.window="openRequirementModal"
     >
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -239,10 +240,10 @@
                                     x-model="animal.species"
                                     class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
                                 >
-                                    <option value="dog">Koira</option>
-                                    <option value="cat">Kissa</option>
-                                    <option value="rabbit">Kani</option>
-                                    <option value="other">Muu eläin</option>
+                                    <option value="koira">Koira</option>
+                                    <option value="kissa">Kissa</option>
+                                    <option value="kani">Kani</option>
+                                    <option value="muu">Muu eläin</option>
                                 </select>
                             </div>
                         </template>
@@ -326,22 +327,57 @@
                             Tälle kokoonpanolle ei löytynyt vapaita aikoja.
                         </p>
 
-                        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                            <template
-                                x-for="date in availableStartDates"
-                                :key="date.iso"
-                            >
+                        <div x-show="availableStartDates.length > 0" x-cloak>
+                            <div class="flex items-center justify-between">
                                 <button
                                     type="button"
-                                    class="rounded-md border px-4 py-3 text-sm font-semibold"
-                                    style="
-                                        border-color: var(--brand-primary);
-                                        color: var(--brand-primary);
-                                    "
-                                    @click="selectAvailableDate(date)"
-                                    x-text="date.display"
-                                ></button>
-                            </template>
+                                    class="rounded-md border px-3 py-1 text-sm"
+                                    style="border-color: var(--brand-secondary); color: var(--brand-text);"
+                                    @click="prevResultsMonth"
+                                >
+                                    ‹ Edellinen
+                                </button>
+
+                                <span
+                                    class="text-sm font-semibold"
+                                    style="color: var(--brand-text);"
+                                    x-text="resultsMonthLabel()"
+                                ></span>
+
+                                <button
+                                    type="button"
+                                    class="rounded-md border px-3 py-1 text-sm"
+                                    style="border-color: var(--brand-secondary); color: var(--brand-text);"
+                                    @click="nextResultsMonth"
+                                >
+                                    Seuraava ›
+                                </button>
+                            </div>
+
+                            <div class="mt-3 grid grid-cols-7 gap-1 text-center">
+                                <template x-for="weekday in ['Ma','Ti','Ke','To','Pe','La','Su']" :key="weekday">
+                                    <div class="text-xs font-semibold text-gray-400" x-text="weekday"></div>
+                                </template>
+
+                                <template x-for="(day, index) in resultsCalendarDays()" :key="index">
+                                    <div>
+                                        <button
+                                            type="button"
+                                            x-show="day"
+                                            :disabled="!(day && day.available)"
+                                            @click="day && day.available && selectAvailableDate(day.data)"
+                                            class="flex h-10 w-full items-center justify-center rounded-md text-sm"
+                                            :class="day && day.available
+                                                ? 'font-semibold cursor-pointer'
+                                                : 'text-gray-300 cursor-default'"
+                                            :style="day && day.available
+                                                ? 'border: 1px solid var(--brand-primary); color: var(--brand-primary);'
+                                                : ''"
+                                            x-text="day ? day.day : ''"
+                                        ></button>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -617,7 +653,7 @@
 
                 animalCount: 1,
                 animals: [
-                    { species: 'dog' }
+                    { species: 'koira' }
                 ],
 
                 durationAmount: 1,
@@ -627,6 +663,7 @@
                 availableStartDates: [],
                 availabilityChecked: false,
                 checkingAvailability: false,
+                resultsMonth: null,
 
                 selectedDate: '',
                 arrivalDate: '',
@@ -653,6 +690,12 @@
                 bookingStoreUrl:
                     @json(route('admin.bookings.store')),
 
+                availabilityUrl:
+                    @json(route('admin.bookings.availability')),
+
+                dashboardUrl:
+                    @json(route('dashboard')),
+
                 csrfToken:
                     @json(csrf_token()),
 
@@ -672,7 +715,7 @@
                 resetRequirementForm() {
                     this.animalCount = 1;
                     this.animals = [
-                        { species: 'dog' }
+                        { species: 'koira' }
                     ];
 
                     this.durationAmount = 1;
@@ -703,36 +746,96 @@
                     this.availabilityChecked = false;
                     this.availableStartDates = [];
 
-                    await new Promise(resolve => {
-                        window.setTimeout(resolve, 400);
-                    });
+                    const durationDays =
+                        this.durationUnit === 'weeks'
+                            ? Number(this.durationAmount) * 7
+                            : Number(this.durationAmount);
 
-                    /*
-                     * Nämä ovat vielä testipäiviä.
-                     * Seuraavaksi tähän liitetään oikea
-                     * kapasiteettilaskenta tietokannasta.
-                     */
-                    this.availableStartDates = [
-                        {
-                            display: '10.8.2026',
-                            iso: '2026-08-10'
-                        },
-                        {
-                            display: '12.8.2026',
-                            iso: '2026-08-12'
-                        },
-                        {
-                            display: '18.8.2026',
-                            iso: '2026-08-18'
-                        },
-                        {
-                            display: '24.8.2026',
-                            iso: '2026-08-24'
-                        }
-                    ];
+                    try {
+                        const response = await fetch(this.availabilityUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                            },
+                            body: JSON.stringify({
+                                animals: this.animals,
+                                duration_days: durationDays,
+                            }),
+                        });
 
+                        const data = await response.json();
+
+                        this.availableStartDates = data.dates || [];
+                    } catch (error) {
+                        this.availableStartDates = [];
+                    }
+
+                    this.resultsMonth = new Date();
                     this.availabilityChecked = true;
                     this.checkingAvailability = false;
+                },
+
+                resultsCalendarDays() {
+                    if (!this.resultsMonth) {
+                        return [];
+                    }
+
+                    const year = this.resultsMonth.getFullYear();
+                    const month = this.resultsMonth.getMonth();
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    const leadingBlanks = (firstDay.getDay() + 6) % 7;
+
+                    const days = [];
+
+                    for (let i = 0; i < leadingBlanks; i++) {
+                        days.push(null);
+                    }
+
+                    for (let d = 1; d <= lastDay.getDate(); d++) {
+                        const iso =
+                            year + '-' +
+                            String(month + 1).padStart(2, '0') + '-' +
+                            String(d).padStart(2, '0');
+
+                        const match = this.availableStartDates.find(
+                            date => date.iso === iso
+                        );
+
+                        days.push({
+                            day: d,
+                            iso: iso,
+                            available: !!match,
+                            data: match || null,
+                        });
+                    }
+
+                    return days;
+                },
+
+                resultsMonthLabel() {
+                    if (!this.resultsMonth) {
+                        return '';
+                    }
+
+                    return this.resultsMonth.toLocaleDateString('fi-FI', {
+                        month: 'long',
+                        year: 'numeric',
+                    });
+                },
+
+                prevResultsMonth() {
+                    const d = new Date(this.resultsMonth);
+                    d.setMonth(d.getMonth() - 1);
+                    this.resultsMonth = d;
+                },
+
+                nextResultsMonth() {
+                    const d = new Date(this.resultsMonth);
+                    d.setMonth(d.getMonth() + 1);
+                    this.resultsMonth = d;
                 },
 
                 selectAvailableDate(date) {
@@ -1001,7 +1104,7 @@
                             'Varaus tallennettiin onnistuneesti.';
 
                         window.setTimeout(() => {
-                            window.location.reload();
+                            window.location.href = this.dashboardUrl;
                         }, 900);
                     } catch (error) {
                         this.saveMessage =

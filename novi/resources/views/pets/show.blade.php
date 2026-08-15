@@ -28,128 +28,151 @@
                 </div>
             @endif
 
-            {{-- Perustiedot --}}
-            <section class="bg-white p-6 shadow-sm rounded-lg">
-                <h2
-                    class="text-xl font-semibold"
-                    style="font-family: var(--brand-heading-font); color: var(--brand-text);"
-                >
-                    Perustiedot
-                </h2>
+            @if ($errors->any())
+                <div class="rounded-md bg-red-50 p-4 text-sm font-medium text-red-700">
+                    <p>Tarkista lomakkeen tiedot:</p>
+                    <ul class="mt-1 list-disc pl-5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-                <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Laji</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $pet->species ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Rotu</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $pet->breed ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Syntymäaika</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $pet->birth_date?->format('d.m.Y') ?? '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Sukupuoli</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $pet->sex ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Paino</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $pet->weight ? $pet->weight.' kg' : '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Mikrosiru</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">{{ $pet->microchip_number ?: '—' }}</dd>
-                    </div>
-                </dl>
-            </section>
+            <form method="POST" action="{{ route('admin.pets.update', $pet) }}">
+                @csrf
+                @method('PATCH')
 
-            {{-- Terveys- ja hoitotiedot --}}
-            <section class="bg-white p-6 shadow-sm rounded-lg">
-                <h2
-                    class="text-xl font-semibold"
-                    style="font-family: var(--brand-heading-font); color: var(--brand-text);"
-                >
-                    Terveys- ja hoitotiedot
-                </h2>
+                {{-- Perustiedot --}}
+                <section class="bg-white p-6 shadow-sm rounded-lg">
+                    <h2
+                        class="text-xl font-semibold"
+                        style="font-family: var(--brand-heading-font); color: var(--brand-text);"
+                    >
+                        Perustiedot
+                    </h2>
 
-                <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Allergiat</dt>
-                        <dd class="mt-1 text-sm whitespace-pre-line" style="color: var(--brand-text);">{{ $pet->allergies ?: '—' }}</dd>
+                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Nimi</label>
+                            <input type="text" name="name" value="{{ old('name', $pet->name) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Laji</label>
+                            <input type="text" name="species" value="{{ old('species', $pet->species) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Rotu</label>
+                            <input type="text" name="breed" value="{{ old('breed', $pet->breed) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Syntymäaika</label>
+                            <input type="date" name="birth_date" value="{{ old('birth_date', optional($pet->birth_date)->format('Y-m-d')) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Sukupuoli</label>
+                            <select name="sex" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                <option value="" @selected(old('sex', $pet->sex) === null)>—</option>
+                                <option value="uros" @selected(old('sex', $pet->sex) === 'uros')>Uros</option>
+                                <option value="naaras" @selected(old('sex', $pet->sex) === 'naaras')>Naaras</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Paino (kg)</label>
+                            <input type="number" step="0.1" min="0" name="weight" value="{{ old('weight', $pet->weight) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Mikrosiru</label>
+                            <input type="text" name="microchip_number" value="{{ old('microchip_number', $pet->microchip_number) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
                     </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Lääkitys</dt>
-                        <dd class="mt-1 text-sm whitespace-pre-line" style="color: var(--brand-text);">{{ $pet->medications ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Ruokintaohjeet</dt>
-                        <dd class="mt-1 text-sm whitespace-pre-line" style="color: var(--brand-text);">{{ $pet->feeding_instructions ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Käytöstiedot</dt>
-                        <dd class="mt-1 text-sm whitespace-pre-line" style="color: var(--brand-text);">{{ $pet->behaviour_notes ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Eläinlääkäri</dt>
-                        <dd class="mt-1 text-sm" style="color: var(--brand-text);">
-                            {{ collect([$pet->veterinarian_name, $pet->veterinarian_phone])->filter()->join(' · ') ?: '—' }}
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-400">Hätätilanneohjeet</dt>
-                        <dd class="mt-1 text-sm whitespace-pre-line" style="color: var(--brand-text);">{{ $pet->emergency_notes ?: '—' }}</dd>
-                    </div>
-                </dl>
-            </section>
+                </section>
 
-            {{-- Kaksi erillistä muistiinpanokenttää --}}
-            <section class="bg-white p-6 shadow-sm rounded-lg">
-                <h2
-                    class="text-xl font-semibold"
-                    style="font-family: var(--brand-heading-font); color: var(--brand-text);"
-                >
-                    Muistiinpanot
-                </h2>
+                {{-- Terveys- ja hoitotiedot --}}
+                <section class="mt-6 bg-white p-6 shadow-sm rounded-lg">
+                    <h2
+                        class="text-xl font-semibold"
+                        style="font-family: var(--brand-heading-font); color: var(--brand-text);"
+                    >
+                        Terveys- ja hoitotiedot
+                    </h2>
 
-                <form method="POST" action="{{ route('admin.pets.update', $pet) }}" class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    @csrf
-                    @method('PATCH')
-
-                    <div>
-                        <label class="block text-sm font-semibold" style="color: var(--brand-text);">
-                            Asiakkaan tiedot
-                        </label>
-                        <p class="mt-1 text-xs text-gray-500">Nämä tiedot näkyvät asiakkaalle.</p>
-
-                        <textarea
-                            name="general_notes"
-                            rows="6"
-                            class="mt-2 w-full rounded-md border-gray-300 shadow-sm"
-                        >{{ old('general_notes', $pet->general_notes) }}</textarea>
+                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Allergiat</label>
+                            <textarea name="allergies" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('allergies', $pet->allergies) }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Lääkitys</label>
+                            <textarea name="medications" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('medications', $pet->medications) }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Ruokintaohjeet</label>
+                            <textarea name="feeding_instructions" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('feeding_instructions', $pet->feeding_instructions) }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Käytöstiedot</label>
+                            <textarea name="behaviour_notes" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('behaviour_notes', $pet->behaviour_notes) }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Eläinlääkäri (nimi)</label>
+                            <input type="text" name="veterinarian_name" value="{{ old('veterinarian_name', $pet->veterinarian_name) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Eläinlääkäri (puhelin)</label>
+                            <input type="text" name="veterinarian_phone" value="{{ old('veterinarian_phone', $pet->veterinarian_phone) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Hätätilanneohjeet</label>
+                            <textarea name="emergency_notes" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('emergency_notes', $pet->emergency_notes) }}</textarea>
+                        </div>
                     </div>
+                </section>
 
-                    <div>
-                        <label class="block text-sm font-semibold" style="color: var(--brand-text);">
-                            Hoitolan muistiinpanot
-                        </label>
-                        <p class="mt-1 text-xs text-gray-500">Näkyvät vain yrittäjälle. Asiakas ei näe näitä koskaan.</p>
+                {{-- Kaksi erillistä muistiinpanokenttää --}}
+                <section class="mt-6 bg-white p-6 shadow-sm rounded-lg">
+                    <h2
+                        class="text-xl font-semibold"
+                        style="font-family: var(--brand-heading-font); color: var(--brand-text);"
+                    >
+                        Muistiinpanot
+                    </h2>
 
-                        <textarea
-                            name="internal_notes"
-                            rows="6"
-                            class="mt-2 w-full rounded-md border-gray-300 shadow-sm bg-amber-50"
-                        >{{ old('internal_notes', $pet->internal_notes) }}</textarea>
+                    <div class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <div>
+                            <label class="block text-sm font-semibold" style="color: var(--brand-text);">
+                                Asiakkaan tiedot
+                            </label>
+                            <p class="mt-1 text-xs text-gray-500">Nämä tiedot näkyvät asiakkaalle.</p>
+
+                            <textarea
+                                name="general_notes"
+                                rows="6"
+                                class="mt-2 w-full rounded-md border-gray-300 shadow-sm"
+                            >{{ old('general_notes', $pet->general_notes) }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold" style="color: var(--brand-text);">
+                                Hoitolan muistiinpanot
+                            </label>
+                            <p class="mt-1 text-xs text-gray-500">Näkyvät vain yrittäjälle. Asiakas ei näe näitä koskaan.</p>
+
+                            <textarea
+                                name="internal_notes"
+                                rows="6"
+                                class="mt-2 w-full rounded-md border-gray-300 shadow-sm bg-amber-50"
+                            >{{ old('internal_notes', $pet->internal_notes) }}</textarea>
+                        </div>
                     </div>
+                </section>
 
-                    <div class="lg:col-span-2">
-                        <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
-                            Tallenna muistiinpanot
-                        </button>
-                    </div>
-                </form>
-            </section>
+                <div class="mt-6">
+                    <button type="submit" class="btn-brand rounded-md px-6 py-3 text-sm font-semibold">
+                        Tallenna eläinkortti
+                    </button>
+                </div>
+            </form>
 
             {{-- Hoitojakson muistutukset --}}
             <section class="bg-white p-6 shadow-sm rounded-lg" x-data="petReminders">
@@ -180,7 +203,7 @@
                                 <p class="text-xs text-gray-500">{{ $reminder->due_at->format('d.m.Y H:i') }}</p>
                             </div>
 
-                           <button
+                            <button
                                 type="button"
                                 class="btn-brand rounded-md px-4 py-2 text-sm font-semibold"
                                 @click="remove({{ $reminder->id }})"

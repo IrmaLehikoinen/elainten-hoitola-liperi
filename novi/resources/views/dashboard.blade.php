@@ -270,10 +270,8 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="mt-6 text-center">
-                    
-                        <a href="{{ route('calendar.index') }}" class="btn-brand inline-block rounded-md px-8 py-4 text-base font-semibold">
+                    <div class="mt-6 text-center">
+                    <a href="{{ route('calendar.index') }}?varaa=1" class="btn-brand inline-block whitespace-nowrap rounded-md px-10 py-5 text-lg font-semibold">
                         Varaa hoitoaika
                     </a>
                 </div>

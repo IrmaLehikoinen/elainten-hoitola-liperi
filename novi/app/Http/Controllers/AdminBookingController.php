@@ -17,11 +17,18 @@ class AdminBookingController extends Controller
             return response()->json(null);
         }
 
+        $digitsOnly = preg_replace('/[\s\-]+/', '', $query);
+
         $customer = Customer::with('pets')
-            ->where(function ($builder) use ($query) {
-                $builder
-                    ->where('phone', $query)
-                    ->orWhere('email', $query);
+            ->where(function ($builder) use ($query, $digitsOnly) {
+                $builder->where('email', $query);
+
+                if ($digitsOnly !== '') {
+                    $builder->orWhereRaw(
+                        "REPLACE(REPLACE(phone, ' ', ''), '-', '') = ?",
+                        [$digitsOnly]
+                    );
+                }
             })
             ->first();
 
