@@ -122,6 +122,12 @@ class DashboardController extends Controller
             ->whereDate('end_date', '>=', $start)
             ->get();
 
+        $capacities = \App\Models\Resource::query()
+            ->get(['type', 'capacity'])
+            ->groupBy(fn ($resource) => mb_strtolower(trim($resource->type)))
+            ->map(fn ($group) => (int) $group->sum('capacity'))
+            ->all();
+
         $days = [];
 
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
@@ -129,10 +135,19 @@ class DashboardController extends Controller
                 fn ($p) => $p->start_date->lte($date) && $p->end_date->gte($date)
             )->values();
 
+            $speciesCounts = $dayParticipants
+                ->groupBy(fn ($p) => mb_strtolower(trim($p->species)))
+                ->map(fn ($group) => $group->count());
+
+            $isFull = $speciesCounts->some(
+                fn ($count, $species) => $count >= ($capacities[$species] ?? PHP_INT_MAX)
+            );
+
             $days[] = [
                 'date' => $date->copy(),
                 'count' => $dayParticipants->count(),
                 'participants' => $dayParticipants,
+                'isFull' => $isFull,
             ];
         }
 
