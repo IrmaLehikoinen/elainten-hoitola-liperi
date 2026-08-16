@@ -450,7 +450,7 @@
                         >
                     </div>
 
-                    <div>
+             <div>
                         <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">ALV-prosentti</label>
                         <input
                             type="number"
@@ -463,10 +463,57 @@
                         >
                     </div>
 
+                    <div class="flex gap-6">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Pääväri</label>
+                            <div class="mt-1 flex items-center gap-2">
+                                <input
+                                    type="color"
+                                    id="primary_color_picker"
+                                    value="{{ $company->primary_color ?? '#3F4F3A' }}"
+                                    class="h-10 w-16 rounded-md border-gray-300 shadow-sm"
+                                    oninput="document.getElementById('primary_color_text').value = this.value"
+                                >
+                                <input
+                                    type="text"
+                                    name="primary_color"
+                                    id="primary_color_text"
+                                    value="{{ $company->primary_color ?? '#3F4F3A' }}"
+                                    placeholder="#3F4F3A"
+                                    class="w-28 rounded-md border-gray-300 shadow-sm text-sm"
+                                    oninput="if (/^#([0-9A-Fa-f]{6})$/.test(this.value)) { document.getElementById('primary_color_picker').value = this.value; }"
+                                >
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Toissijainen väri</label>
+                            <div class="mt-1 flex items-center gap-2">
+                                <input
+                                    type="color"
+                                    id="secondary_color_picker"
+                                    value="{{ $company->secondary_color ?? '#D8C6BD' }}"
+                                    class="h-10 w-16 rounded-md border-gray-300 shadow-sm"
+                                    oninput="document.getElementById('secondary_color_text').value = this.value"
+                                >
+                                <input
+                                    type="text"
+                                    name="secondary_color"
+                                    id="secondary_color_text"
+                                    value="{{ $company->secondary_color ?? '#D8C6BD' }}"
+                                    placeholder="#D8C6BD"
+                                    class="w-28 rounded-md border-gray-300 shadow-sm text-sm"
+                                    oninput="if (/^#([0-9A-Fa-f]{6})$/.test(this.value)) { document.getElementById('secondary_color_picker').value = this.value; }"
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400">Oletuksena Novin vihreä (#3F4F3A) ja beige (#D8C6BD). Vaihda nämä oman yrityksesi brändiväreihin — niitä käytetään kuiteissa, laskuissa ja jatkossa julkisella ajanvarausivulla, ei hallintapaneelissa.</p>
+
                     <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
                         Tallenna
                     </button>
-                </form>
+                </form>       
             </section>
 
         </div>

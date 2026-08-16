@@ -9,12 +9,12 @@
     <link href="https://fonts.bunny.net/css?family=playfair-display:600,700|inter:400,500,600&display=swap" rel="stylesheet" />
 
     <style>
-      :root {
-            --brand-primary: #3F4F3A;
-            --brand-secondary: #D8C6BD;
+     :root {
+            --brand-primary: {{ $invoice->company->primary_color ?? '#3F4F3A' }};
+            --brand-secondary: {{ $invoice->company->secondary_color ?? '#D8C6BD' }};
             --brand-text: #2A3428;
             --brand-background: #F8F6F2;
-        }
+        } 
 
         * {
             box-sizing: border-box;

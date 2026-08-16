@@ -56,7 +56,7 @@ class CompanySettingsController extends Controller
         return back()->with('status', 'Perushinta päivitetty.');
     }
 
-    public function updateCompanyInfo(Request $request)
+   public function updateCompanyInfo(Request $request)
     {
         $validated = $request->validate([
             'official_name' => ['nullable', 'string', 'max:255'],
@@ -66,6 +66,8 @@ class CompanySettingsController extends Controller
             'iban' => ['nullable', 'string', 'max:50'],
             'payment_term_days' => ['required', 'integer', 'min:1', 'max:90'],
             'vat_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
+            'primary_color' => ['nullable', 'string', 'max:20'],
+            'secondary_color' => ['nullable', 'string', 'max:20'],
         ]);
 
         $company = $request->user()->company;
@@ -78,6 +80,8 @@ class CompanySettingsController extends Controller
         $settings['vat_percentage'] = $validated['vat_percentage'];
         $company->settings = $settings;
         $company->phone = $validated['phone'] ?? null;
+        $company->primary_color = $validated['primary_color'] ?? $company->primary_color;
+        $company->secondary_color = $validated['secondary_color'] ?? $company->secondary_color;
         $company->save();
 
         return back()->with('status', 'Yritystiedot päivitetty.');

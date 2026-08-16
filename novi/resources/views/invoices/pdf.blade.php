@@ -1,3 +1,7 @@
+@php
+    $primaryColor = $invoice->company->primary_color ?? '#3F4F3A';
+    $secondaryColor = $invoice->company->secondary_color ?? '#D8C6BD';
+@endphp
 <!DOCTYPE html>
 <html lang="fi">
 <head>
@@ -12,7 +16,7 @@
         }
 
         .header {
-            background-color: #3F4F3A;
+            background-color: {{ $primaryColor }};
             color: white;
             padding: 24px 30px;
         }
@@ -61,13 +65,13 @@
             margin-bottom: 20px;
         }
 
-        table.items th {
+       table.items th {
             text-align: left;
             font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #9a9188;
-            border-bottom: 1px solid #D8C6BD;
+            border-bottom: 1px solid {{ $secondaryColor }};
             padding-bottom: 8px;
         }
 
@@ -96,8 +100,8 @@
         .total-row td {
             font-weight: bold;
             font-size: 15px;
-            color: #3F4F3A;
-            border-top: 1px solid #D8C6BD;
+            color: {{ $primaryColor }};
+            border-top: 1px solid {{ $secondaryColor }};
             padding-top: 10px;
         }
         .footer {
@@ -180,7 +184,7 @@
 
         .amount-value {
             font-size: 15px;
-            color: #3F4F3A;
+            color: {{ $primaryColor }};
         }
     </style>
        
