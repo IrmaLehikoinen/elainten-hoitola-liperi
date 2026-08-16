@@ -35,7 +35,7 @@
             ['route' => 'admin.bookings.index', 'active' => request()->routeIs('admin.bookings.index'), 'label' => 'Varaukset', 'icon' => 'check'],
             ['route' => 'admin.customers.index', 'active' => request()->routeIs('admin.customers.*'), 'label' => 'Asiakkaat', 'icon' => 'users'],
             ['route' => 'admin.services.index', 'active' => request()->routeIs('admin.services.*'), 'label' => 'Palvelut', 'icon' => 'shield'],
-            ['route' => null, 'active' => false, 'label' => 'Laskutus', 'icon' => 'euro'],
+            ['route' => 'admin.invoices.index', 'active' => request()->routeIs('admin.invoices.*'), 'label' => 'Laskutus', 'icon' => 'euro'],
             ['route' => 'admin.reports.index', 'active' => request()->routeIs('admin.reports.*'), 'label' => 'Raportit', 'icon' => 'chart'],
         ];
     @endphp

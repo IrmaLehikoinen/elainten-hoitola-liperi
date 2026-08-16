@@ -56,6 +56,33 @@ class CompanySettingsController extends Controller
         return back()->with('status', 'Perushinta päivitetty.');
     }
 
+    public function updateCompanyInfo(Request $request)
+    {
+        $validated = $request->validate([
+            'official_name' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'business_id' => ['nullable', 'string', 'max:50'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'iban' => ['nullable', 'string', 'max:50'],
+            'payment_term_days' => ['required', 'integer', 'min:1', 'max:90'],
+            'vat_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
+        ]);
+
+        $company = $request->user()->company;
+        $settings = $company->settings ?? [];
+        $settings['official_name'] = $validated['official_name'] ?? null;
+        $settings['business_id'] = $validated['business_id'] ?? null;
+        $settings['address'] = $validated['address'] ?? null;
+        $settings['iban'] = $validated['iban'] ?? null;
+        $settings['payment_term_days'] = $validated['payment_term_days'];
+        $settings['vat_percentage'] = $validated['vat_percentage'];
+        $company->settings = $settings;
+        $company->phone = $validated['phone'] ?? null;
+        $company->save();
+
+        return back()->with('status', 'Yritystiedot päivitetty.');
+    }
+
     public function storeResource(Request $request)
     {
         $validated = $request->validate([

@@ -230,7 +230,8 @@
                         </div>
 
                         <div
-                            class="flex cursor-not-allowed items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold opacity-60"
+                            onclick="window.location.href='{{ route('admin.invoices.index') }}'"
+                            class="flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold"
                             style="border-color: var(--brand-secondary); color: var(--brand-text);"
                         >
                             <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
@@ -240,11 +241,12 @@
                                 <ellipse cx="14.5" cy="6" rx="2" ry="2.5" />
                                 <ellipse cx="18" cy="9" rx="2.1" ry="2.6" />
                             </svg>
-                            Uusi lasku
+                            Uusi kuitti
                         </div>
 
-                        <div
-                            class="flex cursor-not-allowed items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold opacity-60"
+                     <div
+                            onclick="window.location.href='{{ route('admin.services.index') }}'"
+                            class="flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold"
                             style="border-color: var(--brand-secondary); color: var(--brand-text);"
                         >
                             <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
@@ -254,8 +256,8 @@
                                 <ellipse cx="14.5" cy="6" rx="2" ry="2.5" />
                                 <ellipse cx="18" cy="9" rx="2.1" ry="2.6" />
                             </svg>
-                            Uusi raportti
-                        </div>
+                            Uudet palvelut
+                        </div>   
                     </div>
                 </section>
 

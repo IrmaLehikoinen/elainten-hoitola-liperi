@@ -84,6 +84,15 @@
                 >
                     Hoitomuodot
                 </button>
+
+                <button
+                    type="button"
+                    @click="activeTab = 'yritystiedot'"
+                    class="rounded-md px-4 py-2 text-sm font-medium"
+                    :style="activeTab === 'yritystiedot' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
+                >
+                    Yritystiedot
+                </button>
             </div>
 
             {{-- Perushinta --}}
@@ -275,12 +284,7 @@
                     @foreach ($reminderTypes as $type)
                         <form method="POST" action="{{ route('admin.settings.reminder-types.update', $type) }}" class="flex flex-wrap items-end gap-3 rounded-md border p-3" style="border-color: var(--brand-secondary);">
                             @csrf
-                            @method('PATCH')
-
-                            <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Tunniste</label>
-                                <input type="text" value="{{ $type->slug }}" disabled class="mt-1 w-32 rounded-md border-gray-200 bg-gray-50 text-gray-400 shadow-sm">
-                            </div>
+                            @method('PATCH') 
                             <div>
                                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Nimi</label>
                                 <input type="text" name="label" value="{{ $type->label }}" class="mt-1 w-40 rounded-md border-gray-300 shadow-sm">
@@ -330,11 +334,6 @@
                         <form method="POST" action="{{ route('admin.settings.care-types.update', $type) }}" class="flex flex-wrap items-end gap-3 rounded-md border p-3" style="border-color: var(--brand-secondary);">
                             @csrf
                             @method('PATCH')
-
-                            <div>
-                                <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Tunniste</label>
-                                <input type="text" value="{{ $type->slug }}" disabled class="mt-1 w-32 rounded-md border-gray-200 bg-gray-50 text-gray-400 shadow-sm">
-                            </div>
                             <div>
                                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Nimi</label>
                                 <input type="text" name="label" value="{{ $type->label }}" class="mt-1 w-40 rounded-md border-gray-300 shadow-sm">
@@ -370,6 +369,103 @@
                         <input type="number" name="sort_order" value="0" class="mt-1 w-20 rounded-md border-gray-300 shadow-sm">
                     </div>
                     <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">Lisää hoitomuoto</button>
+                </form>
+            </section>
+
+            {{-- Yritystiedot --}}
+            <section x-show="activeTab === 'yritystiedot'" x-cloak class="bg-white p-6 shadow-sm rounded-lg">
+                <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                    Yritystiedot
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Nämä tiedot näkyvät asiakkaille lähetettävillä kuiteilla.
+                </p>
+
+                <form method="POST" action="{{ route('admin.settings.company-info.update') }}" class="mt-4 space-y-4 max-w-md">
+                    @csrf
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Virallinen nimi</label>
+                        <input
+                            type="text"
+                            name="official_name"
+                            value="{{ $company->settings['official_name'] ?? '' }}"
+                            placeholder="Esim. Liperin Eläinhoitola Oy"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Puhelin</label>
+                        <input
+                            type="text"
+                            name="phone"
+                            value="{{ $company->phone }}"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Y-tunnus</label>
+                        <input
+                            type="text"
+                            name="business_id"
+                            value="{{ $company->settings['business_id'] ?? '' }}"
+                            placeholder="1234567-8"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Osoite</label>
+                        <input
+                            type="text"
+                            name="address"
+                            value="{{ $company->settings['address'] ?? '' }}"
+                            placeholder="Esim. Kelotie 5, 83100 Liperi"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Pankkitili (IBAN)</label>
+                        <input
+                            type="text"
+                            name="iban"
+                            value="{{ $company->settings['iban'] ?? '' }}"
+                            placeholder="FI12 3456 7890 1234 56"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Maksuehto (pv netto)</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="90"
+                            name="payment_term_days"
+                            value="{{ $company->settings['payment_term_days'] ?? 14 }}"
+                            class="mt-1 w-32 rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">ALV-prosentti</label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            max="100"
+                            name="vat_percentage"
+                            value="{{ $company->settings['vat_percentage'] ?? 25.5 }}"
+                            class="mt-1 w-32 rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                        Tallenna
+                    </button>
                 </form>
             </section>
 

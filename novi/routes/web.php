@@ -13,6 +13,7 @@ use App\Http\Controllers\CompanySettingsController;
 use App\Http\Controllers\BookingHoldController;
 use App\Http\Controllers\ServiceSelectionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\InvoiceController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -159,7 +160,9 @@ Route::get('/', [CompanySettingsController::class, 'index'])->name('index');
 
 Route::post('/deposit', [CompanySettingsController::class, 'updateDepositSettings'])->name('deposit.update');
 
-    Route::post('/base-rate', [CompanySettingsController::class, 'updateBaseRate'])->name('base-rate.update');
+Route::post('/base-rate', [CompanySettingsController::class, 'updateBaseRate'])->name('base-rate.update');
+
+    Route::post('/company-info', [CompanySettingsController::class, 'updateCompanyInfo'])->name('company-info.update');
 
     Route::post('/resources', [CompanySettingsController::class, 'storeResource'])->name('resources.store');
     Route::patch('/resources/{resource}', [CompanySettingsController::class, 'updateResource'])->name('resources.update');
@@ -184,6 +187,12 @@ Route::post('/deposit', [CompanySettingsController::class, 'updateDepositSetting
 use App\Http\Controllers\PaymentController;
 
 Route::get('/varaukset/{booking}/maksa', [PaymentController::class, 'checkout'])->name('payment.checkout');
+
+Route::get('/kuitti/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+
+Route::get('/kuitti/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
+
+Route::get('/kuitti/{invoice}/tulosta', [InvoiceController::class, 'printPdf'])->name('invoices.print');
 
 Route::get('/maksu/onnistui', function () {
     return 'Maksu onnistui! Kiitos varauksestasi.';
@@ -217,6 +226,14 @@ Route::post('/admin/palvelut/{booking}/tallenna', [ServiceSelectionController::c
 Route::get('/admin/raportit', [ReportController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('admin.reports.index');
+
+Route::get('/admin/laskutus', [InvoiceController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.invoices.index');
+
+Route::post('/admin/laskutus/{booking}/tee-kuitti', [InvoiceController::class, 'store'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.invoices.store');
 
 use App\Http\Controllers\StripeWebhookController;
 
