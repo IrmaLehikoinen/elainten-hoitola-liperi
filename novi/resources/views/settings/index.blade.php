@@ -14,7 +14,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-8" x-data="{ activeTab: 'perushinta' }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             @if (session('status'))
@@ -29,8 +29,65 @@
                 </div>
             @endif
 
+            {{-- Välilehtinavigaatio --}}
+            <div class="flex flex-wrap gap-2 rounded-lg bg-white p-3 shadow-sm">
+                <button
+                    type="button"
+                    @click="activeTab = 'perushinta'"
+                    class="rounded-md px-4 py-2 text-sm font-medium"
+                    :style="activeTab === 'perushinta' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
+                >
+                    Perushinta
+                </button>
+
+                <button
+                    type="button"
+                    @click="activeTab = 'varausmaksu'"
+                    class="rounded-md px-4 py-2 text-sm font-medium"
+                    :style="activeTab === 'varausmaksu' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
+                >
+                    Varausmaksu
+                </button>
+
+                <button
+                    type="button"
+                    @click="activeTab = 'elainryhmat'"
+                    class="rounded-md px-4 py-2 text-sm font-medium"
+                    :style="activeTab === 'elainryhmat' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
+                >
+                    Eläinryhmät ja kapasiteetti
+                </button>
+
+                <button
+                    type="button"
+                    @click="activeTab = 'palvelut'"
+                    class="rounded-md px-4 py-2 text-sm font-medium"
+                    :style="activeTab === 'palvelut' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
+                >
+                    Lisäpalvelut
+                </button>
+
+                <button
+                    type="button"
+                    @click="activeTab = 'muistutustyypit'"
+                    class="rounded-md px-4 py-2 text-sm font-medium"
+                    :style="activeTab === 'muistutustyypit' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
+                >
+                    Muistutustyypit
+                </button>
+
+                <button
+                    type="button"
+                    @click="activeTab = 'hoitomuodot'"
+                    class="rounded-md px-4 py-2 text-sm font-medium"
+                    :style="activeTab === 'hoitomuodot' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
+                >
+                    Hoitomuodot
+                </button>
+            </div>
+
             {{-- Perushinta --}}
-            <section class="bg-white p-6 shadow-sm rounded-lg">
+            <section x-show="activeTab === 'perushinta'" x-cloak class="bg-white p-6 shadow-sm rounded-lg">
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
                     Perushinta
                 </h2>
@@ -57,7 +114,7 @@
             </section>
 
             {{-- Varausmaksu --}}
-            <section class="bg-white p-6 shadow-sm rounded-lg">
+            <section x-show="activeTab === 'varausmaksu'" x-cloak class="bg-white p-6 shadow-sm rounded-lg">
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
                     Varausmaksu
                 </h2>
@@ -82,7 +139,7 @@
             </section>
 
             {{-- Eläinryhmät ja kapasiteetti --}}
-            <section class="bg-white p-6 shadow-sm rounded-lg">
+            <section x-show="activeTab === 'elainryhmat'" x-cloak class="bg-white p-6 shadow-sm rounded-lg">
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
                     Eläinryhmät ja kapasiteetti
                 </h2>
@@ -139,7 +196,7 @@
             </section>
 
             {{-- Lisäpalvelut --}}
-            <section class="bg-white p-6 shadow-sm rounded-lg">
+            <section x-show="activeTab === 'palvelut'" x-cloak class="bg-white p-6 shadow-sm rounded-lg">
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
                     Lisäpalvelut, hinnat ja tuotteet
                 </h2>
@@ -209,7 +266,7 @@
             </section>
 
             {{-- Muistutustyypit --}}
-            <section class="bg-white p-6 shadow-sm rounded-lg">
+            <section x-show="activeTab === 'muistutustyypit'" x-cloak class="bg-white p-6 shadow-sm rounded-lg">
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
                     Muistutustyypit
                 </h2>
@@ -263,7 +320,7 @@
             </section>
 
             {{-- Hoitomuodot --}}
-            <section class="bg-white p-6 shadow-sm rounded-lg">
+            <section x-show="activeTab === 'hoitomuodot'" x-cloak class="bg-white p-6 shadow-sm rounded-lg">
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
                     Hoitomuodot
                 </h2>

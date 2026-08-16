@@ -11,6 +11,8 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\BookingWizardController;
 use App\Http\Controllers\CompanySettingsController;
 use App\Http\Controllers\BookingHoldController;
+use App\Http\Controllers\ServiceSelectionController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -203,6 +205,18 @@ Route::get('/admin/calendar/{date}', [CalendarController::class, 'day'])
 Route::get('/admin/varaukset', [AdminBookingController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('admin.bookings.index');
+
+Route::get('/admin/palvelut', [ServiceSelectionController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.services.index');
+
+Route::post('/admin/palvelut/{booking}/tallenna', [ServiceSelectionController::class, 'update'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.services.update');
+
+Route::get('/admin/raportit', [ReportController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.reports.index');
 
 use App\Http\Controllers\StripeWebhookController;
 

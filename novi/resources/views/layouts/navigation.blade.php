@@ -34,9 +34,9 @@
             ['route' => 'calendar.index', 'active' => request()->routeIs('calendar.*'), 'label' => 'Kalenteri', 'icon' => 'calendar'],
             ['route' => 'admin.bookings.index', 'active' => request()->routeIs('admin.bookings.index'), 'label' => 'Varaukset', 'icon' => 'check'],
             ['route' => 'admin.customers.index', 'active' => request()->routeIs('admin.customers.*'), 'label' => 'Asiakkaat', 'icon' => 'users'],
-            ['route' => null, 'active' => false, 'label' => 'Palvelut', 'icon' => 'shield'],
+            ['route' => 'admin.services.index', 'active' => request()->routeIs('admin.services.*'), 'label' => 'Palvelut', 'icon' => 'shield'],
             ['route' => null, 'active' => false, 'label' => 'Laskutus', 'icon' => 'euro'],
-            ['route' => null, 'active' => false, 'label' => 'Raportit', 'icon' => 'chart'],
+            ['route' => 'admin.reports.index', 'active' => request()->routeIs('admin.reports.*'), 'label' => 'Raportit', 'icon' => 'chart'],
         ];
     @endphp
 

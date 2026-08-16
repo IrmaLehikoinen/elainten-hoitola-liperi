@@ -131,11 +131,18 @@ class CustomerController extends Controller
             }
         }
 
+        $activeBooking = $upcomingBookings->first();
+        $selectedServicesTotal = $activeBooking
+            ? $activeBooking->bookingServices()->sum('price')
+            : 0;
+
         return view('customers.show', [
             'customer' => $customer,
             'upcomingBookings' => $upcomingBookings,
             'pastBookings' => $pastBookings,
             'pendingSpecies' => $pendingSpecies,
+            'activeBooking' => $activeBooking,
+            'selectedServicesTotal' => $selectedServicesTotal,
         ]);
     }
 

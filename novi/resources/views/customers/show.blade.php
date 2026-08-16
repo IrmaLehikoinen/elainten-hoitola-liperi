@@ -181,6 +181,41 @@
                 </div>
             </section>
 
+            {{-- Valitut palvelut --}}
+            <section class="bg-white p-6 shadow-sm rounded-lg">
+                <div class="flex items-center justify-between gap-4">
+                    <h2
+                        class="text-xl font-semibold"
+                        style="font-family: var(--brand-heading-font); color: var(--brand-text);"
+                    >
+                        Valitut palvelut
+                    </h2>
+
+                    @if ($activeBooking)
+                        <div
+                            onclick="window.location.href='{{ route('admin.services.index', ['customer_id' => $customer->id, 'booking_id' => $activeBooking->id]) }}'"
+                            class="cursor-pointer text-sm font-medium shrink-0"
+                            style="color: var(--brand-primary);"
+                        >
+                            Muokkaa palveluita →
+                        </div>
+                    @endif
+                </div>
+
+                @if ($activeBooking)
+                    <p class="mt-2 text-sm text-gray-500">
+                        Lisäpalvelut yhteensä (varaus {{ $activeBooking->arrival_at?->format('d.m.Y') }} – {{ $activeBooking->pickup_at?->format('d.m.Y') }}):
+                        <span class="font-semibold" style="color: var(--brand-text);">
+                            {{ number_format((float) $selectedServicesTotal, 2, ',', ' ') }} €
+                        </span>
+                    </p>
+                @else
+                    <p class="mt-2 text-sm text-gray-500">
+                        Ei käynnissä olevaa tai tulevaa varausta, jolle palveluita voisi lisätä.
+                    </p>
+                @endif
+            </section>
+
             {{-- Menneet varaukset --}}
             <section class="bg-white p-6 shadow-sm rounded-lg">
                 <h2
