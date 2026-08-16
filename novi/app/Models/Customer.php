@@ -9,7 +9,7 @@ class Customer extends Model
 {
     use BelongsToCompany;
 
-    protected $fillable = ['company_id', 'name', 'email', 'phone', 'address', 'notes'];
+  protected $fillable = ['company_id', 'name', 'email', 'phone', 'address', 'notes', 'custom_daily_rate']; 
 
     public function pets()
     {

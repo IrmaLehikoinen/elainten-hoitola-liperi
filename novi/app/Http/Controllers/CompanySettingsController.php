@@ -18,11 +18,42 @@ class CompanySettingsController extends Controller
     public function index()
     {
         return view('settings.index', [
+            'company' => request()->user()->company,
             'resources' => Resource::orderBy('type')->get(),
             'services' => Service::orderBy('name')->get(),
             'reminderTypes' => ReminderType::orderBy('sort_order')->get(),
             'careTypes' => CareType::orderBy('sort_order')->get(),
         ]);
+    }
+
+    public function updateDepositSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'deposit_percentage' => ['required', 'integer', 'in:0,20,30,50'],
+        ]);
+
+        $company = $request->user()->company;
+        $settings = $company->settings ?? [];
+        $settings['deposit_percentage'] = $validated['deposit_percentage'];
+        $company->settings = $settings;
+        $company->save();
+
+        return back()->with('status', 'Varausmaksun prosentti päivitetty.');
+    }
+
+    public function updateBaseRate(Request $request)
+    {
+        $validated = $request->validate([
+            'base_daily_rate' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $company = $request->user()->company;
+        $settings = $company->settings ?? [];
+        $settings['base_daily_rate'] = $validated['base_daily_rate'];
+        $company->settings = $settings;
+        $company->save();
+
+        return back()->with('status', 'Perushinta päivitetty.');
     }
 
     public function storeResource(Request $request)

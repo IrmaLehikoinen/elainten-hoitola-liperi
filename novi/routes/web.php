@@ -153,7 +153,11 @@ Route::post(
     ->name('admin.bookings.wizard-store');
 
 Route::middleware(['auth', 'verified'])->prefix('admin/settings')->name('admin.settings.')->group(function () {
-    Route::get('/', [CompanySettingsController::class, 'index'])->name('index');
+Route::get('/', [CompanySettingsController::class, 'index'])->name('index');
+
+Route::post('/deposit', [CompanySettingsController::class, 'updateDepositSettings'])->name('deposit.update');
+
+    Route::post('/base-rate', [CompanySettingsController::class, 'updateBaseRate'])->name('base-rate.update');
 
     Route::post('/resources', [CompanySettingsController::class, 'storeResource'])->name('resources.store');
     Route::patch('/resources/{resource}', [CompanySettingsController::class, 'updateResource'])->name('resources.update');
@@ -177,7 +181,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin/settings')->name('admin.s
 
 use App\Http\Controllers\PaymentController;
 
-Route::get('/varaukset/{booking}/maksa', [PaymentController::class, 'checkout']);
+Route::get('/varaukset/{booking}/maksa', [PaymentController::class, 'checkout'])->name('payment.checkout');
 
 Route::get('/maksu/onnistui', function () {
     return 'Maksu onnistui! Kiitos varauksestasi.';

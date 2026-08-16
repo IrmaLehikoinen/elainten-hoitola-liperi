@@ -32,7 +32,7 @@
         $navItems = [
             ['route' => 'dashboard', 'active' => request()->routeIs('dashboard'), 'label' => 'Etusivu', 'icon' => 'home'],
             ['route' => 'calendar.index', 'active' => request()->routeIs('calendar.*'), 'label' => 'Kalenteri', 'icon' => 'calendar'],
-            ['route' => null, 'active' => false, 'label' => 'Varaukset', 'icon' => 'check'],
+            ['route' => 'admin.bookings.index', 'active' => request()->routeIs('admin.bookings.index'), 'label' => 'Varaukset', 'icon' => 'check'],
             ['route' => 'admin.customers.index', 'active' => request()->routeIs('admin.customers.*'), 'label' => 'Asiakkaat', 'icon' => 'users'],
             ['route' => null, 'active' => false, 'label' => 'Palvelut', 'icon' => 'shield'],
             ['route' => null, 'active' => false, 'label' => 'Laskutus', 'icon' => 'euro'],

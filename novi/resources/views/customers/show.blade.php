@@ -28,13 +28,35 @@
 
                 @if (request('fromBooking'))
                     <div class="mt-4 rounded-md p-4" style="background-color: var(--brand-secondary);">
-                        <button
-                            type="button"
-                            onclick="handleBackToBooking()"
-                            class="btn-brand rounded-md px-4 py-2 text-sm font-semibold"
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onclick="handleBackToBooking()"
+                                class="btn-brand rounded-md px-4 py-2 text-sm font-semibold"
+                            >
+                                ← Takaisin ajanvaraukseen (sulje tämä välilehti)
+                            </button>
+
+                            <button
+                                type="button"
+                                onclick="forceCloseBookingTab()"
+                                class="rounded-md border px-4 py-2 text-sm font-semibold"
+                                style="border-color: var(--brand-primary); color: var(--brand-primary);"
+                            >
+                                Peruuta ja sulje (älä tallenna)
+                            </button>
+                        </div>
+                    </div>
+                @endif
+
+                @if (request('from') === 'bookings')
+                    <div class="mt-4 rounded-md p-4" style="background-color: var(--brand-secondary);">
+                        <div
+                            onclick="window.location.href='{{ route('admin.bookings.index') }}'"
+                            class="btn-brand inline-block cursor-pointer rounded-md px-4 py-2 text-sm font-semibold"
                         >
-                            ← Takaisin ajanvaraukseen (sulje tämä välilehti)
-                        </button>
+                            ← Takaisin varauksiin
+                        </div>
                     </div>
                 @endif
 
@@ -72,6 +94,19 @@
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Muistiinpanot</label>
                         <textarea name="notes" rows="3" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('notes', $customer->notes) }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Oma hoitopäivähinta (valinnainen)</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            name="custom_daily_rate"
+                            value="{{ old('custom_daily_rate', $customer->custom_daily_rate) }}"
+                            placeholder="Tyhjä = käytetään yleistä perushintaa"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                        >
                     </div>
 
                     <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
@@ -275,12 +310,20 @@
                     return;
                 }
 
+               if (window.opener && !window.opener.closed && typeof window.opener.refreshBookingCustomer === 'function') {
+                    window.opener.refreshBookingCustomer();
+                }
+
+                window.close();
+            };
+
+            window.forceCloseBookingTab = function () {
                 if (window.opener && !window.opener.closed && typeof window.opener.refreshBookingCustomer === 'function') {
                     window.opener.refreshBookingCustomer();
                 }
 
                 window.close();
-            }; 
-        })();
+            };
+        })(); 
     </script>    
 </x-app-layout>

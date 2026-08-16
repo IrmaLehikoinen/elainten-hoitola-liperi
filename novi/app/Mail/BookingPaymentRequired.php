@@ -9,25 +9,25 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class BookingConfirmed extends Mailable
+class BookingPaymentRequired extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Booking $booking)
+    public function __construct(public Booking $booking, public string $paymentUrl)
     {
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Varauksesi on vahvistettu',
+            subject: 'Varausmaksu odottaa maksua',
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.booking-confirmed',
+            view: 'emails.booking-payment-required',
         );
     }
 }

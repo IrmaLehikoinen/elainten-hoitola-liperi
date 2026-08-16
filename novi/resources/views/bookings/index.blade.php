@@ -22,7 +22,7 @@
                     Hae varausta
                 </h2>
 
-                <form method="GET" action="{{ route('admin.bookings.index') }}" class="mt-4 flex gap-2">
+             <form method="GET" action="{{ route('admin.bookings.index') }}" class="mt-4 flex gap-2">
                     <input
                         type="text"
                         name="q"
@@ -35,6 +35,16 @@
                         Hae
                     </button>
                 </form>
+
+                @if ($search !== '')
+                    <div
+                        onclick="window.location.href='{{ route('admin.bookings.index') }}'"
+                        class="mt-3 inline-block cursor-pointer text-sm font-medium"
+                        style="color: var(--brand-primary);"
+                    >
+                        ← Näytä kaikki varaukset
+                    </div>
+                @endif   
             </section>
 
             <section class="rounded-lg bg-white p-6 shadow-sm">
@@ -54,7 +64,7 @@
                         @endphp
 
                         <div
-                            @if ($booking->customer) onclick="window.location.href='{{ route('admin.customers.show', $booking->customer->id) }}'" @endif
+                            @if ($booking->customer) onclick="window.location.href='{{ route('admin.customers.show', ['customer' => $booking->customer->id, 'from' => 'bookings']) }}'" @endif
                             class="cursor-pointer rounded-lg border p-4 transition hover:shadow-md"
                             style="border-color: var(--brand-secondary);"
                         >
@@ -84,11 +94,23 @@
                                 </p>
                             </div>
 
+                        <div class="mt-3 flex items-center gap-2 text-sm">
+                                <span class="font-medium" style="color: var(--brand-text);">Ennakkomaksu:</span>
+                                @if ((float) $booking->deposit_amount > 0)
+                                    <span class="rounded px-2 py-0.5 text-xs font-medium text-white" style="background-color: {{ $booking->deposit_paid_at ? 'var(--brand-primary)' : '#b45309' }};">
+                                        {{ number_format((float) $booking->deposit_amount, 2, ',', ' ') }} €
+                                        {{ $booking->deposit_paid_at ? '· Maksettu' : '· Odottaa maksua' }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">Ei käytössä</span>
+                                @endif
+                            </div>
+
                             @if ($booking->notes)
                                 <p class="mt-3 rounded-md bg-gray-50 p-3 text-sm text-gray-600">
                                     {{ $booking->notes }}
                                 </p>
-                            @endif
+                            @endif    
                         </div>
                     @empty
                         <p class="py-6 text-center text-sm text-gray-500">
@@ -145,6 +167,18 @@
                                 </p>
                             </div>
 
+                       <div class="mt-3 flex items-center gap-2 text-sm">
+                                <span class="font-medium" style="color: var(--brand-text);">Ennakkomaksu:</span>
+                                @if ($booking->deposit_amount)
+                                    <span class="rounded px-2 py-0.5 text-xs font-medium text-white" style="background-color: {{ $booking->deposit_paid_at ? 'var(--brand-primary)' : '#b45309' }};">
+                                        {{ number_format((float) $booking->deposit_amount, 2, ',', ' ') }} €
+                                        {{ $booking->deposit_paid_at ? '· Maksettu' : '· Odottaa maksua' }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">Ei käytössä</span>
+                                @endif
+                            </div>
+
                             @if ($booking->notes)
                                 <p class="mt-3 rounded-md bg-gray-50 p-3 text-sm text-gray-600">
                                     {{ $booking->notes }}
@@ -154,7 +188,7 @@
                     @empty
                         <p class="py-6 text-center text-sm text-gray-500">
                             Ei menneitä varauksia.
-                        </p>
+                        </p>     
                     @endforelse
                 </div>
             </section>

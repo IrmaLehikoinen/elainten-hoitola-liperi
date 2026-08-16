@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\BookingPaymentRequired;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Pet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class AdminBookingController extends Controller
 {
@@ -92,6 +94,29 @@ class AdminBookingController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
+        $customer = Customer::findOrFail($validated['customer_id']);
+
+        $arrivalAt = \Carbon\Carbon::parse($validated['arrival_at']);
+        $pickupAt = \Carbon\Carbon::parse($validated['pickup_at']);
+        $nights = max(1, $arrivalAt->diffInDays($pickupAt));
+
+        $company = $request->user()->company;
+        $settings = $company->settings ?? [];
+        $baseDailyRate = (float) ($settings['base_daily_rate'] ?? 0);
+        $dailyRate = $customer->custom_daily_rate !== null
+            ? (float) $customer->custom_daily_rate
+            : $baseDailyRate;
+
+        $animalCount = count($validated['animals']);
+        $totalPrice = round($dailyRate * $nights * $animalCount, 2);
+
+        $depositPercentage = (int) ($settings['deposit_percentage'] ?? 0);
+        $depositAmount = round($totalPrice * $depositPercentage / 100, 2);
+        $requiresPayment = $depositAmount > 0;
+
+        $twoDaysOut = now()->addDays(2);
+        $paymentDeadline = $twoDaysOut->lt($arrivalAt) ? $twoDaysOut : $arrivalAt;
+
         $booking = Booking::create([
             'company_id' => $request->user()->company_id,
             'customer_id' => $validated['customer_id'],
@@ -100,10 +125,13 @@ class AdminBookingController extends Controller
             'start_date' => date('Y-m-d', strtotime($validated['arrival_at'])),
             'end_date' => date('Y-m-d', strtotime($validated['pickup_at'])),
             'care_type' => $validated['care_type'],
-            'status' => 'confirmed',
+            'status' => $requiresPayment ? 'pending' : 'confirmed',
             'payment_status' => 'unpaid',
             'priority' => 'normal',
             'notes' => $validated['notes'] ?? null,
+            'total_price' => $totalPrice,
+            'deposit_amount' => $depositAmount,
+            'payment_deadline' => $requiresPayment ? $paymentDeadline : null,
         ]);
 
         foreach ($validated['animals'] as $animal) {
@@ -115,12 +143,21 @@ class AdminBookingController extends Controller
                 'species' => $pet->species,
                 'start_date' => $booking->start_date,
                 'end_date' => $booking->end_date,
+                'daily_rate' => $dailyRate,
             ]);
+        }
+
+        $paymentUrl = $requiresPayment ? route('payment.checkout', $booking) : null;
+
+        if ($requiresPayment && $customer->email) {
+            Mail::to($customer->email)->send(new BookingPaymentRequired($booking, $paymentUrl));
         }
 
         return response()->json([
             'message' => 'Varaus tallennettu',
             'booking' => $booking,
+            'payment_url' => $paymentUrl,
+            'email_sent' => $requiresPayment && $customer->email ? true : false,
         ], 201);
     }
 }

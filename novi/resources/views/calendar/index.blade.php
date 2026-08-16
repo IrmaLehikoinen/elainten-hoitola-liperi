@@ -19,11 +19,14 @@
 
             <button
                 type="button"
-                class="btn-brand rounded-md px-4 py-2 text-sm font-semibold"
+                class="btn-brand flex items-center gap-2 rounded-md px-6 py-3 text-base font-semibold shadow-md"
                 @click="$dispatch('open-requirement-modal')"
             >
-                Lisää varaus
-            </button>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Uusi varaus
+            </button>   
         </div>
     </x-slot>
 
@@ -350,21 +353,33 @@
                 <div class="mt-6 space-y-5">
                     <div>
                         <label class="block text-sm font-medium">
-                            Puhelinnumero tai sähköposti
+                            Puhelinnumero
+                        </label>
+
+                        <input
+                            type="text"
+                            x-model="customerPhone"
+                            @keydown.enter.prevent="searchCustomer"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                            placeholder="040 123 4567"
+                        >
+
+                        <label class="mt-3 block text-sm font-medium">
+                            Sähköposti
                         </label>
 
                         <div class="mt-1 flex gap-2">
                             <input
                                 type="text"
-                                x-model="customerSearch"
+                                x-model="customerEmail"
                                 @keydown.enter.prevent="searchCustomer"
                                 class="w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="040 123 4567 tai asiakas@email.fi"
+                                placeholder="asiakas@email.fi"
                             >
 
                             <button
                                 type="button"
-                                class="btn-brand rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                                class="btn-brand shrink-0 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
                                 @click="searchCustomer"
                                 :disabled="searching"
                             >
@@ -372,6 +387,10 @@
                                 <span x-show="searching">Haetaan…</span>
                             </button>
                         </div>
+
+                        <p class="mt-1 text-xs text-gray-400">
+                            Täytä ainakin toinen. Uudelle asiakkaalle voit täyttää molemmat.
+                        </p>
 
                         <p
                             x-show="searchMessage"
@@ -512,7 +531,7 @@
                         ></textarea>
                     </div>
 
-                    <p
+                 <p
                         x-show="saveMessage"
                         x-text="saveMessage"
                         class="rounded-md px-3 py-2 text-sm font-medium"
@@ -520,6 +539,18 @@
                             ? 'bg-green-50 text-green-700'
                             : 'bg-red-50 text-red-700'"
                     ></p>
+
+                    <div x-show="paymentUrl" x-cloak class="rounded-md border p-3" style="border-color: var(--brand-secondary);">
+                        <p class="break-all text-sm" style="color: var(--brand-text);" x-text="paymentUrl"></p>
+
+                        <button
+                            type="button"
+                            class="btn-brand mt-2 rounded-md px-3 py-1.5 text-sm font-semibold"
+                            @click="navigator.clipboard.writeText(paymentUrl); saveMessage = 'Linkki kopioitu leikepöydälle.'"
+                        >
+                            Kopioi linkki
+                        </button>
+                    </div>   
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3">
@@ -582,8 +613,10 @@
                 pickupDate: '',
                 pickupTime: '17:00',
                 notes: '',
+                paymentUrl: '',
 
-                customerSearch: '',
+                customerPhone: '',
+                customerEmail: '',
                 customer: null,
                 customerNotFound: false,
                 pets: [],
@@ -867,7 +900,8 @@
                 },   
 
                 resetBookingForm() {
-                    this.customerSearch = '';
+                    this.customerPhone = '';
+                    this.customerEmail = '';
                     this.customer = null;
                     this.customerNotFound = false;
            this.pets = [];
@@ -880,6 +914,7 @@
                     this.pickupDate = '';
                     this.pickupTime = '17:00';
                     this.notes = '';
+                    this.paymentUrl = '';
 
                     this.searching = false;
                     this.saving = false;
@@ -968,9 +1003,9 @@
                     }
                 },
 
-                async createAndOpenNewCustomer() {
-                    const query = this.customerSearch.trim();
-                    const isEmail = query.includes('@');
+                    async createAndOpenNewCustomer() {
+                    const phone = this.customerPhone.trim();
+                    const email = this.customerEmail.trim();
 
                     try {
                         const response = await fetch(this.customersStoreUrl, {
@@ -981,8 +1016,8 @@
                                 'X-CSRF-TOKEN': this.csrfToken,
                             },
                             body: JSON.stringify({
-                                phone: isEmail ? null : query,
-                                email: isEmail ? query : null,
+                                phone: phone || null,
+                                email: email || null,
                             }),
                         });
 
@@ -1017,7 +1052,9 @@
                     this.bookingAnimals = [];
                     this.searchMessage = '';
 
-                    const query = this.customerSearch.trim();
+                    const phone = this.customerPhone.trim();
+                    const email = this.customerEmail.trim();
+                    const query = phone || email;
 
                     if (!query) {
                         this.searchMessage = 'Kirjoita puhelinnumero tai sähköposti.';
@@ -1115,7 +1152,7 @@
                             }),
                         });
 
-                        const data = await response.json();
+                     const data = await response.json();
 
                         if (!response.ok) {
                             const errors = data.errors
@@ -1125,14 +1162,22 @@
                             throw new Error(errors || data.message || 'Tallennus epäonnistui.');
                         }
 
-         this.releaseHold();
+                    this.releaseHold();
 
                         this.saveSucceeded = true;
-                        this.saveMessage = 'Varaus tallennettiin onnistuneesti.';
 
-                        window.setTimeout(() => {
-                            window.location.href = this.dashboardUrl;
-                        }, 900);
+                        if (data.payment_url) {
+                            this.paymentUrl = data.payment_url;
+                            this.saveMessage = data.email_sent
+                                ? 'Varaus tallennettu. Maksulinkki lähetettiin asiakkaalle sähköpostitse. Voit myös kopioida sen tästä varmuuden vuoksi:'
+                                : 'Varaus tallennettu. Asiakkaalla ei ole sähköpostia tallennettuna — kopioi maksulinkki ja lähetä se asiakkaalle itse:';
+                        } else {
+                            this.saveMessage = 'Varaus tallennettiin onnistuneesti.';
+
+                            window.setTimeout(() => {
+                                window.location.href = this.dashboardUrl;
+                            }, 900);
+                        }
                     } catch (error) {
                         this.saveMessage = error.message || 'Tallennus epäonnistui.';
                     } finally {

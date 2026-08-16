@@ -144,13 +144,14 @@ class CustomerController extends Controller
      */
     public function update(Request $request, Customer $customer)
     {
-        $validated = $request->validate([
+    $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
-        ]);
+            'custom_daily_rate' => ['nullable', 'numeric', 'min:0'],
+        ]);    
 
       $customer->update($validated);
 

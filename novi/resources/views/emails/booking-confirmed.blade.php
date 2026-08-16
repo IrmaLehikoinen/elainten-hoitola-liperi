@@ -1,15 +1,23 @@
-<x-mail::message>
-# Varauksesi on vahvistettu
+<!DOCTYPE html>
+<html>
+<body style="font-family: sans-serif; color: #111827; padding: 24px;">
+    <h1 style="font-size: 20px;">Varauksesi on vahvistettu</h1>
 
-Hei {{ $booking->customer->name }},
+    <p>Hei {{ $booking->customer->name ?? '' }},</p>
 
-Varauksesi #{{ $booking->id }} on vahvistettu ja varausmaksu on maksettu onnistuneesti.
+    <p>Ennakkomaksusi on vastaanotettu ja varauksesi on nyt vahvistettu.</p>
 
-**Hoitojakso:** {{ $booking->start_date }} – {{ $booking->end_date }}
-**Varausmaksu:** {{ $booking->deposit_amount }} €
+    <table style="margin-top: 16px;">
+        <tr>
+            <td style="padding-right: 12px; color: #6b7280;">Saapuminen:</td>
+            <td>{{ $booking->arrival_at?->format('d.m.Y H:i') }}</td>
+        </tr>
+        <tr>
+            <td style="padding-right: 12px; color: #6b7280;">Nouto:</td>
+            <td>{{ $booking->pickup_at?->format('d.m.Y H:i') }}</td>
+        </tr>
+    </table>
 
-Kiitos varauksestasi!
-
-Terveisin,<br>
-{{ config('app.name') }}
-</x-mail::message>
+    <p style="margin-top: 24px;">Nähdään pian!</p>
+</body>
+</html>

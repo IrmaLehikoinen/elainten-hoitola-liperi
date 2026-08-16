@@ -29,6 +29,58 @@
                 </div>
             @endif
 
+            {{-- Perushinta --}}
+            <section class="bg-white p-6 shadow-sm rounded-lg">
+                <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                    Perushinta
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Hoitopäivän hinta per eläin. Käytetään varauksen kokonaishinnan ja ennakkomaksun laskemiseen.
+                </p>
+
+                <form method="POST" action="{{ route('admin.settings.base-rate.update') }}" class="mt-4 flex items-center gap-3">
+                    @csrf
+                    <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        name="base_daily_rate"
+                        value="{{ $company->settings['base_daily_rate'] ?? 0 }}"
+                        class="w-32 rounded-md border-gray-300 shadow-sm"
+                    >
+                    <span class="text-sm text-gray-500">€ / hoitopäivä / eläin</span>
+
+                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                        Tallenna
+                    </button>
+                </form>
+            </section>
+
+            {{-- Varausmaksu --}}
+            <section class="bg-white p-6 shadow-sm rounded-lg">
+                <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                    Varausmaksu
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Kuinka suuri osuus hinnasta peritään ennakkomaksuna varausta tehdessä. 0 % = ei ennakkomaksua, varaus vahvistuu heti.
+                </p>
+
+                <form method="POST" action="{{ route('admin.settings.deposit.update') }}" class="mt-4 flex items-center gap-3">
+                    @csrf
+                    <select name="deposit_percentage" class="rounded-md border-gray-300 shadow-sm">
+                        @foreach ([0, 20, 30, 50] as $percentage)
+                            <option value="{{ $percentage }}" @selected(($company->settings['deposit_percentage'] ?? 0) == $percentage)>
+                                {{ $percentage }} %
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                        Tallenna
+                    </button>
+                </form>
+            </section>
+
             {{-- Eläinryhmät ja kapasiteetti --}}
             <section class="bg-white p-6 shadow-sm rounded-lg">
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
