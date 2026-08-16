@@ -38,17 +38,13 @@
                             <p class="mt-1 text-sm text-gray-500">{{ $inCareToday->count() }} lemmikkiä juuri nyt</p>   
                         </div>
 
-                        <span
+                   <span
                             class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
                             style="background-color: var(--brand-secondary);"
                         >
-                         <svg viewBox="0 0 24 24" fill="var(--brand-primary)" class="h-5 w-5">
-                                <ellipse cx="12" cy="16" rx="5" ry="4.2" />
-                                <ellipse cx="6" cy="9" rx="2.1" ry="2.6" />
-                                <ellipse cx="10.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="14.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="18" cy="9" rx="2.1" ry="2.6" />
-                            </svg>   
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" class="h-5 w-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>  
                         </span>
                     </div>
 
@@ -67,9 +63,13 @@
                             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
                             style="background-color: var(--brand-secondary);"
                         >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="1.8" class="h-4 w-4">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h11M11 7l4 5-4 5M20 7v10" />
-                            </svg>
+                         <svg viewBox="0 0 24 24" fill="var(--brand-primary)" class="h-4 w-4">
+                                <ellipse cx="12" cy="16" rx="5" ry="4.2" />
+                                <ellipse cx="6" cy="9" rx="2.1" ry="2.6" />
+                                <ellipse cx="10.5" cy="6" rx="2" ry="2.5" />
+                                <ellipse cx="14.5" cy="6" rx="2" ry="2.5" />
+                                <ellipse cx="18" cy="9" rx="2.1" ry="2.6" />
+                            </svg>   
                         </span>
                     </div>
 
@@ -136,45 +136,7 @@
 
                     <div class="mt-4">
                         <div class="w-full">
-                            <div class="grid grid-cols-7 border-l border-t border-gray-200">
-
-                                @foreach (['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'] as $weekday)
-                                    <div class="border-b border-r border-gray-200 px-2 py-2 text-center text-xs font-semibold text-gray-500">
-                                        {{ $weekday }}
-                                    </div>
-                                @endforeach
-
-                            @php $leadingBlanks = $calendarMonth->copy()->startOfMonth()->dayOfWeekIso - 1; @endphp
-                                @for ($i = 0; $i < $leadingBlanks; $i++)
-                                    <div class="aspect-square border-b border-r border-gray-200 bg-gray-50"></div>
-                                @endfor
-
-                                @foreach ($calendarDays as $day)
-                                    @php
-                                        $dayHref = $day['count'] > 0
-                                            ? route('admin.calendar.day', $day['date']->format('Y-m-d'))
-                                            : null;
-                                
-                                    @endphp
-
-                                    <div
-                                        @if ($dayHref) onclick="window.location.href='{{ $dayHref }}'" @endif
-                                        class="aspect-square overflow-hidden border-b border-r border-gray-200 p-1.5 {{ $dayHref ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default' }}"   
-                                    >
-                                        <div class="text-xs font-medium" style="color: var(--brand-text);">
-                                            {{ $day['date']->day }}
-                                        </div>
-                                 @foreach ($day['participants']->groupBy(fn ($p) => mb_strtolower(trim($p->species))) as $species => $group)
-                                            <div
-                                                class="mt-1 truncate rounded px-1.5 py-0.5 text-[11px] font-medium text-white"
-                                                style="background-color: var(--brand-primary);"
-                                            >
-                                                {{ ucfirst($species) }} {{ $group->count() }}
-                                            </div>
-                         @endforeach
-                                    </div>
-                                @endforeach
-                            </div>
+                     @include('partials.calendar-grid', ['days' => $calendarDays, 'periodStart' => $calendarMonth])      
                         </div>
                     </div>
 

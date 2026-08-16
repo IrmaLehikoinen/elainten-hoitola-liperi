@@ -37,43 +37,8 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <section class="rounded-lg bg-white p-6 shadow-sm">
 
-                <!-- Kalenterin yläpalkki -->
+           <!-- Kalenterin yläpalkki -->
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex items-center gap-2">
-                        <button
-                            type="button"
-                            class="rounded-md border px-3 py-2 text-sm"
-                            style="
-                                border-color: var(--brand-secondary);
-                                color: var(--brand-text);
-                            "
-                        >
-                            Edellinen
-                        </button>
-
-                        <button
-                            type="button"
-                            class="rounded-md border px-3 py-2 text-sm"
-                            style="
-                                border-color: var(--brand-secondary);
-                                color: var(--brand-text);
-                            "
-                        >
-                            Tänään
-                        </button>
-
-                        <button
-                            type="button"
-                            class="rounded-md border px-3 py-2 text-sm"
-                            style="
-                                border-color: var(--brand-secondary);
-                                color: var(--brand-text);
-                            "
-                        >
-                            Seuraava
-                        </button>
-                    </div>
-
                     <h2
                         class="text-xl font-semibold"
                         style="
@@ -81,91 +46,49 @@
                             font-family: var(--brand-heading-font);
                         "
                     >
-                        {{ ucfirst($calendarMonth->translatedFormat('F Y')) }}
+                        {{ $periodLabel }}
                     </h2>
 
                     <div class="flex items-center gap-2">
-                        <button
-                            type="button"
-                            class="rounded-md px-3 py-2 text-sm font-medium"
+                        <div
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => 'month', 'date' => $anchorDate->format('Y-m-d')]) }}'"
+                            class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium"
                             style="
-                                background-color: var(--brand-secondary);
+                                {{ $calendarView === 'month' ? 'background-color: var(--brand-secondary);' : 'border: 1px solid var(--brand-secondary);' }}
                                 color: var(--brand-text);
                             "
                         >
                             Kuukausi
-                        </button>
+                        </div>
 
-                        <button
-                            type="button"
-                            class="rounded-md border px-3 py-2 text-sm"
+                        <div
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => 'week', 'date' => $anchorDate->format('Y-m-d')]) }}'"
+                            class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium"
                             style="
-                                border-color: var(--brand-secondary);
+                                {{ $calendarView === 'week' ? 'background-color: var(--brand-secondary);' : 'border: 1px solid var(--brand-secondary);' }}
                                 color: var(--brand-text);
                             "
                         >
                             Viikko
-                        </button>
+                        </div>
 
-                        <button
-                            type="button"
-                            class="rounded-md border px-3 py-2 text-sm"
+                        <div
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => 'day', 'date' => $anchorDate->format('Y-m-d')]) }}'"
+                            class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium"
                             style="
-                                border-color: var(--brand-secondary);
+                                {{ $calendarView === 'day' ? 'background-color: var(--brand-secondary);' : 'border: 1px solid var(--brand-secondary);' }}
                                 color: var(--brand-text);
                             "
                         >
                             Päivä
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Kuukausikalenteri -->
-                <div class="mt-6 overflow-x-auto">
-                    <div class="min-w-[760px]">
-                        <div class="grid grid-cols-7 border-l border-t border-gray-200">
-
-          @foreach (['Ma', 'Ti', 'Ke', 'To', 'Pe', 'La', 'Su'] as $weekday)
-                                <div class="border-b border-r border-gray-200 px-3 py-3 text-center text-sm font-semibold text-gray-500">
-                                    {{ $weekday }}
-                                </div>
-                            @endforeach
-
-                            @php $leadingBlanks = $calendarMonth->copy()->startOfMonth()->dayOfWeekIso - 1; @endphp
-                            @for ($i = 0; $i < $leadingBlanks; $i++)
-                                <div class="min-h-28 border-b border-r border-gray-200 bg-gray-50"></div>
-                            @endfor
-
-                            @foreach ($calendarDays as $day)
-                                @php
-                                    $dayHref = $day['count'] > 0
-                                        ? route('admin.calendar.day', $day['date']->format('Y-m-d'))
-                                        : null;
-                                @endphp
-
-                                <a href="{{ $dayHref ?? '#' }}" @unless ($dayHref) onclick="return false;" @endunless class="block min-h-28 border-b border-r border-gray-200 p-2 {{ $dayHref ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default' }}">
-                                    <div class="text-sm font-medium" style="color: var(--brand-text);">
-                                        {{ $day['date']->day }}
-                                    </div>
-
-                                    @if ($day['count'] === 1)
-                                        @php $p = $day['participants']->first(); @endphp
-                                        <div class="mt-2 truncate rounded-md px-2 py-1 text-xs font-medium" style="background-color: var(--brand-secondary); color: var(--brand-text);">
-                                            {{ optional($p->booking)->arrival_at?->format('H:i') }} {{ $p->name }}
-                                        </div>
-                                    @elseif ($day['count'] > 1)
-                                        @foreach ($day['participants']->groupBy('species') as $species => $group)
-                                            <div class="mt-2 truncate rounded-md px-2 py-1 text-xs font-medium text-white" style="background-color: var(--brand-primary);">
-                                                {{ $group->count() }} {{ $species }}
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                </a>
-                            @endforeach
-
                         </div>
                     </div>
                 </div>
+
+            <!-- Kalenteriruudukko -->
+                <div class="mt-6">
+                    @include('partials.calendar-grid', ['days' => $calendarDays, 'periodStart' => $periodStart])
+                </div>       
             </section>
         </div>
 

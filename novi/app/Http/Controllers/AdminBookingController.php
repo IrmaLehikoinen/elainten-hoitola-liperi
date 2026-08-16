@@ -39,6 +39,47 @@ class AdminBookingController extends Controller
         return response()->json($customer);
     }
 
+    public function index(Request $request)
+    {
+        $search = trim((string) $request->get('q'));
+
+        $bookings = Booking::with(['customer', 'participants'])
+            ->when($search !== '', function ($query) use ($search) {
+                $digitsOnly = preg_replace('/[\s\-]+/', '', $search);
+
+                $query->whereHas('customer', function ($customerQuery) use ($search, $digitsOnly) {
+                    $customerQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+
+                    if ($digitsOnly !== '') {
+                        $customerQuery->orWhereRaw(
+                            "REPLACE(REPLACE(phone, ' ', ''), '-', '') LIKE ?",
+                            ["%{$digitsOnly}%"]
+                        );
+                    }
+                });
+            })
+            ->get();
+
+        $today = today();
+
+        $upcomingBookings = $bookings
+            ->filter(fn ($b) => ! $b->end_date || $b->end_date->gte($today))
+            ->sortBy('arrival_at')
+            ->values();
+
+        $pastBookings = $bookings
+            ->filter(fn ($b) => $b->end_date && $b->end_date->lt($today))
+            ->sortByDesc('arrival_at')
+            ->values();
+
+        return view('bookings.index', [
+            'upcomingBookings' => $upcomingBookings,
+            'pastBookings' => $pastBookings,
+            'search' => $search,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

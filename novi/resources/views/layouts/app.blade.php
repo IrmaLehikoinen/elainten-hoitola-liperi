@@ -18,10 +18,14 @@
         --brand-body-font: '{{ $brand['font_body'] ?? 'Figtree' }}', sans-serif;
     }
 
-    body {
+        body {
         font-family: var(--brand-body-font);
         color: var(--brand-text);
         background-color: var(--brand-background);
+    }
+
+    header h1 {
+        color: var(--brand-primary) !important;
     }
 </style>
 

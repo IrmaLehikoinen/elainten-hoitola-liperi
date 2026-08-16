@@ -196,6 +196,10 @@ Route::get('/admin/calendar/{date}', [CalendarController::class, 'day'])
     ->where('date', '\d{4}-\d{2}-\d{2}')
     ->name('admin.calendar.day');
 
+Route::get('/admin/varaukset', [AdminBookingController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.index');
+
 use App\Http\Controllers\StripeWebhookController;
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
