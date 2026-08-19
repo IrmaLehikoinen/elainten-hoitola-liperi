@@ -50,11 +50,14 @@ class ServiceSelectionController extends Controller
                 ->orderBy('arrival_at')
                 ->get();
 
-            $bookingIdParam = $request->get('booking_id');
+                         $bookingIdParam = $request->get('booking_id');
 
-            $selectedBooking = $bookingIdParam
-                ? $bookings->firstWhere('id', (int) $bookingIdParam)
-                : $bookings->first();
+            if ($bookingIdParam) {
+                $selectedBooking = $bookings->firstWhere('id', (int) $bookingIdParam)
+                    ?? Booking::where('customer_id', $customer->id)->find((int) $bookingIdParam);
+            } else {
+                $selectedBooking = $bookings->first();
+            }   
 
             $services = Service::orderBy('name')->get();
 

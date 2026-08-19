@@ -43,7 +43,7 @@
                 @if ($search !== '')
                     <div class="mt-4 divide-y">
                         @forelse ($searchResults as $customer)
-                            <a href="{{ route('admin.customers.show', $customer->id) }}" class="block py-3 hover:bg-gray-50">
+                        <a href="{{ route('admin.customers.show', $customer->id) }}?from=customers"    class="block py-3 hover:bg-gray-50">
                                 <p class="text-sm font-medium" style="color: var(--brand-text);">{{ $customer->name }}</p>
                                 <p class="text-xs text-gray-500">
                                     {{ collect([$customer->phone, $customer->email])->filter()->join(' · ') ?: 'Ei yhteystietoja' }}
@@ -67,7 +67,7 @@
 
                 <div class="mt-4 divide-y">
                     @forelse ($inCareCustomers as $customer)
-                        <a href="{{ route('admin.customers.show', $customer->id) }}" class="block py-3 hover:bg-gray-50">
+                            <a href="{{ route('admin.customers.show', $customer->id) }}?from=customers" class="block py-3 hover:bg-gray-50">
                             <p class="text-sm font-medium" style="color: var(--brand-text);">{{ $customer->name }}</p>
                             <p class="text-xs text-gray-500">
                                 {{ collect([$customer->phone, $customer->email])->filter()->join(' · ') ?: 'Ei yhteystietoja' }}
@@ -90,7 +90,7 @@
 
                 <div class="mt-4 divide-y">
                     @forelse ($arrivingTomorrowCustomers as $customer)
-                        <a href="{{ route('admin.customers.show', $customer->id) }}" class="block py-3 hover:bg-gray-50">
+                        <a href="{{ route('admin.customers.show', $customer->id) }}?from=customers" class="block py-3 hover:bg-gray-50">
                             <p class="text-sm font-medium" style="color: var(--brand-text);">{{ $customer->name }}</p>
                             <p class="text-xs text-gray-500">
                                 {{ collect([$customer->phone, $customer->email])->filter()->join(' · ') ?: 'Ei yhteystietoja' }}

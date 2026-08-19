@@ -49,7 +49,7 @@
                     </div>
                 @endif
 
-                @if (request('from') === 'bookings')
+                                @if (request('from') === 'bookings')
                     <div class="mt-4 rounded-md p-4" style="background-color: var(--brand-secondary);">
                         <div
                             onclick="window.location.href='{{ route('admin.bookings.index') }}'"
@@ -60,7 +60,18 @@
                     </div>
                 @endif
 
-                @if (session('status'))
+                @if (request('from') === 'customers')
+                    <div class="mt-4 rounded-md p-4" style="background-color: var(--brand-secondary);">
+                        <div
+                            onclick="window.location.href='{{ route('admin.customers.index') }}'"
+                            class="btn-brand inline-block cursor-pointer rounded-md px-4 py-2 text-sm font-semibold"
+                        >
+                            ← Takaisin asiakkaat etusivulle
+                        </div>
+                    </div>
+                @endif
+
+                                @if (session('status'))
                     <div class="mt-4 rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">
                         {{ session('status') }}
                     </div>
