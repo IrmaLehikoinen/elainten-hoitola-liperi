@@ -18,6 +18,7 @@ class ServiceSelectionController extends Controller
         $selectedBooking = null;
         $services = collect();
         $selectedServiceIds = [];
+        $selectedPetName = null;
 
         $customerId = $request->get('customer_id');
 
@@ -40,6 +41,12 @@ class ServiceSelectionController extends Controller
                 ->first();
         }
 
+        $participantId = $request->get('participant_id');
+
+        if ($participantId) {
+            $selectedPetName = optional(BookingParticipant::find($participantId))->name;
+        }
+
         if ($customer) {
             $today = today();
 
@@ -50,14 +57,14 @@ class ServiceSelectionController extends Controller
                 ->orderBy('arrival_at')
                 ->get();
 
-                         $bookingIdParam = $request->get('booking_id');
+            $bookingIdParam = $request->get('booking_id');
 
             if ($bookingIdParam) {
                 $selectedBooking = $bookings->firstWhere('id', (int) $bookingIdParam)
                     ?? Booking::where('customer_id', $customer->id)->find((int) $bookingIdParam);
             } else {
                 $selectedBooking = $bookings->first();
-            }   
+            }
 
             $services = Service::orderBy('name')->get();
 
@@ -66,7 +73,7 @@ class ServiceSelectionController extends Controller
             }
         }
 
-       $today = today();
+        $today = today();
 
         $inHousePets = BookingParticipant::with(['booking.customer', 'pet'])
             ->whereDate('start_date', '<=', $today)
@@ -88,10 +95,11 @@ class ServiceSelectionController extends Controller
             'selectedBooking' => $selectedBooking,
             'services' => $services,
             'selectedServiceIds' => $selectedServiceIds,
+            'selectedPetName' => $selectedPetName,
             'inHousePets' => $inHousePets,
             'upcomingPets' => $upcomingPets,
         ]);
-    } 
+    }
 
     public function update(Request $request, Booking $booking)
     {

@@ -17,7 +17,7 @@
     <div class="py-8" x-data="{ modalOpen: {{ $customer ? 'true' : 'false' }} }">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-            @if (session('status'))
+            @if (session('status') && !$customer)
                 <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">
                     {{ session('status') }}
                 </div>
@@ -57,7 +57,7 @@
                 <div class="mt-4 space-y-2">
                     @forelse ($inHousePets as $participant)
                         <div
-                            onclick="window.location.href='{{ route('admin.services.index', ['customer_id' => optional($participant->booking)->customer_id, 'booking_id' => $participant->booking_id]) }}'"
+                            onclick="window.location.href='{{ route('admin.services.index', ['customer_id' => optional($participant->booking)->customer_id, 'booking_id' => $participant->booking_id, 'participant_id' => $participant->id]) }}'"
                             class="cursor-pointer flex items-center justify-between rounded-md border p-3 transition hover:shadow-md"
                             style="border-color: var(--brand-secondary);"
                         >
@@ -83,7 +83,7 @@
                 <div class="mt-4 space-y-2">
                     @forelse ($upcomingPets as $participant)
                         <div
-                            onclick="window.location.href='{{ route('admin.services.index', ['customer_id' => optional($participant->booking)->customer_id, 'booking_id' => $participant->booking_id]) }}'"
+                            onclick="window.location.href='{{ route('admin.services.index', ['customer_id' => optional($participant->booking)->customer_id, 'booking_id' => $participant->booking_id, 'participant_id' => $participant->id]) }}'"
                             class="cursor-pointer flex items-center justify-between rounded-md border p-3 transition hover:shadow-md"
                             style="border-color: var(--brand-secondary);"
                         >
@@ -114,33 +114,48 @@
                 >
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <p class="text-xl font-semibold" style="color: var(--brand-text);">
-                                {{ $customer->name }}
-                            </p>
+                            @if ($selectedPetName)
+                                <p class="text-xl font-semibold" style="color: var(--brand-text);">
+                                    {{ $selectedPetName }}
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    {{ $customer->name }}
+                                </p>
+                            @else
+                                <p class="text-xl font-semibold" style="color: var(--brand-text);">
+                                    {{ $customer->name }}
+                                </p>
+                            @endif
                             <p class="mt-1 text-sm text-gray-500">
                                 {{ collect([$customer->phone, $customer->email])->filter()->join(' · ') ?: 'Ei yhteystietoja' }}
                             </p>
                         </div>
 
-                        <div class="flex items-center gap-3 shrink-0">
-                            <div
-                                onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}'"
-                                class="cursor-pointer text-sm font-medium"
-                                style="color: var(--brand-primary);"
-                            >
-                                Avaa asiakaskortti →
-                            </div>
-
-                            <button
-                                type="button"
-                                class="rounded-md p-1 text-gray-500 hover:bg-gray-100"
-                                @click="modalOpen = false"
-                                aria-label="Sulje"
-                            >
-                                ✕
-                            </button>
+                        <div
+                            onclick="window.location.href='{{ route('admin.services.index') }}'"
+                            class="cursor-pointer text-sm font-medium shrink-0"
+                            style="color: var(--brand-primary);"
+                        >
+                            ← Takaisin
                         </div>
                     </div>
+
+                    @if (session('status'))
+                        <div class="mt-4 rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="mt-4 rounded-md bg-red-50 p-4 text-sm font-medium text-red-700">
+                            <p>Tallennus epäonnistui:</p>
+                            <ul class="mt-1 list-disc pl-5">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
                     @if ($bookings->isEmpty())
                         <p class="mt-4 text-sm text-gray-500">
@@ -203,9 +218,19 @@
                                 </div>
 
                                 @if ($services->isNotEmpty())
-                                    <button type="submit" class="btn-brand mt-4 rounded-md px-4 py-2 text-sm font-semibold">
-                                        Tallenna palvelut
-                                    </button>
+                                    <div class="mt-4 flex items-center gap-4">
+                                        <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                                            Tallenna palvelut
+                                        </button>
+
+                                        <div
+                                            onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}'"
+                                            class="cursor-pointer text-sm font-medium"
+                                            style="color: var(--brand-primary);"
+                                        >
+                                            Avaa asiakaskortti →
+                                        </div>
+                                    </div>
                                 @endif
                             </form>
                         @endif
