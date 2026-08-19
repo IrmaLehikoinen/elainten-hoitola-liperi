@@ -14,6 +14,7 @@ use App\Http\Controllers\BookingHoldController;
 use App\Http\Controllers\ServiceSelectionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\CalendarCapacityController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -210,6 +211,14 @@ Route::get('/admin/calendar/{date}', [CalendarController::class, 'day'])
     ->middleware(['auth', 'verified'])
     ->where('date', '\d{4}-\d{2}-\d{2}')
     ->name('admin.calendar.day');
+
+Route::post('/admin/calendar/kapasiteetti', [CalendarCapacityController::class, 'store'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.calendar.capacity.store');
+
+Route::delete('/admin/calendar/kapasiteetti/{override}', [CalendarCapacityController::class, 'destroy'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.calendar.capacity.destroy');
 
 Route::get('/admin/varaukset', [AdminBookingController::class, 'index'])
     ->middleware(['auth', 'verified'])

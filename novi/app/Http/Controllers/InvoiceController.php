@@ -39,7 +39,7 @@ class InvoiceController extends Controller
                 })
                 ->first();
 
-            if ($customer) {
+                        if ($customer) {
                 $invoices = Invoice::where('customer_id', $customer->id)
                     ->orderByDesc('issued_at')
                     ->get();
@@ -51,11 +51,16 @@ class InvoiceController extends Controller
                 ->get();
         }
 
+        $customerReadyToInvoice = $customer
+            ? $readyToInvoice->where('customer_id', $customer->id)->values()
+            : collect();
+
         return view('invoices.index', [
             'readyToInvoice' => $readyToInvoice,
             'search' => $search,
             'customer' => $customer,
             'invoices' => $invoices,
+            'customerReadyToInvoice' => $customerReadyToInvoice,
         ]);
     }
 

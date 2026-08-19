@@ -80,12 +80,38 @@
                 @endif
             </section>
 
-            <section class="rounded-lg bg-white p-6 shadow-sm">
+                             <section class="rounded-lg bg-white p-6 shadow-sm">
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
                     {{ $customer ? $customer->name . ' - kuitit' : 'Uusimmat kuitit' }}
                 </h2>
 
-                <div class="mt-4 divide-y">
+                @if ($customer && $customerReadyToInvoice->count() > 0)
+                    <div class="mt-4 space-y-2">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Ei vielä laskutettu</p>
+
+                        @foreach ($customerReadyToInvoice as $booking)
+                            <div class="flex items-center justify-between rounded-md border p-3" style="border-color: var(--brand-secondary);">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei eläimiä liitetty' }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ $booking->arrival_at?->format('d.m.Y') }} – {{ $booking->pickup_at?->format('d.m.Y') }}
+                                    </p>
+                                </div>
+
+                                <form method="POST" action="{{ route('admin.invoices.store', $booking) }}">
+                                    @csrf
+                                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                                        Tee kuitti
+                                    </button>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                <div class="mt-4 divide-y">   
                     @forelse ($invoices as $invoice)
                         <div
                             onclick="window.open('{{ route('invoices.show', $invoice) }}', '_blank')"

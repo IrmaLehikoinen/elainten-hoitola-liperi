@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BookingParticipant;
+use App\Models\DateCapacityOverride;
+use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 
 class CalendarController extends Controller
@@ -68,7 +70,7 @@ class CalendarController extends Controller
      * eläinkorttiin, useamman eläimen varaus (sama asiakas) linkittää
      * asiakaskorttiin, josta eläinkortit avataan yksitellen.
      */
-   public function day(string $date)
+       public function day(string $date, AvailabilityService $availability)
     {
         $day = Carbon::createFromFormat('Y-m-d', $date)->startOfDay();
 
@@ -100,12 +102,19 @@ class CalendarController extends Controller
             ->forDate($day)
             ->get();
 
+         $overrides = DateCapacityOverride::whereDate('date', $day->toDateString())->get();
+        $dayBlockOverride = $overrides->first(fn ($o) => $o->species === null && (int) $o->capacity === 0);
+
         return view('calendar.day', [
             'day' => $day,
             'bookings' => $bookings,
             'arrivingToday' => $arrivingToday,
             'leavingToday' => $leavingToday,
             'reminders' => $reminders,
+            'usage' => $availability->usageForDate($day),
+            'overrides' => $overrides,
+            'isDayBlocked' => (bool) $dayBlockOverride,
+            'dayBlockOverride' => $dayBlockOverride,
         ]);
-    }
+    } 
 }

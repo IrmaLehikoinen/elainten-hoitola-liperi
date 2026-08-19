@@ -1,5 +1,6 @@
 @php
     $leadingBlanks = $periodStart->dayOfWeekIso - 1;
+    $availabilityService = app(\App\Services\AvailabilityService::class);
 @endphp
 
 <div class="grid grid-cols-7 border-l border-t border-gray-200">
@@ -16,24 +17,40 @@
 
     @foreach ($days as $day)
         @php
-            $dayHref = $day['count'] > 0
-                ? route('admin.calendar.day', $day['date']->format('Y-m-d'))
-                : null;
+            $dayHref = route('admin.calendar.day', $day['date']->format('Y-m-d'));
+            $usage = $availabilityService->usageForDate($day['date']);
+            $isBlocked = \App\Models\DateCapacityOverride::whereDate('date', $day['date']->toDateString())
+                ->whereNull('species')
+                ->where('capacity', 0)
+                ->exists();
         @endphp
 
         <div
-            @if ($dayHref) onclick="window.location.href='{{ $dayHref }}'" @endif
-            class="aspect-square overflow-hidden border-b border-r border-gray-200 p-1.5 {{ $dayHref ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default' }}"
+            onclick="window.location.href='{{ $dayHref }}'"
+            class="aspect-square overflow-hidden border-b border-r border-gray-200 p-1.5 hover:bg-gray-50 cursor-pointer"
             style="{{ $day['date']->isToday() ? 'background-color: var(--brand-secondary);' : '' }}"
         >
-            <div class="text-xs font-medium" style="color: var(--brand-text);">
-                {{ $day['date']->day }}
+            <div class="flex items-center justify-between gap-1">
+                <span class="text-xs font-medium" style="color: var(--brand-text);">
+                    {{ $day['date']->day }}
+                </span>
+
+                                 @if ($isBlocked)
+                    <span class="rounded px-1 text-[9px] font-semibold text-white" style="background-color: var(--brand-secondary);">
+                        Suljettu
+                    </span>
+                @endif
             </div>
 
-            @foreach ($day['participants']->groupBy(fn ($p) => mb_strtolower(trim($p->species))) as $species => $group)
-                <div class="mt-1 truncate rounded px-1.5 py-0.5 text-[11px] font-medium text-white" style="background-color: var(--brand-primary);">
-                    {{ ucfirst($species) }} {{ $group->count() }}
-                </div>
+            @foreach ($usage as $species => $info)
+                @if ($info['used'] > 0 || $info['overridden'])
+                    <div
+                        class="mt-1 truncate rounded px-1.5 py-0.5 text-[11px] font-medium text-white"
+                        style="background-color: var(--brand-primary);"
+                    >   
+                        {{ ucfirst($species) }} {{ $info['used'] }}/{{ $info['capacity'] }}
+                    </div>
+                @endif
             @endforeach
         </div>
     @endforeach

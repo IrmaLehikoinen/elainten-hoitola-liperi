@@ -40,17 +40,66 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <section class="rounded-lg bg-white p-6 shadow-sm">
 
-           <!-- Kalenterin yläpalkki -->
+                               <!-- Kalenterin yläpalkki -->
+                @if (session('status'))
+                    <div class="mb-4 rounded-md bg-green-50 p-3 text-sm font-medium text-green-700">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <h2
-                        class="text-xl font-semibold"
-                        style="
-                            color: var(--brand-text);
-                            font-family: var(--brand-heading-font);
-                        "
-                    >
-                        {{ $periodLabel }}
-                    </h2>
+                    @php
+                        $prevAnchor = match ($calendarView) {
+                            'week' => $anchorDate->copy()->subWeek(),
+                            'day' => $anchorDate->copy()->subDay(),
+                            default => $anchorDate->copy()->subMonth(),
+                        };
+                        $nextAnchor = match ($calendarView) {
+                            'week' => $anchorDate->copy()->addWeek(),
+                            'day' => $anchorDate->copy()->addDay(),
+                            default => $anchorDate->copy()->addMonth(),
+                        };
+                    @endphp
+
+                    <div class="flex items-center gap-3">
+                        <div
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => $prevAnchor->format('Y-m-d')]) }}'"
+                            class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border"
+                            style="border-color: var(--brand-secondary); color: var(--brand-text);"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" />
+                            </svg>
+                        </div>
+
+                        <h2
+                            class="text-xl font-semibold"
+                            style="
+                                color: var(--brand-text);
+                                font-family: var(--brand-heading-font);
+                            "
+                        >
+                            {{ $periodLabel }}
+                        </h2>
+
+                        <div
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => $nextAnchor->format('Y-m-d')]) }}'"
+                            class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border"
+                            style="border-color: var(--brand-secondary); color: var(--brand-text);"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
+                            </svg>
+                        </div>
+
+                        <div
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => today()->format('Y-m-d')]) }}'"
+                            class="ml-1 cursor-pointer rounded-md px-2 py-1 text-xs font-medium"
+                            style="border: 1px solid var(--brand-secondary); color: var(--brand-text);"
+                        >
+                            Tänään
+                        </div>
+                    </div>
 
                     <div class="flex items-center gap-2">
                         <div
@@ -85,7 +134,7 @@
                         >
                             Päivä
                         </div>
-                    </div>
+                                        </div>
                 </div>
 
             <!-- Kalenteriruudukko -->
