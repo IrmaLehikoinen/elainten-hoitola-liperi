@@ -68,7 +68,7 @@
 
                                         @if ($p->pet_id && Route::has('admin.pets.show'))
                                             <div
-                                                onclick="window.location.href='{{ route('admin.pets.show', $p->pet_id) }}'"
+                                                onclick="window.location.href='{{ route('admin.pets.show', $p->pet_id) }}?from=day&date={{ $day->format('Y-m-d') }}'"
                                                 class="shrink-0 cursor-pointer text-sm font-medium"
                                                 style="color: var(--brand-primary);"
                                             >
@@ -160,7 +160,7 @@
 
                             @if ($p->pet_id && Route::has('admin.pets.show'))
                                 <div
-                                    onclick="window.location.href='{{ route('admin.pets.show', $p->pet_id) }}'"
+                                    onclick="window.location.href='{{ route('admin.pets.show', $p->pet_id) }}?from=day&date={{ $day->format('Y-m-d') }}'"
                                     class="shrink-0 cursor-pointer text-sm font-medium"
                                     style="color: var(--brand-primary);"
                                 >
@@ -202,7 +202,7 @@
 
                             @if ($p->pet_id && Route::has('admin.pets.show'))
                                 <div
-                                    onclick="window.location.href='{{ route('admin.pets.show', $p->pet_id) }}'"
+                                    onclick="window.location.href='{{ route('admin.pets.show', $p->pet_id) }}?from=day&date={{ $day->format('Y-m-d') }}'"
                                     class="shrink-0 cursor-pointer text-sm font-medium"
                                     style="color: var(--brand-primary);"
                                 >
@@ -259,7 +259,7 @@
                             <input type="hidden" name="capacity" value="0">
 
                             <div class="flex flex-wrap items-center gap-3">
-                                                            <button type="submit" class="rounded-md px-4 py-2 text-sm font-semibold" style="background-color: var(--brand-secondary); color: var(--brand-text);">
+                                <button type="submit" class="rounded-md px-4 py-2 text-sm font-semibold" style="background-color: var(--brand-secondary); color: var(--brand-text);">
                                     <span x-show="!multi">Sulje koko päivä</span>
                                     <span x-show="multi" x-cloak>Sulje jakso</span>
                                 </button>

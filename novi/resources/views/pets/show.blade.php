@@ -22,7 +22,7 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-         @if (request('fromBooking'))
+                   @if (request('fromBooking'))
                 <div class="rounded-md p-4" style="background-color: var(--brand-secondary);">
                  <button
                         type="button"
@@ -32,7 +32,23 @@
                         ← Takaisin asiakaskorttiin (sulje tämä välilehti)
                     </button>  
                 </div>
-            @endif
+            @elseif (request('from') === 'day' && request('date'))
+                <div
+                    onclick="window.location.href='{{ route('admin.calendar.day', request('date')) }}'"
+                    class="cursor-pointer text-sm font-medium"
+                    style="color: var(--brand-primary);"
+                >
+                    ← Takaisin päivänäkymään
+                </div>
+            @elseif (request('from') === 'customer' && request('customer'))
+                <div
+                    onclick="window.location.href='{{ route('admin.customers.show', request('customer')) }}'"
+                    class="cursor-pointer text-sm font-medium"
+                    style="color: var(--brand-primary);"
+                >
+                    ← Takaisin asiakaskorttiin
+                </div>
+            @endif  
 
             @if (session('status'))
                 <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">

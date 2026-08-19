@@ -127,7 +127,7 @@
              <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @forelse ($customer->pets as $pet)
                         @if (Route::has('admin.pets.show'))
-                            <a href="{{ route('admin.pets.show', $pet->id) }}" class="block rounded-lg border p-4 transition hover:shadow-md" style="border-color: var(--brand-secondary);">
+                                                        <a href="{{ route('admin.pets.show', $pet->id) }}?from=customer&customer={{ $customer->id }}" class="block rounded-lg border p-4 transition hover:shadow-md" style="border-color: var(--brand-secondary);">
                                 <p class="font-semibold" style="color: var(--brand-primary);">{{ $pet->name }}</p>
                                 <p class="text-sm text-gray-500">{{ $pet->species }}{{ $pet->breed ? ' · '.$pet->breed : '' }}</p>
                             </a>
@@ -142,8 +142,7 @@
                             <p class="text-sm text-gray-500">Ei vielä eläinkortteja.</p>
                         @endif
                     @endforelse
-
-                    @foreach ($pendingSpecies as $species)
+                                     @foreach ($pendingSpecies as $species)
                         <div
                             onclick="createAndOpenNewPetFor('{{ $species }}')"
                             class="cursor-pointer rounded-lg border border-dashed p-4 transition hover:shadow-md"
@@ -153,8 +152,17 @@
                             <p class="text-sm text-gray-500">{{ $species }}</p>
                         </div>
                     @endforeach
+
+                    <div
+                        onclick="promptNewPet()"
+                        class="cursor-pointer rounded-lg border border-dashed p-4 transition hover:shadow-md"
+                        style="border-color: var(--brand-primary);"
+                    >
+                        <p class="font-semibold" style="color: var(--brand-primary);">+ Lisää uusi lemmikki</p>
+                        <p class="text-sm text-gray-500">Koira, kissa, kani, muu…</p>
+                    </div>
                 </div>   
-            </section>
+            </section>   
 
             {{-- Tulevat varaukset --}}
             <section class="bg-white p-6 shadow-sm rounded-lg">
@@ -334,7 +342,17 @@
                         alert('Lemmikin luonti epäonnistui.');
                     });
             };
-           window.handleBackToBooking = function () {
+                        window.promptNewPet = function () {
+                var species = window.prompt('Minkä lajin lemmikki? (esim. koira, kissa, kani)');
+
+                if (!species) {
+                    return;
+                }
+
+                window.createAndOpenNewPetFor(species.trim());
+            };
+
+            window.handleBackToBooking = function () {   
                 if (formDirty) {
                     alert('Tallenna muutokset ensin ennen kuin palaat varaukseen.');
                     return;

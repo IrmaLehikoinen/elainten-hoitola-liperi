@@ -405,13 +405,14 @@
                             Puhelinnumero
                         </label>
 
-                        <input
+                                               <input
                             type="text"
-                            x-model="customerPhone"
+                            :value="customerPhone"
+                            @input="customerPhone = formatPhoneNumber($event.target.value)"
                             @keydown.enter.prevent="searchCustomer"
                             class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
                             placeholder="040 123 4567"
-                        >
+                        > 
 
                         <label class="mt-3 block text-sm font-medium">
                             Sähköposti
@@ -708,8 +709,22 @@
                 holdReleaseUrl:
                     @json(route('admin.bookings.hold.destroy')),
 
-                csrfToken:
+                                csrfToken:
                     @json(csrf_token()),
+
+                formatPhoneNumber(value) {
+                    const digits = value.replace(/\D/g, '').slice(0, 10);
+
+                    if (digits.length > 6) {
+                        return digits.slice(0, 3) + ' ' + digits.slice(3, 6) + ' ' + digits.slice(6);
+                    }
+
+                    if (digits.length > 3) {
+                        return digits.slice(0, 3) + ' ' + digits.slice(3);
+                    }
+
+                    return digits;
+                },
 
                 openRequirementModal() {
                     this.resetRequirementForm();
