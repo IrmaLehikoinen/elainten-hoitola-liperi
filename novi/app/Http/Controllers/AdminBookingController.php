@@ -41,7 +41,7 @@ class AdminBookingController extends Controller
         return response()->json($customer);
     }
 
-    public function index(Request $request)
+        public function index(Request $request)
     {
         $search = trim((string) $request->get('q'));
 
@@ -65,8 +65,20 @@ class AdminBookingController extends Controller
 
         $today = today();
 
-        $upcomingBookings = $bookings
-            ->filter(fn ($b) => ! $b->end_date || $b->end_date->gte($today))
+        $nonPastBookings = $bookings->filter(fn ($b) => ! $b->end_date || $b->end_date->gte($today));
+
+        $awaitingPayment = $nonPastBookings
+            ->filter(fn ($b) => $b->status === 'pending')
+            ->sortBy('arrival_at')
+            ->values();
+
+        $activeBookings = $nonPastBookings
+            ->filter(fn ($b) => $b->status === 'confirmed' && $b->start_date && $b->start_date->lte($today))
+            ->sortBy('pickup_at')
+            ->values();
+
+        $upcomingBookings = $nonPastBookings
+            ->filter(fn ($b) => $b->status === 'confirmed' && (! $b->start_date || $b->start_date->gt($today)))
             ->sortBy('arrival_at')
             ->values();
 
@@ -76,9 +88,22 @@ class AdminBookingController extends Controller
             ->values();
 
         return view('bookings.index', [
+            'activeBookings' => $activeBookings,
+            'awaitingPayment' => $awaitingPayment,
             'upcomingBookings' => $upcomingBookings,
             'pastBookings' => $pastBookings,
             'search' => $search,
+            'careTypeLabels' => \App\Models\CareType::pluck('label', 'slug'),
+        ]);
+    }
+
+    public function show(Booking $booking)
+    {
+        $booking->load(['customer', 'participants.pet', 'bookingServices.service', 'invoice']);
+
+        return view('bookings.show', [
+            'booking' => $booking,
+            'careTypeLabels' => \App\Models\CareType::pluck('label', 'slug'),
         ]);
     }
 
@@ -159,5 +184,12 @@ class AdminBookingController extends Controller
             'payment_url' => $paymentUrl,
             'email_sent' => $requiresPayment && $customer->email ? true : false,
         ], 201);
+    }
+
+    public function cancel(Booking $booking)
+    {
+        $booking->update(['status' => 'cancelled']);
+
+        return back()->with('status', 'Varaus peruttu.');
     }
 }

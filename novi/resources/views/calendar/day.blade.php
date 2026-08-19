@@ -17,136 +17,18 @@
     <div class="py-8">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-                     <div onclick="window.location.href='{{ route('calendar.index') }}'" class="cursor-pointer text-sm font-medium" style="color: var(--brand-primary);">
-                ← Takaisin kalenteriin
-            </div>
-
-            <div class="rounded-lg bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-primary);">
-                    Kapasiteetti tälle päivälle
-                </h2>
-
-                @if (session('status'))
-                    <div class="mt-3 rounded-md bg-green-50 p-3 text-sm font-medium text-green-700">
-                        {{ session('status') }}
-                    </div>
-                @endif
-
-                <div class="mt-3 space-y-1">
-                    @foreach ($usage as $species => $info)
-                        <div class="flex items-center justify-between text-sm">
-                            <span style="color: var(--brand-text);">{{ ucfirst($species) }}</span>
-                                                        <span class="font-semibold" style="color: var(--brand-text);">
-                                {{ $info['used'] }}/{{ $info['capacity'] }}
-                                @if ($info['overridden'])
-                                    <span class="ml-1 text-xs font-normal text-gray-400">(muutettu, oletus {{ $info['default'] }})</span>
-                                @endif
-                            </span>
-                        </div>
-                    @endforeach
+                <div class="flex items-center justify-between">
+                <div onclick="window.location.href='{{ route('calendar.index') }}'" class="cursor-pointer text-sm font-medium" style="color: var(--brand-primary);">
+                    ← Takaisin kalenteriin
                 </div>
 
-                <div class="mt-4">
-                    @if ($isDayBlocked)
-                        <form method="POST" action="{{ route('admin.calendar.capacity.destroy', $dayBlockOverride->id) }}">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="rounded-md border px-4 py-2 text-sm font-semibold" style="border-color: var(--brand-secondary); color: var(--brand-text);">
-                                Avaa päivä uudelleen
-                            </button>
-                        </form>
-                                        @else
-                        <form method="POST" action="{{ route('admin.calendar.capacity.store') }}" class="space-y-2" x-data="{ multi: false }">
-                            @csrf
-                            <input type="hidden" name="date" value="{{ $day->format('Y-m-d') }}">
-                            <input type="hidden" name="capacity" value="0">
-
-                            <div class="flex flex-wrap items-center gap-3">
-                                <button type="submit" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white">
-                                    <span x-show="!multi">Sulje koko päivä</span>
-                                    <span x-show="multi" x-cloak>Sulje jakso</span>
-                                </button>
-
-                                <div
-                                    x-show="!multi"
-                                    @click="multi = true"
-                                    class="cursor-pointer text-sm font-medium"
-                                    style="color: var(--brand-primary);"
-                                >
-                                    Haluatko sulkea useamman päivän?
-                                </div>
-                            </div>
-
-                            <div x-show="multi" x-cloak class="flex flex-wrap items-end gap-3">
-                                <div>
-                                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Asti</label>
-                                    <input type="date" name="end_date" min="{{ $day->format('Y-m-d') }}" class="mt-1 rounded-md border-gray-300 shadow-sm">
-                                </div>
-
-                                <div
-                                    @click="multi = false"
-                                    class="cursor-pointer text-xs text-gray-400 hover:text-gray-600"
-                                >
-                                    Peruuta jakso
-                                </div>
-                            </div>
-                        </form>
-                    @endif
-                </div>
-
-                <details class="mt-4">
-                    <summary class="cursor-pointer text-sm font-medium" style="color: var(--brand-primary);">
-                        Aseta kapasiteetti tarkemmin →
-                    </summary>
-
-                    <form method="POST" action="{{ route('admin.calendar.capacity.store') }}" class="mt-3 max-w-sm space-y-3">
-                        @csrf
-                        <input type="hidden" name="date" value="{{ $day->format('Y-m-d') }}">
-
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Laji (tyhjä = kaikki lajit)</label>
-                            <input type="text" name="species" placeholder="esim. koira" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Kapasiteetti</label>
-                            <input type="number" name="capacity" min="0" required class="mt-1 w-32 rounded-md border-gray-300 shadow-sm">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Asti (valinnainen, useamman päivän jakso)</label>
-                            <input type="date" name="end_date" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Huomautus (valinnainen)</label>
-                            <input type="text" name="note" placeholder="esim. Loma" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                        </div>
-
-                        <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">Tallenna</button>
-                    </form>
-                </details>
-
-                @if ($overrides->count() > 0)
-                    <div class="mt-4 divide-y border-t pt-3">
-                        <p class="pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Voimassa olevat muutokset</p>
-
-                        @foreach ($overrides as $override)
-                            <div class="flex items-center justify-between py-2 text-sm">
-                                <span style="color: var(--brand-text);">
-                                    {{ $override->species ? ucfirst($override->species) : 'Kaikki lajit' }}: {{ $override->capacity }}
-                                    @if ($override->note)
-                                        <span class="text-gray-400">– {{ $override->note }}</span>
-                                    @endif
-                                </span>
-
-                                <form method="POST" action="{{ route('admin.calendar.capacity.destroy', $override->id) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-xs font-medium text-red-600">Poista</button>
-                                </form>
-                            </div>
-                        @endforeach
+                @if (!$day->isToday())
+                    <div
+                        onclick="window.location.href='{{ route('admin.calendar.day', today()->format('Y-m-d')) }}'"
+                        class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium"
+                        style="border: 1px solid var(--brand-secondary); color: var(--brand-text);"
+                    >
+                        Tänään
                     </div>
                 @endif
             </div>
@@ -334,6 +216,136 @@
                         </p>
                     @endforelse
                 </div>
+            </div>
+
+            <div class="rounded-lg bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-primary);">
+                    Kapasiteetti tälle päivälle
+                </h2>
+
+                @if (session('status'))
+                    <div class="mt-3 rounded-md bg-green-50 p-3 text-sm font-medium text-green-700">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                <div class="mt-3 space-y-1">
+                    @foreach ($usage as $species => $info)
+                        <div class="flex items-center justify-between text-sm">
+                            <span style="color: var(--brand-text);">{{ ucfirst($species) }}</span>
+                                                        <span class="font-semibold" style="color: var(--brand-text);">
+                                {{ $info['used'] }}/{{ $info['capacity'] }}
+                                @if ($info['overridden'])
+                                    <span class="ml-1 text-xs font-normal text-gray-400">(muutettu, oletus {{ $info['default'] }})</span>
+                                @endif
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-4">
+                    @if ($isDayBlocked)
+                        <form method="POST" action="{{ route('admin.calendar.capacity.destroy', $dayBlockOverride->id) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="rounded-md border px-4 py-2 text-sm font-semibold" style="border-color: var(--brand-secondary); color: var(--brand-text);">
+                                Avaa päivä uudelleen
+                            </button>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ route('admin.calendar.capacity.store') }}" class="space-y-2" x-data="{ multi: false }">
+                            @csrf
+                            <input type="hidden" name="date" value="{{ $day->format('Y-m-d') }}">
+                            <input type="hidden" name="capacity" value="0">
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                                            <button type="submit" class="rounded-md px-4 py-2 text-sm font-semibold" style="background-color: var(--brand-secondary); color: var(--brand-text);">
+                                    <span x-show="!multi">Sulje koko päivä</span>
+                                    <span x-show="multi" x-cloak>Sulje jakso</span>
+                                </button>
+
+                                <div
+                                    x-show="!multi"
+                                    @click="multi = true"
+                                    class="cursor-pointer text-sm font-medium"
+                                    style="color: var(--brand-primary);"
+                                >
+                                    Haluatko sulkea useamman päivän?
+                                </div>
+                            </div>
+
+                            <div x-show="multi" x-cloak class="flex flex-wrap items-end gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Asti</label>
+                                    <input type="date" name="end_date" min="{{ $day->format('Y-m-d') }}" class="mt-1 rounded-md border-gray-300 shadow-sm">
+                                </div>
+
+                                <div
+                                    @click="multi = false"
+                                    class="cursor-pointer text-xs text-gray-400 hover:text-gray-600"
+                                >
+                                    Peruuta jakso
+                                </div>
+                            </div>
+                        </form>
+                    @endif
+                </div>
+
+                <details class="mt-4">
+                    <summary class="cursor-pointer text-sm font-medium" style="color: var(--brand-primary);">
+                        Aseta kapasiteetti tarkemmin →
+                    </summary>
+
+                    <form method="POST" action="{{ route('admin.calendar.capacity.store') }}" class="mt-3 max-w-sm space-y-3">
+                        @csrf
+                        <input type="hidden" name="date" value="{{ $day->format('Y-m-d') }}">
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Laji (tyhjä = kaikki lajit)</label>
+                            <input type="text" name="species" placeholder="esim. koira" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Kapasiteetti</label>
+                            <input type="number" name="capacity" min="0" required class="mt-1 w-32 rounded-md border-gray-300 shadow-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Asti (valinnainen, useamman päivän jakso)</label>
+                            <input type="date" name="end_date" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Huomautus (valinnainen)</label>
+                            <input type="text" name="note" placeholder="esim. Loma" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                        </div>
+
+                        <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">Tallenna</button>
+                    </form>
+                </details>
+
+                @if ($overrides->count() > 0)
+                    <div class="mt-4 divide-y border-t pt-3">
+                        <p class="pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Voimassa olevat muutokset</p>
+
+                        @foreach ($overrides as $override)
+                            <div class="flex items-center justify-between py-2 text-sm">
+                                <span style="color: var(--brand-text);">
+                                    {{ $override->species ? ucfirst($override->species) : 'Kaikki lajit' }}: {{ $override->capacity }}
+                                    @if ($override->note)
+                                        <span class="text-gray-400">– {{ $override->note }}</span>
+                                    @endif
+                                </span>
+
+                                <form method="POST" action="{{ route('admin.calendar.capacity.destroy', $override->id) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-xs font-medium text-red-600">Poista</button>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
         </div>

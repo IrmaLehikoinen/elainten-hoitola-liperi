@@ -224,6 +224,14 @@ Route::get('/admin/varaukset', [AdminBookingController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('admin.bookings.index');
 
+Route::post('/admin/varaukset/{booking}/peruuta', [AdminBookingController::class, 'cancel'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.cancel');
+
+Route::get('/admin/varaukset/{booking}', [AdminBookingController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.show');
+
 Route::get('/admin/palvelut', [ServiceSelectionController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('admin.services.index');
