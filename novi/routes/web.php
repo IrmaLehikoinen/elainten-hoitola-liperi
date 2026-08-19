@@ -15,9 +15,16 @@ use App\Http\Controllers\ServiceSelectionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\CalendarCapacityController;
+use App\Http\Controllers\PublicBookingController;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::prefix('varaa')->name('public.booking.')->group(function () {
+    Route::get('/', [PublicBookingController::class, 'start'])->name('start');
+    Route::post('/vapaat-ajat', [PublicBookingController::class, 'availability'])->name('availability');
+    Route::post('/hold', [PublicBookingController::class, 'hold'])->name('hold');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
