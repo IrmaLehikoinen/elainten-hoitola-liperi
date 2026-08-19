@@ -95,7 +95,18 @@
                                         </p>
                                     </div>
 
-                                    <div class="flex items-center gap-3">
+                                                                    <div class="flex items-center gap-3">
+                                        <form method="POST" action="{{ route('admin.invoices.store', $visit) }}" target="_blank" onclick="event.stopPropagation()">
+                                            @csrf
+                                            <button
+                                                type="submit"
+                                                class="rounded px-2 py-1 text-xs font-medium"
+                                                style="border: 1px solid var(--brand-secondary); color: var(--brand-text);"
+                                            >
+                                                Tulosta kuitti
+                                            </button>
+                                        </form>
+
                                         <span class="rounded px-2 py-0.5 text-xs font-medium" style="background-color: var(--brand-secondary); color: var(--brand-text);">
                                             {{ $statusLabels[$visit->status] ?? ucfirst($visit->status) }}
                                         </span>

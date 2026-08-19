@@ -31,8 +31,8 @@ class ReportController extends Controller
                 ->first();
         }
 
-        if ($customer) {
-            $visits = Booking::with(['participants', 'bookingServices.service'])
+                    if ($customer) {
+            $visits = Booking::with(['participants', 'bookingServices.service', 'invoice'])
                 ->where('customer_id', $customer->id)
                 ->whereNotNull('end_date')
                 ->where('end_date', '<', today())
