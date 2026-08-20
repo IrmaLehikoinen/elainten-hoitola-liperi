@@ -1,4 +1,4 @@
-<x-layouts.public :step="3" :total-steps="5">
+<x-layouts.public :step="4" :total-steps="6">
     <h2 class="text-2xl font-bold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
         Aika varattu sinulle 10 minuutiksi
     </h2>

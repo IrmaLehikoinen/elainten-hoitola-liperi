@@ -23,6 +23,7 @@ class Booking extends Model
         'payment_status',
         'priority',
         'confirmation_channel',
+        'acknowledged_at',
         'total_price',
         'price_estimate',
        'deposit_amount',
@@ -45,6 +46,7 @@ class Booking extends Model
         'deposit_paid_at' => 'datetime',
         'payment_deadline' => 'datetime',
         'locked_until' => 'datetime',
+        'acknowledged_at' => 'datetime',
         'send_email_confirmation' => 'boolean',
         'send_sms_confirmation' => 'boolean',
     ];

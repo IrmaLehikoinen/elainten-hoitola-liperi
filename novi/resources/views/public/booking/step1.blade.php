@@ -1,4 +1,4 @@
-<x-layouts.public :step="1" :total-steps="5">
+<x-layouts.public :step="1" :total-steps="6">
     <div x-data="{
         animalCount: 1,
         animals: [{ species: 'koira' }],
@@ -110,7 +110,7 @@
     </div>
 
         <x-slot:footer>
-        <div class="grid grid-cols-2 gap-6 sm:grid-cols-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4" style="gap: 32px 24px;">
             @foreach ([
                 ['heart', 'Rakkaudella hoidettu', 'Lemmikkisi on hyvissä käsissä'],
                 ['shield', 'Turvallinen ympäristö', 'Rauhallinen hoitoympäristö'],
@@ -118,19 +118,19 @@
                 ['award', 'Ammattitaidolla', 'Kokemusta ja koulutusta'],
             ] as [$icon, $title, $desc])
                 <div class="text-center">
-                                                            <div class="mx-auto flex items-center justify-center" style="width:44px;height:44px;border-radius:999px;background:var(--brand-secondary);color:white;">
+                    <div class="mx-auto flex items-center justify-center" style="width:24px;height:24px;color:var(--brand-primary);">
                         @if ($icon === 'heart')
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6.5-4.35-9-8.5C1.2 9.5 2.5 6 6 6c2 0 3.5 1.2 4 2.5.5-1.3 2-2.5 4-2.5 3.5 0 4.8 3.5 3 6.5-2.5 4.15-9 8.5-9 8.5z"/></svg>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6.5-4.35-9-8.5C1.2 9.5 2.5 6 6 6c2 0 3.5 1.2 4 2.5.5-1.3 2-2.5 4-2.5 3.5 0 4.8 3.5 3 6.5-2.5 4.15-9 8.5-9 8.5z"/></svg>
                         @elseif ($icon === 'shield')
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>
                         @elseif ($icon === 'camera')
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
                         @else
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="9" r="5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 13.5L7 21l5-2.5L17 21l-2-7.5"/></svg>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="9" r="5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 13.5L7 21l5-2.5L17 21l-2-7.5"/></svg>
                         @endif
                     </div>
-                    <div class="mt-2 text-xs font-semibold" style="color: var(--brand-text);">{{ $title }}</div>
-                    <div class="text-xs" style="color: var(--brand-text); opacity: 0.6;">{{ $desc }}</div>
+                    <div class="mt-3 text-xs font-semibold tracking-wide" style="color: var(--brand-text);">{{ $title }}</div>
+                    <div class="mt-1 text-xs leading-relaxed" style="color: var(--brand-text); opacity: 0.55;">{{ $desc }}</div>
                 </div>
             @endforeach
         </div>

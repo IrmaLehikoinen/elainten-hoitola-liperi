@@ -296,3 +296,30 @@ Irma painotti erikseen että tämä on erittäin tärkeä asia joka pitää olla
 *Liiketoimintahyöty Irmalle:* koska päivitys on nopea ja sama joka asiakkaalle, Irma voi myydä sovittuja huoltokäyntejä (esim. 3–4 kertaa vuodessa per asiakas), joissa tarkistetaan palvelin/PHP/Laravel-versiot, riippuvuudet, varmuuskopiot, lokit, asennetaan uusin Novi-versio, ajetaan migraatiot, ja testataan kirjautuminen/varaus/sähköpostit/varmuuskopiointi. Asiakas maksaa vastuullisesta ylläpitotyöstä, vaikka itse tekninen päivitysaskel veisi vain 15–30 minuuttia – ja tämä malli skaalautuu 10:stä 1000:een asiakkaaseen ilman että ylläpitotyö kasvaa suhteettomasti, koska pohja+moduuli pysyy aina samana kaikilla.
 
 **Mitä tämä vaatii koodilta, jota EI vielä ole (rakennetaan pohja+moduuli-erottelun yhteydessä, ks. yllä "Päätetty etenemisjärjestys"):** oikea asetuksilla/ominaisuuslipuilla ohjattava järjestelmä (`Company.settings`-kenttää pitää laajentaa pelkistä hinnoittelutiedoista myös ominaisuuskytkimiin, esim. `lemmikkirekisteri_kaytossa`, `tyontekija_valinta_kaytossa`), ja eläin/laji-käsitteen (`Pet`, `species`) yleistäminen geneerisemmäksi käsitteeksi jota eri toimialat voivat käyttää eri tavoin. Ei toteuteta nyt – vasta erotteluvaiheessa.
+
+## 12. PAKOLLINEN käyttöönottolista ennen kuin novi viedään oikealle asiakkaalle tuotantoon (kirjattu 20.8.)
+
+Nämä EIVÄT saa jäädä paikalliseen kehitysasetukseen kun sivu viedään asiakkaan omalle palvelimelle (esim. Polar55). Paikallinen `novi.test`/Herd-`.env` pysyy koskemattomana – näitä muutetaan VAIN tuotantopalvelimen omassa, erillisessä `.env`-tiedostossa käyttöönoton yhteydessä:
+
+- `APP_DEBUG=false` (paikallisesti pidetään `true`, koska sen avulla on koko projektin ajan debugattu virheitä kuvakaappauksista – tuotannossa `true` näyttäisi asiakkaille/vierailijoille raakoja virhesivuja mm. tietokantatiedoilla, vakava tietoturvariski).
+- `APP_ENV=production`.
+- `MAIL_MAILER` vaihdettava oikeaan SMTP-palveluun (paikallisesti `log`, koska ei ole omaa SMTP-tiliä testausta varten – tuotannossa sähköpostit eivät lähde oikeasti mihinkään ennen tätä muutosta, mm. taikalinkki ja varausvahvistus).
+- `STRIPE_KEY`/`STRIPE_SECRET`/`STRIPE_WEBHOOK_SECRET` vaihdettava Stripen oikeisiin live-avaimiin (nyt `pk_test_`/`sk_test_`-testiavaimet).
+- Varmista Stripen webhook on rekisteröity oikeaan tuotanto-osoitteeseen (`https://asiakkaan-domain/stripe/webhook`) Stripen dashboardissa, ei enää paikallista `stripe listen`-komentoa.
+- Cron-rivi (`php artisan schedule:run` joka minuutti) lisättävä palvelimen cPaneliin (paikallisesti Herd hoitaa tämän automaattisesti).
+
+Tarkistettu 20.8. muuten kunnossa olevaksi: `.env` on gitignoressa, Stripe-webhook on CSRF-vapautettu ja allekirjoitus tarkistetaan, julkisilla `/varaa`-reiteillä on throttle-rajoitus (60/min, taikalinkin lähetys 5/min), kaikissa julkisen lomakkeen vaiheissa on CSRF-token, kaksoisvarausta ei voi enää syntyä mistään kolmesta varauksentekopaikasta (julkinen lomake, kalenterin "Uusi varaus", entinen varausvelho on poistettu kokonaan käytöstä).
+
+## 13. JATKETAAN HUOMENNA TÄSTÄ (kirjattu 20.8. illalla) – viimeinen tehtävä ennen pohja+moduuli-erottelua
+
+**Viimeinen jäljellä oleva tehtävä ennen kuin lemmikkihoitolan järjestelmä on Irman omien kriteerien mukaan täysin valmis:**
+
+1. **Tehtävä #31 – Hoitojakson pidennys/lyhennys kesken hoidon.** Hoidossa jo olevan lemmikin hoitojakson pituutta (lähtöpäivää) pitää voida muuttaa kesken hoidon, esim. asiakas soittaa ja haluaa jättää lemmikin pariksi päiväksi lisää tai hakea aiemmin. Ei aloitettu ollenkaan – suunnitellaan ja toteutetaan huomenna ensimmäisenä. Muista kapasiteettitarkistus (`AvailabilityService::isAvailable()`) myös tälle: pidennys ei saa ylittää kapasiteettia niiden lisäpäivien osalta.
+
+**Sen jälkeen, kun #31 on tehty ja testattu:**
+
+2. **Koko järjestelmän perusteellinen lopputarkastus.** Käydään vielä kerran läpi koko kokonaisuus (julkinen ajanvaraus + hallintapaneeli) kunnolla: kaikki toiminnot testataan oikeasti selaimessa päästä päähän (ei vain koodista lukien), erityisesti nyt tehdyt viimeisimmät muutokset (kalenterin #30-ominaisuus, stepperin tassu-ulkoasu, Stripe-integraatio, kaksoisvarauksen esto kaikissa kolmessa varauksentekopaikassa). Tarkistetaan myös vielä kertaalleen kohdan 12 "Pakollinen käyttöönottolista" asiat ovat ajan tasalla.
+
+3. **Vasta tämän jälkeen: pohja + lemmikkihoitolan moduuli erotellaan omaksi kokonaisuudekseen**, ks. kohta 10 ("Novin liiketoimintamalli – pohja + toimialamoduulit") ja kohta 11 (Irman ei-neuvoteltava vaatimus: ei koskaan myydä poikkeavaa versiota, edes ensimmäiselle asiakkaalle). Tässä vaiheessa tehdään myös ensimmäinen virallinen versionumero: **Novi 1.0.0** (ks. kohta 10, kohta 4: "Git-versionumerot otetaan käyttöön VASTA kun pohja + lemmikkihoitolan moduuli on eroteltu – ei ennen").
+
+Järjestys on siis: #31 valmiiksi → koko systeemi tarkistetaan huolella → pohja/moduuli-erottelu → Novi 1.0.0.

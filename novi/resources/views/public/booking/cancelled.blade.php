@@ -1,4 +1,4 @@
-<x-layouts.public :step="4" :total-steps="5">
+<x-layouts.public :step="5" :total-steps="6">
     <div class="public-card" style="text-align:center; padding: 48px 32px;">
         <h1 style="font-family: var(--brand-heading-font); font-size: 24px; font-weight:700; color: var(--brand-text); margin-bottom:12px;">
             Maksu peruttiin

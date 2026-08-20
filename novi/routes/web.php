@@ -8,7 +8,6 @@ use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\CalendarController;
-use App\Http\Controllers\BookingWizardController;
 use App\Http\Controllers\CompanySettingsController;
 use App\Http\Controllers\BookingHoldController;
 use App\Http\Controllers\ServiceSelectionController;
@@ -42,6 +41,13 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get(
+    '/admin/bookings/{booking}/avaa',
+    [AdminBookingController::class, 'acknowledge']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.acknowledge');
+
+Route::get(
     '/admin/bookings/customer-search',
     [AdminBookingController::class, 'searchCustomer']
 )
@@ -54,6 +60,13 @@ Route::post(
 )
     ->middleware(['auth', 'verified'])
     ->name('admin.bookings.store');
+
+Route::post(
+    '/admin/bookings/availability',
+    [AdminBookingController::class, 'availability']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.availability');
 
 Route::post(
     '/admin/bookings/hold',

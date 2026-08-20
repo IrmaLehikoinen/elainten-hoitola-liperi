@@ -1,4 +1,4 @@
-<x-layouts.public :step="2" :total-steps="5">
+<x-layouts.public :step="2" :total-steps="6">
     <div x-data="{
                 available: {{ \Illuminate\Support\Js::from(collect($dates)->pluck('iso')) }},
         current: (() => {

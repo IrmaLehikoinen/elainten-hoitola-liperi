@@ -11,6 +11,28 @@ use Illuminate\Support\Facades\Mail;
 
 class AdminBookingController extends Controller
 {
+    public function availability(Request $request, \App\Services\AvailabilityService $availability)
+    {
+        $validated = $request->validate([
+            'animals' => ['required', 'array', 'min:1'],
+            'animals.*.species' => ['required', 'string'],
+            'duration_days' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $requirements = collect($validated['animals'])
+            ->groupBy('species')
+            ->map(fn ($group, $species) => [
+                'species' => $species,
+                'count' => $group->count(),
+            ])
+            ->values()
+            ->all();
+
+        $dates = $availability->findStartDates($requirements, $validated['duration_days']);
+
+        return response()->json(['dates' => $dates]);
+    }
+
     public function searchCustomer(Request $request)
     {
     $query = trim((string) $request->get('q'));
@@ -209,5 +231,14 @@ class AdminBookingController extends Controller
         $booking->update(['status' => 'cancelled']);
 
         return back()->with('status', 'Varaus peruttu.');
+    }
+
+    public function acknowledge(Booking $booking)
+    {
+        if (is_null($booking->acknowledged_at)) {
+            $booking->update(['acknowledged_at' => now()]);
+        }
+
+        return redirect()->route('admin.customers.show', $booking->customer_id);
     }
 }

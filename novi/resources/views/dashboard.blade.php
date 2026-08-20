@@ -125,10 +125,42 @@
             <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
 
                 <section class="rounded-xl bg-white p-6 shadow-sm md:col-span-3">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
-                            {{ ucfirst($calendarMonth->translatedFormat('F Y')) }}
-                        </h2>
+                                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div
+                                onclick="window.location.href='{{ route('dashboard', ['date' => $calendarMonth->copy()->subMonth()->format('Y-m-d')]) }}'"
+                                class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border"
+                                style="border-color: var(--brand-secondary); color: var(--brand-text);"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" />
+                                </svg>
+                            </div>
+
+                            <h2 class="text-lg font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                                {{ ucfirst($calendarMonth->translatedFormat('F Y')) }}
+                            </h2>
+
+                            <div
+                                onclick="window.location.href='{{ route('dashboard', ['date' => $calendarMonth->copy()->addMonth()->format('Y-m-d')]) }}'"
+                                class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border"
+                                style="border-color: var(--brand-secondary); color: var(--brand-text);"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
+                                </svg>
+                            </div>
+
+                            @if (!$calendarMonth->isSameMonth(today()))
+                                <div
+                                    onclick="window.location.href='{{ route('dashboard') }}'"
+                                    class="cursor-pointer rounded-md px-2 py-1 text-xs font-medium"
+                                    style="border: 1px solid var(--brand-secondary); color: var(--brand-text);"
+                                >
+                                    Tänään
+                                </div>
+                            @endif
+                        </div>
 
                         <span
                             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"

@@ -25,17 +25,25 @@
                 ->exists();
         @endphp
 
-        <div
+                <div
             onclick="window.location.href='{{ $dayHref }}'"
             class="aspect-square overflow-hidden border-b border-r border-gray-200 p-1.5 hover:bg-gray-50 cursor-pointer"
             style="{{ $day['date']->isToday() ? 'background-color: var(--brand-secondary);' : '' }}"
-        >
+        >    
             <div class="flex items-center justify-between gap-1">
                 <span class="text-xs font-medium" style="color: var(--brand-text);">
                     {{ $day['date']->day }}
                 </span>
 
-                                 @if ($isBlocked)
+                                @if ($day['has_new'] ?? false)
+                    <span
+                        onclick="event.stopPropagation(); window.location.href='{{ !empty($day['new_booking_id']) ? route('admin.bookings.acknowledge', $day['new_booking_id']) : $dayHref }}'"
+                        class="rounded px-1 text-[9px] font-semibold text-white cursor-pointer"
+                        style="background-color: #D98C7A;"
+                    >
+                        Uusi
+                    </span>
+                @elseif ($isBlocked)   
                     <span class="rounded px-1 text-[9px] font-semibold text-white" style="background-color: var(--brand-secondary);">
                         Suljettu
                     </span>

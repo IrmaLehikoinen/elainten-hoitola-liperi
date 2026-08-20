@@ -10,9 +10,13 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $today = Carbon::today();
+            $today = Carbon::today();
         $tomorrow = $today->copy()->addDay();
-        $monthStart = $today->copy()->startOfMonth();
+
+        $calendarAnchor = request('date')
+            ? Carbon::createFromFormat('Y-m-d', request('date'))->startOfDay()
+            : $today->copy();
+        $monthStart = $calendarAnchor->copy()->startOfMonth(); 
 
         return view('dashboard', [
             'today' => $today,

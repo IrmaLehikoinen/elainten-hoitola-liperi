@@ -1,4 +1,4 @@
-@props(['step' => null, 'totalSteps' => 5, 'stepLabels' => ['Palvelu', 'Aika', 'Tunnistus', 'Tiedot', 'Valmis']])
+@props(['step' => null, 'totalSteps' => 6, 'stepLabels' => ['Palvelu', 'Aika', 'Tunnistus', 'Tiedot', 'Varausmaksun maksaminen', 'Valmis']])
 
 <!DOCTYPE html>
 <html lang="fi">
@@ -192,39 +192,42 @@
             gap: 8px;
         }
 
-        .public-stepper-circle {
-            width: 32px;
-            height: 32px;
-            border-radius: 999px;
+                .public-stepper-circle {
+            width: 100px;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
-            font-weight: 600;
-            border: 2px solid var(--brand-secondary);
-            color: var(--brand-accent);
-            background: white;
             flex-shrink: 0;
+            position: relative;
         }
 
-        .public-stepper-circle.is-active {
-            background: var(--brand-primary);
-            border-color: var(--brand-primary);
-            color: white;
+            .public-stepper-number {
+            position: absolute;
+            top: 52%;
+            left: 39%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            font-weight: 700;
+            font-family: var(--brand-body-font);
         }
 
-        .public-stepper-label {
+            .public-stepper-label {
             font-size: 11px;
             color: var(--brand-accent);
             opacity: 0.7;
-            white-space: nowrap;
+            white-space: normal;
+            max-width: 90px;
+            text-align: center;
+            line-height: 1.3;
         }
 
         .public-stepper-line {
             flex: 1;
             height: 2px;
             background: var(--brand-secondary);
-            margin: 15px 6px 0;
+            margin: 49px 6px 0;
+            min-width: 12px;
         }
 
         .public-stepper-line.is-done {
@@ -315,51 +318,36 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
-    <header class="public-topbar">
-        <div class="public-topbar-inner">
-            <div class="public-topbar-brand">
-                <span class="public-topbar-logo">🐾</span>
-                <div>
-                    <div class="public-topbar-name">{{ $brand['name'] ?? 'Ajanvaraus' }}</div>
-                    <div class="public-topbar-tagline">Varaa hoitoaika lemmikillesi vaivattomasti</div>
-                </div>
-            </div>
-
-            @isset($step)
-                <nav class="public-topbar-nav">
-                    @foreach ($stepLabels as $i => $label)
-                        <span class="public-topbar-navitem {{ ($i + 1) === $step ? 'is-active' : '' }}">{{ $label }}</span>
-                    @endforeach
-                </nav>
-            @endisset
-
-            @if (!empty($company['email']))
-                <span onclick="window.location.href='mailto:{{ $company['email'] }}'" class="public-help-pill" style="cursor:pointer;">🎧 Tarvitsetko apua?</span>
-            @else
-                <span class="public-help-pill">🎧 Tarvitsetko apua?</span>
-            @endif
-        </div>
-    </header>
-
-    <div class="public-wrap">
+            <div class="public-wrap">
         <div style="text-align:center;">
                         <span class="public-eyebrow">🐾 Lemmikkihoitolan ajanvaraus</span>
             <h1 class="public-heading">{{ $brand['name'] ?? 'Ajanvaraus' }}</h1>
             <p class="public-subheading">Varaa hoitoaika lemmikillesi muutamassa minuutissa</p>
 
-            @isset($step)
+                    @isset($step)
                 <div class="public-stepper">
                     @foreach ($stepLabels as $i => $label)
                         @if ($i > 0)
                             <div class="public-stepper-line {{ $i < $step ? 'is-done' : '' }}"></div>
                         @endif
                         <div class="public-stepper-item">
-                            <div class="public-stepper-circle {{ ($i + 1) <= $step ? 'is-active' : '' }}">
-                                @if (($i + 1) < $step)
-                                    ✓
-                                @else
+                                                    <div class="public-stepper-circle">
+                                @php $isDone = ($i + 1) <= $step; @endphp
+                                <svg width="90" height="90" viewBox="0 0 24 24">
+                                    <g transform="rotate(90 12 12.5)"
+                                       fill="{{ $isDone ? 'var(--brand-primary)' : 'white' }}"
+                                       stroke="var(--brand-primary)"
+                                                                           stroke-width="{{ $isDone ? 0 : 0.7 }}"   
+                                    >
+                                        <circle cx="7.5" cy="9" r="2.1"/>
+                                        <circle cx="12" cy="6.8" r="2.1"/>
+                                        <circle cx="16.5" cy="9" r="2.1"/>
+                                        <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                                    </g>
+                                </svg>
+                                <span class="public-stepper-number" style="color: {{ $isDone ? 'white' : 'var(--brand-primary)' }};">
                                     {{ $i + 1 }}
-                                @endif
+                                </span>
                             </div>
                             <div class="public-stepper-label">{{ $label }}</div>
                         </div>
@@ -372,8 +360,8 @@
             {{ $slot }}
         </div>
 
-                @isset($footer)
-            <div style="margin-top: 48px;">
+                        @isset($footer)
+            <div style="margin-top: 64px;">
                 {{ $footer }}
             </div>
         @endisset

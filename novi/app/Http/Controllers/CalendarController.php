@@ -40,19 +40,32 @@ class CalendarController extends Controller
             ->whereDate('end_date', '>=', $periodStart)
             ->get();
 
-        $days = [];
+                $days = [];
 
         for ($date = $periodStart->copy(); $date->lte($periodEnd); $date->addDay()) {
             $dayParticipants = $participants->filter(
                 fn ($p) => $p->start_date->lte($date) && $p->end_date->gte($date)
             )->values();
 
+                    $newParticipant = $dayParticipants->first(
+                fn ($p) => $p->booking
+                    && $p->booking->confirmation_channel === 'online'
+                    && is_null($p->booking->acknowledged_at)
+            );
+
             $days[] = [
                 'date' => $date->copy(),
                 'count' => $dayParticipants->count(),
                 'participants' => $dayParticipants,
+                'has_new' => (bool) $newParticipant,
+                'new_booking_id' => $newParticipant?->booking_id,
             ];
         }
+
+        $newBookingsCount = \App\Models\Booking::where('confirmation_channel', 'online')
+            ->whereNull('acknowledged_at')
+            ->where('status', '!=', 'cancelled')
+            ->count();
 
         return view('calendar.index', [
             'calendarView' => $view,
@@ -61,6 +74,7 @@ class CalendarController extends Controller
             'periodLabel' => $periodLabel,
             'calendarDays' => $days,
             'careTypes' => \App\Models\CareType::orderBy('sort_order')->get(),
+            'newBookingsCount' => $newBookingsCount,
         ]);
     }
 
@@ -102,8 +116,14 @@ class CalendarController extends Controller
             ->forDate($day)
             ->get();
 
-         $overrides = DateCapacityOverride::whereDate('date', $day->toDateString())->get();
+                $overrides = DateCapacityOverride::whereDate('date', $day->toDateString())->get();
         $dayBlockOverride = $overrides->first(fn ($o) => $o->species === null && (int) $o->capacity === 0);
+
+        // Kun yrittäjä avaa päivän, sen uudet nettivaraukset merkitään nähdyiksi.
+        \App\Models\Booking::whereIn('id', $participants->pluck('booking_id')->unique())
+            ->where('confirmation_channel', 'online')
+            ->whereNull('acknowledged_at')
+            ->update(['acknowledged_at' => now()]);
 
         return view('calendar.day', [
             'day' => $day,

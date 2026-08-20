@@ -12,9 +12,18 @@
                     Kalenteri
                 </h1>
 
-                <p class="mt-1 text-sm text-gray-500">
+                            <p class="mt-1 text-sm text-gray-500">
                     Varaukset ja vapaat ajat
                 </p>
+
+                @if ($newBookingsCount > 0)
+                    <span
+                        class="mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold text-white"
+                        style="background-color: #D98C7A;"
+                    >
+                        {{ $newBookingsCount }} uutta varausta
+                    </span>
+                @endif
             </div>
 
             <button
