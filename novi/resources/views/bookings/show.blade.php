@@ -6,7 +6,7 @@
                     Varaus – {{ $booking->customer->name ?? 'Tuntematon asiakas' }}
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei eläimiä liitetty' }}
+                 {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei lemmikkejä liitetty' }}   
                 </p>
             </div>
 

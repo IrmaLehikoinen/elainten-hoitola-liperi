@@ -198,7 +198,7 @@
 
             <div class="mt-6">
                     <button type="submit" class="btn-brand rounded-md px-6 py-3 text-sm font-semibold">
-                        Tallenna eläinkortti
+                     Tallenna lemmikkikortti   
                     </button>
                 </div>
             </form>

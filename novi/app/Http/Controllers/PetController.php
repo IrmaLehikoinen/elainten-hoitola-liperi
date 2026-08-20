@@ -87,7 +87,7 @@ class PetController extends Controller
                 'pet' => $pet->id,
                 'fromBooking' => $request->boolean('from_booking') ? 1 : null,
             ])
-            ->with('status', 'Eläinkortti tallennettu.');
+            ->with('status','Lemmikkikortti tallennettu.');
     }
 
     /**

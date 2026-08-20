@@ -91,7 +91,7 @@
                                             {{ $visit->arrival_at?->format('d.m.Y') }} – {{ $visit->pickup_at?->format('d.m.Y') }}
                                         </p>
                                         <p class="text-xs text-gray-500">
-                                            {{ $visit->participants->pluck('name')->join(', ') ?: 'Ei eläimiä liitetty' }}
+                                         {{ $visit->participants->pluck('name')->join(', ') ?: 'Ei lemmikkejä liitetty' }}   
                                         </p>
                                     </div>
 

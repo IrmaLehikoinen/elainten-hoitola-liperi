@@ -168,7 +168,7 @@
                         </h2>
 
                         <p class="mt-1 text-sm text-gray-500">
-                            Määritä eläimet ja hoidon pituus.
+                            Määritä lemmikit ja hoidon pituus.
                         </p>
                     </div>
 
@@ -185,7 +185,7 @@
                 <div class="mt-6 space-y-5">
                     <div>
                         <label class="block text-sm font-medium">
-                            Eläinten määrä
+                            Lemmikkien määrä
                         </label>
 
                         <select
@@ -193,11 +193,11 @@
                             @change="updateAnimalCount"
                             class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
                         >
-                            <option :value="1">1 eläin</option>
-                            <option :value="2">2 eläintä</option>
-                            <option :value="3">3 eläintä</option>
-                            <option :value="4">4 eläintä</option>
-                            <option :value="5">5 eläintä</option>
+                                                      <option :value="1">1 lemmikki</option>
+                            <option :value="2">2 lemmikkiä</option>
+                            <option :value="3">3 lemmikkiä</option>
+                            <option :value="4">4 lemmikkiä</option>
+                            <option :value="5">5 lemmikkiä</option>  
                         </select>
                     </div>
 
@@ -209,7 +209,7 @@
                             <div>
                                 <label
                                     class="block text-sm font-medium"
-                                    x-text="'Eläin ' + (index + 1)"
+                                    x-text="'Lemmikki ' + (index + 1)"
                                 ></label>
 
                                 <select
@@ -219,7 +219,7 @@
                                     <option value="koira">Koira</option>
                                     <option value="kissa">Kissa</option>
                                     <option value="kani">Kani</option>
-                                    <option value="muu">Muu eläin</option>
+                                    <option value="muu">Muu lemmikki</option>
                                 </select>
                             </div>
                         </template>
@@ -514,7 +514,7 @@
                             x-show="bookingAnimals.length === 0"
                             class="mt-2 text-sm text-gray-500"
                         >
-                            Ei eläimiä valittuna.
+                          Ei lemmikkejä valittuna.  
                         </p>
                     </div>
 
@@ -1165,7 +1165,7 @@
                     }
 
                     if (!this.bookingAnimals.length) {
-                        this.saveMessage = 'Ei eläimiä varaukselle.';
+                     this.saveMessage = 'Ei lemmikkejä varaukselle.';   
                         return;
                     }
 

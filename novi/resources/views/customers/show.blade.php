@@ -132,7 +132,7 @@
                     class="text-xl font-semibold"
                     style="font-family: var(--brand-heading-font); color: var(--brand-text);"
                 >
-                    Eläimet
+                                Lemmikit    
                 </h2>
 
              <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -150,7 +150,7 @@
                         @endif
                     @empty
                         @if ($pendingSpecies->isEmpty())
-                            <p class="text-sm text-gray-500">Ei vielä eläinkortteja.</p>
+                            <p class="text-sm text-gray-500">Ei vielä lemmikkikortteja.</p>
                         @endif
                     @endforelse
                                      @foreach ($pendingSpecies as $species)
@@ -191,7 +191,7 @@
                                 {{ $booking->start_date?->format('d.m.Y') }} – {{ $booking->end_date?->format('d.m.Y') }}
                             </p>
                             <p class="text-gray-500">
-                                {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei eläimiä liitetty' }}
+                                {{ $booking->participants->pluck('name')->join(', ') ?: 'lemmikkiä ei liitetty' }}
                             </p>
                         </div>
                     @empty
@@ -251,7 +251,7 @@
                                 {{ $booking->start_date?->format('d.m.Y') }} – {{ $booking->end_date?->format('d.m.Y') }}
                             </p>
                             <p class="text-gray-500">
-                                {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei eläimiä liitetty' }}
+                                {{ $booking->participants->pluck('name')->join(', ') ?: 'lemmikkiä ei liitetty' }}
                             </p>
                         </div>
                     @empty

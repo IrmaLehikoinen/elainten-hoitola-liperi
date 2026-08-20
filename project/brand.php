@@ -30,4 +30,6 @@ return [
 
     'font_body' => 'Inter',
 
+    'border_radius' => '0px',
+
 ];

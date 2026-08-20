@@ -26,7 +26,7 @@
                 {{-- VAIHE 1: eläimet, hoitomuoto, kesto --}}
                 <div x-show="step === 1" x-cloak>
                     <h2 class="text-xl font-semibold" style="color: var(--brand-text); font-family: var(--brand-heading-font);">
-                        1. Eläimet ja hoidon kesto
+                     1. Lemmikit ja hoidon kesto   
                     </h2>
 
                     <div class="mt-4 space-y-3">
@@ -36,7 +36,7 @@
                                     <option value="Koira">Koira</option>
                                     <option value="Kissa">Kissa</option>
                                     <option value="Kani">Kani</option>
-                                    <option value="Muu">Muu eläin</option>
+                                    <option value="Muu">Muu lemmikki</option>
                                 </select>
 
                              <button
@@ -58,7 +58,7 @@
                             style="color: var(--brand-primary);"
                             @click="addAnimal"
                         >
-                            + Lisää eläin
+                         + Lisää lemmikki   
                         </button>
                     </div>
 
@@ -213,7 +213,7 @@
                     </div>
                 </div>
 
-                {{-- VAIHE 5: asiakaskortti ja eläimet --}}
+                {{-- VAIHE 5: asiakaskortti ja lemmikit --}}
                 <div x-show="step === 5" x-cloak>
                     <h2 class="text-xl font-semibold" style="color: var(--brand-text); font-family: var(--brand-heading-font);">
                         5. Asiakaskortti
@@ -224,7 +224,7 @@
                         <p class="mt-1 text-sm text-gray-500" x-text="customer ? [customer.phone, customer.email].filter(Boolean).join(' · ') : ''"></p>
                     </div>
 
-                    {{-- Eläinkortit ruudukkona --}}
+                    {{-- Lemmikkikortit ruudukkona --}}
                     <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2" x-show="activePetIndex === null" x-cloak>
                         <template x-for="(assignment, index) in petAssignments" :key="index">
                             <button
@@ -239,13 +239,13 @@
                         </template>
                     </div>
 
-                    {{-- Yksittäisen eläimen täysi kortti --}}
+                    {{-- Yksittäisen lemmikin täysi kortti --}}
                     <template x-for="(assignment, index) in petAssignments" :key="'form-' + index">
                         <div x-show="activePetIndex === index" x-cloak class="mt-4 rounded-lg border p-4" style="border-color: var(--brand-secondary);">
-                            <p class="text-sm font-medium" style="color: var(--brand-text);" x-text="'Eläin ' + (index + 1) + ' (' + assignment.species + ')'"></p>
+                            <p class="text-sm font-medium" style="color: var(--brand-text);"x-text="'Lemmikki ' + (index + 1) + ' (' + assignment.species + ')'"></p>
 
                             <select x-model="assignment.pet_id" x-show="!assignment.showNewPetForm && customerPets.length > 0" class="mt-2 w-full rounded-md border-gray-300 shadow-sm">
-                                <option value="">Valitse asiakkaan eläin</option>
+                             <option value="">Valitse asiakkaan lemmikki</option>   
                                 <template x-for="pet in customerPets" :key="pet.id">
                                     <option :value="String(pet.id)" x-text="pet.name + ' – ' + pet.species"></option>
                                 </template>
@@ -258,7 +258,7 @@
                                 x-show="!assignment.showNewPetForm && customerPets.length > 0"
                                 @click="assignment.showNewPetForm = true"
                             >
-                                + Luo uusi eläinkortti
+                                + Luo uusi lemmikkikortti
                             </button>
 
                             <div x-show="assignment.showNewPetForm || customerPets.length === 0" x-cloak class="mt-2 space-y-4">
@@ -295,7 +295,7 @@
                                         @click="createPetFor(index)"
                                         :disabled="assignment.creating || assignment.saved || !assignment.newPet.name"
                                     >
-                                        <span x-show="!assignment.creating && !assignment.saved">Tallenna eläinkortti</span>
+                                        <span x-show="!assignment.creating && !assignment.saved">Tallenna lemmikkikortti</span>
                                         <span x-show="assignment.creating">Tallennetaan…</span>
                                         <span x-show="assignment.saved">Tallennettu</span>
                                     </button>
@@ -346,7 +346,7 @@
                     </h2>
 
                     <div class="mt-4">
-                        <label class="block text-sm font-medium">Hoitohinta / vrk / eläin</label>
+                    <label class="block text-sm font-medium">Hoitohinta / vrk / lemmikki</label>    
                         <input type="number" step="0.01" min="0" x-model.number="dailyRate" class="mt-1 w-32 rounded-md border-gray-300 shadow-sm">
                     </div>
 
@@ -364,7 +364,7 @@
 
                     <div class="mt-6 rounded-lg p-4" style="background-color: var(--brand-secondary);">
                         <div class="flex justify-between text-sm">
-                            <span>Hoito (<span x-text="petAssignments.length"></span> eläintä × <span x-text="durationDays"></span> vrk)</span>
+                        <span>Hoito (<span x-text="petAssignments.length"></span> lemmikkiä × <span x-text="durationDays"></span> vrk)</span>    
                             <span x-text="careSubtotal.toFixed(2) + ' €'"></span>
                         </div>
                         <div class="flex justify-between text-sm mt-1">

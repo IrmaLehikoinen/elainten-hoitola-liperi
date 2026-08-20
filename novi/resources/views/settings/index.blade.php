@@ -9,12 +9,12 @@
             </h1>
 
             <p class="mt-1 text-sm text-gray-500">
-                Eläinryhmät, palvelut, muistutustyypit ja hoitomuodot
+             Lemmikkiryhmät, palvelut, muistutustyypit ja hoitomuodot  
             </p>
         </div>
     </x-slot>
 
-    <div class="py-8" x-data="{ activeTab: 'perushinta' }">
+        <div class="py-8" x-data="{ activeTab: '{{ request('tab', 'perushinta') }}' }" @submit="$event.target.action = $event.target.action.split('?')[0] + '?tab=' + activeTab">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             @if (session('status'))
@@ -53,9 +53,9 @@
                     type="button"
                     @click="activeTab = 'elainryhmat'"
                     class="rounded-md px-4 py-2 text-sm font-medium"
-                    :style="activeTab === 'elainryhmat' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
+                                        :style="activeTab === 'elainryhmat' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
                 >
-                    Eläinryhmät ja kapasiteetti
+                    Lemmikkiryhmät ja kapasiteetti
                 </button>
 
                 <button
@@ -101,7 +101,7 @@
                     Perushinta
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
-                    Hoitopäivän hinta per eläin. Käytetään varauksen kokonaishinnan ja ennakkomaksun laskemiseen.
+                 Hoitopäivän hinta per lemmikki. Käytetään varauksen kokonaishinnan ja ennakkomaksun laskemiseen.   
                 </p>
 
                 <form method="POST" action="{{ route('admin.settings.base-rate.update') }}" class="mt-4 flex items-center gap-3">
@@ -114,7 +114,7 @@
                         value="{{ $company->settings['base_daily_rate'] ?? 0 }}"
                         class="w-32 rounded-md border-gray-300 shadow-sm"
                     >
-                    <span class="text-sm text-gray-500">€ / hoitopäivä / eläin</span>
+                    <span class="text-sm text-gray-500">€ / hoitopäivä / lemmikki</span>
 
                     <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
                         Tallenna
@@ -147,10 +147,10 @@
                 </form>
             </section>
 
-            {{-- Eläinryhmät ja kapasiteetti --}}
+                        {{-- Lemmikkiryhmät ja kapasiteetti --}}
             <section x-show="activeTab === 'elainryhmat'" x-cloak class="bg-white p-6 shadow-sm rounded-lg">
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
-                    Eläinryhmät ja kapasiteetti
+                    Lemmikkiryhmät ja kapasiteetti
                 </h2>
                 <p class="mt-1 text-sm text-gray-500">
                     Kuinka monta kutakin lajia voi olla hoidossa samaan aikaan.
@@ -200,7 +200,7 @@
                         <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Kapasiteetti</label>
                         <input type="number" min="0" name="capacity" value="1" class="mt-1 w-24 rounded-md border-gray-300 shadow-sm">
                     </div>
-                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">Lisää eläinryhmä</button>
+                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">Lisää lemmikkiryhmä</button>
                 </form>
             </section>
 

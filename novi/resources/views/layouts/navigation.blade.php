@@ -121,14 +121,21 @@
         <div class="border-t border-white/15 p-4">
             <div class="mb-3 flex items-center gap-2 px-2">
              <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20">
-                    <svg viewBox="0 0 24 24" fill="white" class="h-4 w-4">
-                        <ellipse cx="12" cy="16" rx="5" ry="4.2" />
-                        <ellipse cx="6" cy="9" rx="2.1" ry="2.6" />
-                        <ellipse cx="10.5" cy="6" rx="2" ry="2.5" />
-                        <ellipse cx="14.5" cy="6" rx="2" ry="2.5" />
-                        <ellipse cx="18" cy="9" rx="2.1" ry="2.6" />
+                    <svg viewBox="-2.25 0.5 21.47 21.47" fill="white" class="h-6 w-6">
+                        <g transform="translate(-5,2) rotate(-10) scale(0.62)">
+                            <circle cx="7.5" cy="9" r="2.1"/>
+                            <circle cx="12" cy="6.8" r="2.1"/>
+                            <circle cx="16.5" cy="9" r="2.1"/>
+                            <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                        </g>
+                        <g transform="translate(10,4) rotate(28) scale(0.62)">
+                            <circle cx="7.5" cy="9" r="2.1"/>
+                            <circle cx="12" cy="6.8" r="2.1"/>
+                            <circle cx="16.5" cy="9" r="2.1"/>
+                            <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                        </g>
                     </svg>
-                </span>  
+                </span>
                 <div class="min-w-0">
                     <p class="truncate text-sm font-semibold">{{ Auth::user()->name }}</p>
                     <p class="truncate text-xs text-white/60">{{ Auth::user()->email }}</p>

@@ -36,7 +36,7 @@
                                     {{ $booking->customer->name ?? 'Tuntematon asiakas' }}
                                 </p>
                                 <p class="text-xs text-gray-500">
-                                    {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei eläimiä liitetty' }}
+                                 {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei lemmikkejä liitetty' }}   
                                     · {{ $booking->arrival_at?->format('d.m.Y') }} – {{ $booking->pickup_at?->format('d.m.Y') }}
                                 </p>
                             </div>
@@ -93,7 +93,7 @@
                             <div class="flex items-center justify-between rounded-md border p-3" style="border-color: var(--brand-secondary);">
                                 <div>
                                     <p class="text-sm text-gray-700">
-                                        {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei eläimiä liitetty' }}
+                                      {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei lemmikkejä liitetty' }}  
                                     </p>
                                     <p class="text-xs text-gray-500">
                                         {{ $booking->arrival_at?->format('d.m.Y') }} – {{ $booking->pickup_at?->format('d.m.Y') }}

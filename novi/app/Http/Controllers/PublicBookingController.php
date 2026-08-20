@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\CareType;
-use App\Models\Company;
 use App\Services\AvailabilityService;
 use Illuminate\Http\Request;
 
@@ -11,10 +10,9 @@ class PublicBookingController extends Controller
 {
     public function start()
     {
-        return view('public.booking.step1', [
-            'company' => Company::first(),
+             return view('public.booking.step1', [
             'careTypes' => CareType::orderBy('sort_order')->get(),
-        ]);
+        ]);   
     }
 
     public function availability(Request $request, AvailabilityService $availability)
@@ -45,8 +43,7 @@ class PublicBookingController extends Controller
 
         $dates = $availability->findStartDates($requirements, $durationDays);
 
-        return view('public.booking.step2', [
-            'company' => Company::first(),
+                return view('public.booking.step2', [
             'dates' => $dates,
         ]);
     }
@@ -90,8 +87,7 @@ class PublicBookingController extends Controller
             'public_booking.hold_expires_at' => $expiresAt->toIso8601String(),
         ]);
 
-        return view('public.booking.step3', [
-            'company' => Company::first(),
+                return view('public.booking.step3', [
             'startDate' => $startDate,
             'endDate' => $endDate,
             'expiresAt' => $expiresAt,

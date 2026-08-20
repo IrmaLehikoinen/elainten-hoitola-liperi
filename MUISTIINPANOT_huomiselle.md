@@ -139,6 +139,54 @@ Pilottiasiakkaan nimi: **Missukan lemmikkihoitola**.
 
 **Vaihe 4 – vasta pohjan tallennuksen jälkeen:** aloitetaan Missukan lemmikkihoitolan oman nettisivun koodaaminen (etusivu + muut sivut, tarkka sivumäärä/sisältö sovitaan silloin) suoraan `novi`:n (tämän asiakkaan työkopion) sisään, sekä hänen brändiasetuksensa (värit, nimi, yhteystiedot) hallintapaneelin Yritystiedot-sivulle.
 
+## 8. Julkisen ajanvarausjärjestelmän tarkka virtaus (19.8., vahvistettu Irman kanssa)
+
+Vaihe 1 (kolme paneelikorjausta) ja iso Varaukset/Palvelut-sivujen uudistus + peruutus/automatiikka on nyt valmis ja committoitu. Aloitettu Vaihe 2 (julkinen ajanvarausjärjestelmä).
+
+**Tunnistautuminen: TAIKALINKKI, vahvistettu Irman toimesta (ei pelkkä puhelin/nimi-haku).**
+- Syy: pelkkä puhelinnumero/nimi julkisella lomakkeella olisi tietoturvariski (kuka tahansa voisi arvata/tietää toisen numeron ja nähdä tämän lemmikkien terveystiedot).
+- Uusi asiakas: ei vaadita sähköpostivarmistusta (ei ole vielä mitään suojattavaa dataa) – täyttää tiedot suoraan.
+- Palaava asiakas (sähköposti löytyy jo `customers`-taulusta): järjestelmä lähettää kertakäyttöisen, ajastetun linkin (Laravelin `URL::temporarySignedRoute`, ei erillistä magic_links-taulua) sähköpostiin. Asiakas klikkaa linkkiä ja pääsee vasta silloin näkemään/muokkaamaan valmiiksi täytettyä lemmikkikorttiaan.
+
+**Koko varausvirtaus (sama uusille ja palaaville asiakkaille, paitsi tunnistautumiskohta):**
+1. Eläinten laji + lukumäärä, hoidon kesto/tyyppi (sama logiikka kuin paneelin sisäisessä velhossa).
+2. Vapaan ajan haku (`AvailabilityService::findStartDates()`, sama moottori kuin paneelissa – ei voi tulla päällekkäisvarauksia).
+3. Valitun ajan 10 min väliaikaisvaraus (`BookingHold`, jo olemassa, vapautuu itsestään jos ei viedä loppuun).
+4. Sähköposti kysytään → tarkistetaan onko asiakas jo olemassa:
+   - Ei löydy → täytetään asiakas- ja lemmikkikortti(t) tyhjästä (nimi, puhelin, lemmikkien perustiedot + terveys/hoitotiedot – samat kentät kuin paneelin eläinkortilla).
+   - Löytyy → taikalinkki sähköpostiin → linkin klikkauksen jälkeen valmiiksi täytetty lemmikkikortti näytetään, asiakas voi muokata tietoja, lisätä lisäpalveluita tälle hoitojaksolle, kirjoittaa vapaata tekstiä.
+5. "Varaa hoito" -painike → luodaan `Booking` (status=pending) + `BookingParticipant`-rivit, hold vapautetaan, ohjataan Stripe Checkoutiin ennakkomaksua varten (uudelleenkäyttää `PaymentController`/`payment.checkout`-reittiä, ei rakenneta uudelleen).
+6. Stripe-maksu onnistuu → olemassa oleva `StripeWebhookController` hoitaa lopun automaattisesti: `status=confirmed`, `deposit_paid_at`, vahvistussähköposti asiakkaalle (`BookingConfirmed`-mail, jo valmis).
+7. Jos maksu jää tekemättä määräaikaan mennessä → jo rakennettu `bookings:cancel-expired`-ajastus peruuttaa varauksen automaattisesti (ei uutta koodia tarvita).
+
+**Tyylit, KORJATTU 19.8. illalla (tämä kumoaa yllä olevan alkuperäisen maininnan companies-taulusta):** julkinen ajanvarauslomake EI käytä `Company`-tietokantamallia (`companies.primary_color` ym.) eikä hallintapaneelin omaa kiinteää väriä. Se käyttää olemassa olevaa, koko sovelluksessa jo valmiiksi toimivaa bränditiedostojärjestelmää: `project/brand.php` (sijaitsee `novi`-kansion ULKOPUOLELLA, samassa kansiossa kuin tämä muistiinpanotiedosto), joka jaetaan kaikkiin näkymiin automaattisesti `ShareCompanyBranding`-middlewaren kautta muuttujina `$brand` (taulukko: primary_color, secondary_color, accent_color, background_color, text_color, font_heading, font_body) ja `$company` (taulukko: name, short_name, email, phone, business_id). `.env`:ssä `NOVI_BRAND_SOURCE=website` = "koodattu verkkosivu" -tila (asiakkaan oma koodattu sivu, ei WordPress) – tämä on jo oikea asetus, ei muuteta.
+
+**TÄRKEÄ UUSI PÄÄTÖS 19.8. illalla: kaksi eri brändiä, eivät koskaan samat.**
+- **Hallintapaneeli** (`layouts/app.blade.php`, `layouts/guest.blade.php`, kirjautumisen takana) = Novin OMAT, KIINTEÄT värit aina, eivät koskaan riipu asiakkaan verkkosivun brändistä. Ei enää lue `$brand`-muuttujaa ollenkaan – värit kirjoitetaan suoraan `:root`-CSS-blokkiin.
+- **Julkinen ajanvarauslomake** (`/varaa`, `components/layouts/public.blade.php`) = lukee `$brand`/`$company`-muuttujat (jo automaattisesti saatavilla kaikissa näkymissä, EI tarvitse antaa erikseen controllerista `view()`-kutsussa).
+- Nämä kaksi eivät ole koskaan samannäköisiä, eivätkä koskaan käytä samaa väriasetusta.
+
+**UUSI PÄÄTÖS 19.8. illalla — verkkosivun oma "esikysely", periaatepäätös tehty, tarkennetaan kun oikea verkkosivu suunnitellaan:** Irma haluaa että tulevaisuudessa asiakkaan oma koodattu verkkosivu voi sisältää PIENEN oman kaavakkeen (eläinmäärä/laji + hoidon kesto), rakennettu suoraan verkkosivun omalla tyylillä osana verkkosivun koodia. Tämä pieni kaavake lähettää tiedot suoraan noviin, samaan osoitteeseen jota novin oma Vaihe 1 -lomake jo käyttää (`POST /varaa/vapaat-ajat`, kentät: `animals[][species]`, `care_type`, `duration_amount`, `duration_unit`). Novi ottaa siitä eteenpäin (vapaat päivät, hold, tunnistautuminen jne). Käyttäjä ei huomaa siirtymää kahden koodikannan välillä. Kenttänimien pitää täsmätä tarkalleen – jos jompikumpi puoli muuttuu, toisen pitää pysyä perässä. EI rakenneta vielä – vasta kun oikean verkkosivun ulkoasu suunnitellaan.
+
+**Deployment-suunnitelma, vahvistettu 19.8.:** novi viedään Polar55-webhotellille (sama tili kuin asiakkaan koodattu verkkosivu). Polar55 tukee SSH:ta, useita PHP-versioita, cronia, Git-kloonausta, cPanelia – kaikki mitä novi tarvitsee. Novi ja verkkosivu pysyvät AINA kahtena täysin erillisenä kansiona samalla tilillä (esim. `/home/kayttaja/public_html/` = verkkosivu, `/home/kayttaja/novi/` = koko novi omana kansionaan), EIVÄT koskaan samassa kansiossa. Alidomaini (esim. `varaa.missukanlemmikkihoitola.fi`) luodaan ja sen "Document Root" osoitetaan NIMENOMAAN `novi/public`-alikansioon (Laravelin ainoa julkinen kansio – loput, mm. `.env`, eivät koskaan saa olla selaimesta saavutettavissa). Novi ja verkkosivu yhdistyvät käyttäjälle VAIN tavallisen linkin/napin kautta verkkosivulla ("Varaa hoitoaika" -nappi → vie alidomainiin) – ei mitään tiedostotason yhteyttä. Cron-rivi (`php artisan schedule:run` joka minuutti) pitää lisätä palvelimen cPaneliin käyttöönoton yhteydessä (paikallisesti Herd hoitaa tämän automaattisesti).
+
+**Rakennusjärjestys jota seurataan (iso kokonaisuus pilkottu osiin, yksi osa kerrallaan "tehty"-vahvistuksella):**
+1. Perusta: julkiset reitit (ei auth-middlewarea), kevyt julkinen layout (ei admin-sivuvalikkoa), `PublicBookingController`-runko.
+2. Vaihe 1: eläinten laji/määrä + hoidon kesto -lomake.
+3. Vaihe 2: vapaan ajan haku + 10 min hold.
+4. Tunnistautuminen: sähköposti → uusi vs. taikalinkki.
+5. Asiakas-/lemmikkikortti (uusi tai esitäytetty) + lisäpalvelut + vapaa teksti.
+6. Varauksen tallennus + Stripe-uudelleenohjaus.
+7. Kiitos-/vahvistussivu (webhook hoitaa lopun jo valmiiksi).
+
+Ei vielä lisätä mitään Missukan lemmikkihoitolan omaa sisältöä (etusivun tekstit/kuvat) – vain puhdas järjestelmä, pohjan tallennus vasta tämän jälkeen (ks. kohta 6, Vaihe 3).
+
+**Asiakasnäkyvyys, vahvistettu 19.8.:** eläinkortilla on jo valmiiksi kaksi erillistä kenttää: `general_notes` ("Asiakkaan tiedot", näkyy asiakkaalle) ja `internal_notes` ("Hoitolan muistiinpanot", vain yrittäjälle). Julkinen/palaavan asiakkaan lomake (kohta 5 yllä) saa näyttää ja muokata VAIN `general_notes`-kenttää – `internal_notes` ei koskaan tule julkiseen näkymään. Asiakaskortin `notes`-kenttä on toistaiseksi vain admin-puolella, ei näy julkisella lomakkeella.
+
+**Arkkitehtuuri, vahvistettu 19.8.:** `/varaa`-reitit ovat samassa `novi`-Laravel-sovelluksessa kuin hallintapaneeli, sama tietokanta, ei erillinen projekti – ainoa ero on ettei niissä ole `auth`-middlewarea. Kun etusivu (kohta #27) rakennetaan myöhemmin, se on vain uusi `GET /`-reitti samaan sovellukseen, jossa nappi linkkaa `/varaa`-osoitteeseen.
+
+**"Lisätietoa tälle hoitojaksolle" -kenttä, vahvistettu 19.8.:** ei saa koskaan esitäyttyä vanhasta varauksesta, vaikka palaava asiakas löytyisi haulla. Ratkaisu ilman tietokantamuutosta: tämä teksti tallennetaan `BookingParticipant.notes`-kenttään (per-varaus-rivi, luodaan aina uutena joka varaukselle) – EI `Pet.general_notes`-kenttään, joka on lemmikin pysyvä profiilitieto ja esitäytetään normaalisti. `Pet.internal_notes` ("Hoitolan muistiinpanot") pysyy erillään, pysyvänä, vain yrittäjän luettavissa, ei liity tähän kenttään mitenkään. Yhteenveto vaiheeseen 5: Pet-kentät (general_notes ym.) esitäytetään palaavalle asiakkaalle, BookingParticipant.notes-kenttä on AINA tyhjä lomakkeen avautuessa.
+
 ## 7. Sovittu toimintatapa koko tälle projektille (miten päätettiin edetä, 16.8. ilta keskustelu)
 
 - `novi`-kansioon EI lisätä yhtään nettisivun/markkinoinnin sisältöä ennen kuin puhdas järjestelmä (paneeli + ajanvarausjärjestelmä) on valmis JA tallennettu pohjaksi. Tämä oli väärinymmärrys kesken keskustelun (Claude ehdotti aluksi sivun rakentamista samaan aikaan) – Irma korjasi: järjestelmä ensin, pohja talteen, VASTA SITTEN sivusisältö.
@@ -146,3 +194,105 @@ Pilottiasiakkaan nimi: **Missukan lemmikkihoitola**.
 - Ei iframea, ei erillistä ylätason `public`-kansiota tässä pilotissa – kaikki yhtenä Laravel-sovelluksena `novi`-kansion sisällä (ks. kohta 5 "Kansiorakennepäätös"). Iframe säästetään myöhempää asiakasta varten, jolla on jo valmis nettisivu.
 - Jatketaan aina yksi tehtävä kerrallaan, "tehty"-vahvistuksella ja tarkistuksella ennen seuraavaan siirtymistä.
 - Claude ei koskaan muokkaa `novi`-kansion tiedostoja suoraan – ainoa poikkeus on tämä muistiinpanotiedosto.
+
+## 9. Tilanne 19.8. illan lopussa – mitä on TEHTY ja mitä ON VIELÄ TEKEMÄTTÄ
+
+**TEHTY ja testattu selaimessa toimivaksi (Irma vahvisti, koko ketju 1→2→3 toimii):**
+- Reitit `novi/routes/web.php`: `/varaa` (GET), `/varaa/vapaat-ajat` (POST), `/varaa/hold` (POST), kaikki ilman auth-middlewarea.
+- `novi/app/Http/Controllers/PublicBookingController.php`: `start()`, `availability()`, `hold()` -metodit.
+- `novi/resources/views/components/layouts/public.blade.php` – HUOM: oikea polku on `components/layouts/`, EI `layouts/` (anonyymit Blade-komponentit haetaan aina `components`-kansiosta, tästä tuli aiemmin virhe "Unable to locate a class or view for component [layouts.public]").
+- `novi/resources/views/public/booking/step1.blade.php`, `step2.blade.php`, `step3.blade.php`.
+- Kaikki yllä olevat ovat kuitenkin vielä ALKUPERÄISESSÄ, yksinkertaisessa versiossaan (Company-mallia käyttäen, ei vielä tyylikkäämpää ulkoasua).
+
+**EI VIELÄ TEHTY – Irma ei ole vienyt näitä VS Codeen (jatketaan näistä huomenna):**
+1. `novi/resources/views/components/layouts/public.blade.php` – KOKO TIEDOSTON KORVAUS: tyylikkäämpi ulkoasu, "🐾 Lemmikkihoitolan ajanvaraus" -tunniste, vaihe-eteneminen (Vaihe X/5), oikea bränditiedosto (`$brand`/`$company`, ei `Company`-malli).
+2. `novi/resources/views/public/booking/step1.blade.php` – KOKO TIEDOSTON KORVAUS: `:step="1"` lisätty, `:company`-proppi poistettu.
+3. `novi/resources/views/public/booking/step2.blade.php` – KOKO TIEDOSTON KORVAUS: `:step="2"`, `<a href>` korvattu `<span onclick>`-linkillä.
+4. `novi/resources/views/public/booking/step3.blade.php` – KOKO TIEDOSTON KORVAUS: `:step="3"`.
+5. `novi/app/Http/Controllers/PublicBookingController.php` – poista `use App\Models\Company;` -importti ja kaikki kolme `'company' => Company::first(),` -riviä (start/availability/hold-metodeista), koska `$brand`/`$company` ovat jo automaattisesti saatavilla kaikissa näkymissä `ShareCompanyBranding`-middlewaren kautta.
+6. `novi/resources/views/layouts/app.blade.php` – hallintapaneelin `:root`-CSS-lohko: poista `$brand[...] ??`-viittaukset, kirjoita kiinteät Novi-arvot suoraan (`--brand-primary: #4F46E5;` jne., samat arvot kuin nykyiset fallback-arvot).
+7. `novi/resources/views/layouts/guest.blade.php` – sama kiinnitys kuin kohdassa 6.
+
+Tarkka koodi kaikkiin seitsemään kohtaan on jo kirjoitettu tämän keskustelun aiemmissa Claude-vastauksissa (Poistettava alue / Mitä liitetään tilalle -muodossa) – Claude toistaa ne uudelleen huomenna kun jatketaan, ei tarvitse etsiä niitä erikseen.
+
+**Tämän päivän commit (19.8. ilta):** committoitiin se mikä on tähän mennessä tehty ja testattu (kohdat "TEHTY"-listasta yllä) – ei vielä niitä seitsemää tekemätöntä kohtaa.
+
+## 10. Novin liiketoimintamalli – "pohja + toimialamoduulit", vahvistettu 19.8. illalla
+
+Irma on varmistanut tämän useaan kertaan aiemminkin – tämä EI ole uusi päätös, vaan vahvistus samasta, jo aiemmin sovitusta suunnitelmasta (ks. kohta 6, "Sovittu toimintatapa": pohja talteen ennen sisältöä).
+
+**Lopullinen tavoite:** myydä Novi paitsi muille lemmikkihoitoloille, myös MUILLE TOIMIALOILLE (esim. parturi). Tutkittiin 19.8. koko koodikanta läpi tätä varten (Explore-agentti, kattava läpikäynti) – yhteenveto löydöksistä:
+- Hyvä uutinen: "yksi asennus = yksi asiakas = oma tietokanta" -malli on JO käytännössä koodin oletusarvo (`Company::first()`, kiinteä `project/brand.php`-tiedosto per asennus) – tätä ei tarvitse muuttaa.
+- `BelongsToCompany`-trait (tehty projektin alussa, task #1) on suunniteltu eri malliin (yksi jaettu tietokanta, monta yritystä `company_id`:llä) – tarpeeton mutta harmiton nykymallissa, voidaan siistiä joskus myöhemmin, ei kiireellinen.
+- Eläin/laji (`Pet`, `species`) on TÄLLÄ HETKELLÄ syvältä kovakoodattu koko koodiin (mm. `AvailabilityService` laskee kapasiteetin lajin mukaan). Tämä on täysin OK niin kauan kuin myydään muille lemmikkihoitoloille (sama tarve). Jos/kun mennään muille toimialoille, "Eläin"-käsite pitää yleistää (esim. geneerinen "Varauskohde") ja rakentaa oikea asetuksilla-ohjattava ominaisuusjärjestelmä (feature flagit) – tätä EI ole vielä olemassa lainkaan.
+
+**Etenemisjärjestys, vahvistettu 19.8.:**
+1. Lemmikkihoitolan järjestelmä (nykyinen työ – paneli + julkinen ajanvaraus + kaikki muut kesken olevat tehtävät) tehdään ENSIN kokonaan valmiiksi ja testatuksi.
+2. VASTA SEN JÄLKEEN koodi eritellään kahteen kerrokseen: "pohja" (kaikille toimialoille yhteinen: kirjautuminen, kalenteri, asiakkaat, laskutus, asetukset, varausmoottori) ja "lemmikkihoitolan moduuli" (eläin/laji-spesifit osat, pakataan uudelleenkäytettäväksi kokonaisuudeksi kaikille tuleville lemmikkihoitola-asiakkaille).
+3. Muille toimialoille (esim. parturi) rakennetaan myöhemmin OMA moduulinsa saman pohjan päälle, vasta kun ensimmäinen toimiala on opittu kunnolla.
+4. Git-versionumerot (esim. Novi 1.0.0) otetaan käyttöön VASTA kun pohja + lemmikkihoitolan moduuli on eroteltu – ei ennen.
+
+**Rekisteröityminen (`/register`), vahvistettu 19.8.:** Tärkeä erottelu – asiakkaan (lemmikin omistajan) EI tarvitse koskaan rekisteröityä mihinkään, hän tunnistautuu taikalinkillä (ks. kohta 8). `/register`-sivu koskee vain HALLINTAPANEELIN käyttäjätiliä (yrityksen työntekijä). Koska yksi asennus = yksi asiakas, tätä sivua ei tarvita julkisena tuotannossa lainkaan – päätetty että se suljetaan/poistetaan käytöstä kokonaan (julkinen `/register` pois), ja Irma luo ensimmäisen käyttäjätilin itse komentoriviltä (`php artisan tinker`) osana jokaisen uuden asiakkaan käyttöönottoa, vasta kun asiakas on oikeasti ostanut palvelun. Tämän jälkeen yrityksen oma pääkäyttäjä voi ITSE lisätä lisää työntekijätilejä sisäänrakennetulla "Lisää työntekijä" -toiminnolla hallintapaneelin sisällä (esim. asetussivulle, `CompanySettingsController`in yhteyteen) – ei tarvitse enää Irmaa joka kerta kun uusi työntekijä palkataan. Sama malli pätee kaikkiin tuleviin toimialoihin, ei ole toimialariippuvainen. EI toteuteta vielä – tehdään myöhemmin, ei kiireellinen juuri nyt.
+
+## 11b. Novin virallinen tassukuvake (SVG), vahvistettu 20.8., PÄIVITETTY 20.8. illalla
+
+**PÄIVITYS 20.8. illalla: yksittäinen tassu on POISTETTU KÄYTÖSTÄ.** Irma vahvisti: "se on Novin ainoa tassukuva, muita ei käytetä" — eli kahden tassun "kävelyjälki"-versio on nyt Novin AINOA virallinen SVG-tassukuvake, käytetään KAIKKIALLA (myös kohdissa joissa aiemmin oli yksittäinen tassu tai vanha malli). Yksittäisen tassun koodia (3 ympyrää + 1 soikio ilman `<g>`-ryhmitystä) ei enää käytetä missään uudessa paikassa.
+
+**Novin ainoa virallinen tassukuvake — kaksi tassua rinnakkain ("kävelyjälki"):**
+```html
+<svg width="30" height="26" viewBox="-4 0 30 28" fill="white">
+    <g transform="translate(-5,2) rotate(-10) scale(0.62)">
+        <circle cx="7.5" cy="9" r="2.1"/>
+        <circle cx="12" cy="6.8" r="2.1"/>
+        <circle cx="16.5" cy="9" r="2.1"/>
+        <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+    </g>
+    <g transform="translate(10,4) rotate(28) scale(0.62)">
+        <circle cx="7.5" cy="9" r="2.1"/>
+        <circle cx="12" cy="6.8" r="2.1"/>
+        <circle cx="16.5" cy="9" r="2.1"/>
+        <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+    </g>
+</svg>
+```
+Väri asetetaan `fill`-määreellä (`currentColor` = periytyy isäntäelementin tekstiväristä, tai kiinteä väri kuten `white`/`var(--brand-primary)` kontekstin taustan mukaan). `width`/`height`-arvot ja `viewBox` pysyvät samoina — Tailwindin kokoluokat (esim. `h-4 w-4`) ohjaavat lopullisen näkyvän koon, `viewBox`-suhde vain varmistaa oikean muodon.
+
+**KOOT PÄIVITETTY 20.8. illalla — nämä ovat NYT ne oikeat, lopulliset koot (alkuperäiset olivat liian pieniä, Irma korjasi):**
+
+- `public/booking/step1.blade.php` — "Lemmikki 1" (ent. Eläin 1) -kentän label: `<svg width="30" height="26" viewBox="-4 0 30 28" fill="currentColor">`
+- `public/booking/step1.blade.php` — "Näytä vapaat ajat" -napin ikoni: `<svg width="40" height="34" viewBox="-4 0 30 28" fill="white">`
+- `dashboard.blade.php` — "Saapuvat ja lähtevät tänään" -osion ikoni: `<svg viewBox="-4 0 30 28" fill="var(--brand-primary)" class="h-7 w-7">`
+- `dashboard.blade.php` — "Uusi varaus" -pikapainike: `<svg viewBox="-4 0 30 28" fill="currentColor" class="h-7 w-7">`
+- `dashboard.blade.php` — "Uusi kuitti" -pikapainike: `<svg viewBox="-4 0 30 28" fill="currentColor" class="h-7 w-7">`
+- `dashboard.blade.php` — "Uudet palvelut" -pikapainike: `<svg viewBox="-4 0 30 28" fill="currentColor" class="h-7 w-7">`
+- `layouts/navigation.blade.php` — sivuvalikon käyttäjäavatar: `<svg viewBox="-4 0 30 28" fill="white" class="h-6 w-6">`
+
+Sisäinen `<g>`-rakenne (kaksi tassua) on kaikissa sama, ks. koodiblokki yllä — vain ulkokuoren `<svg>`-rivi (koko + fill) vaihtelee paikan mukaan.
+
+**Emojipohjaiset tassut jätetään edelleen koskematta**, vahvistettu 20.8.: yläpalkin "🐾 Lemmikkihoitolan ajanvaraus" (components/layouts/public.blade.php) ja hallintapaneelin sivuvalikon logo (layouts/navigation.blade.php, `🐾` sivuvalikon yläosassa) käyttävät edelleen tavallista 🐾-emojia, EI tätä SVG:tä — näitä ei muuteta.
+
+**Eläin → Lemmikki -sananvaihto, tehty 20.8.:** kaikki käyttäjälle näkyvä "eläin"-sana (julkinen lomake + koko hallintapaneeli) vaihdettu muotoon "lemmikki" (esim. "Eläinten määrä" → "Lemmikkien määrä", "Eläinryhmät" → "Lemmikkiryhmät", flash-viestit ym.). TIETOISESTI JÄTETTY ENNALLEEN: "Eläinlääkäri" (virallinen ammattinimike, ei yleinen eläin-viittaus), yrityksen nimi "Eläinten hoitola Liperi" ja asetussivun esimerkkiplaceholder "Liperin Eläinhoitola Oy", sekä koodikommentit (eivät näy käyttäjälle).
+
+## 11. KRIITTINEN, PITKÄN AIKAVÄLIN TAVOITE – Novin liiketoiminta- ja päivitysmalli (vahvistettu 19.8. illalla, Irman oma sanamuoto, EI SAA UNOHTUA)
+
+Irma painotti erikseen että tämä on erittäin tärkeä asia joka pitää olla mielessä KAIKISSA tulevissa rakenneratkaisuissa, vaikka itse toteutusjärjestys on päätetty (ks. alla "Päätetty etenemisjärjestys"). Kirjataan siis koko malli tarkasti talteen.
+
+**Irma oli aluksi eri mieltä ehdotuksestani** rakentaa ensin täysin lemmikkihoitola-spesifinen, kovakoodattu järjestelmä ja vasta sen jälkeen erottaa siitä geneerinen pohja. Irman kanta, hänen omin sanoin: *"minä en tee mitään lemmikkihoitolalle tehdyllä kovakoodatulla koodilla. haluan että myös ensimmäinen myytävä tuote on aivan samalla pohjalla ja lemmikkhoitola moduulilla kun sen jälkeen tulevat muut järjestelmät. en myy erilaista järjestelmää mihinkään en edes ensimmäistä!!!"* Tämä on siis lopullinen, ei-neuvoteltava vaatimus: EI KOSKAAN myydä yhdellekään asiakkaalle (ei edes ensimmäiselle, Missukalle) versiota joka poikkeaa rakenteellisesti muista – kaikki, myös ensimmäinen myytävä tuote, on rakennettava samalle pohjalle + moduulille jota kaikki myöhemmätkin asiakkaat käyttävät.
+
+**Päätetty etenemisjärjestys (Irma hyväksyi tämän perustellun riskiarvion jälkeen):** koska geneerisen pohjan suunnitteleminen ARVAAMALLA, ilman yhtään valmista toimivaa toimialaesimerkkiä, on riskialttiimpaa kuin sen poimiminen yhdestä oikeasti valmiiksi rakennetusta ja testatusta esimerkistä (lemmikkihoitola), edetään näin: (1) lemmikkihoitolan järjestelmä viimeistellään ensin täysin valmiiksi ja testatuksi konkreettisena kokonaisuutena, (2) VASTA SITTEN erotetaan siitä pohja + lemmikkihoitolan moduuli. TÄRKEÄÄ: tämän välivaiheen (1) aikana ei saa lisätä UUTTA, tarpeetonta kovakoodausta yleisiin osiin (kirjautuminen, laskutus, asetukset, kalenterin runko) – lemmikki-spesifit asiat pidetään siististi omissa, jo nyt melko hyvin eristetyissä paikoissaan (`AvailabilityService`, `Pet`-malli, `species`-kentät), jotta myöhempi erottelu on turvallinen ja nopea, ei iso uudelleenkirjoitusprojekti.
+
+**Lopullinen tavoitetila, Irman kuvaamana (tiivistettynä hänen viesteistään):**
+
+*Yksi Novin pääkoodi, monta erillistä asennusta.* Irmalla on yksi Novin "pääversio" omassa kehitysympäristössä (versionumerolla, esim. Novi 1.0). Kun Novi myydään asiakkaalle (esim. Missukka), asiakkaan palvelimelle viedään TÄSMÄLLEEN tämä sama ohjelmakoodi, plus asiakkaan oma, täysin erillinen tietokanta. Kun Novi myydään toiselle asiakkaalle (esim. parturi), sinne viedään SAMA ohjelmakoodi, plus parturin oma erillinen tietokanta. Tietokannat eivät ole missään yhteydessä toisiinsa. Novi 1.0 → Missukan asennus → Missukan tietokanta. Novi 1.0 → Parturin asennus → Parturin tietokanta.
+
+*Ei koskaan erillisiä koodihaaroja per asiakas.* EI koskaan saa syntyä tilannetta jossa "Novi-Missukka", "Novi-Parturi", "Novi-Hieroja" ovat käytännössä eri ohjelmia joissa esim. kalenterin koodi on kirjoitettu eri tavalla. Sen sijaan Novin pääkoodi osaa KAIKKI ominaisuudet (eläinpaikat, työntekijävalinta, verkkomaksu jne.), ja asiakkaan omissa ASETUKSISSA määrätään mitä ominaisuuksia kyseisellä asiakkaalla on käytössä. Esimerkki: Missukalla "lemmikkirekisteri: kyllä, työntekijävalinta: ei, verkkomaksu: kyllä"; Parturilla "lemmikkirekisteri: ei, työntekijävalinta: kyllä, verkkomaksu: kyllä" – mutta molemmilla on täsmälleen sama Novi 1.0 -ohjelmakoodi, ero on vain asetuksissa.
+
+*Versionhallinta (Git) on pakollinen.* Novin lähdekoodi pidetään Gitissä (yksityinen repositorio, esim. GitHub – ei tarvitse olla julkinen). Git pitää kirjaa jokaisesta koodimuutoksesta (mitä tiedostoja muuttui, mitä rivejä lisättiin/poistettiin, milloin). Versiot nimetään semanttisesti: Novi 1.0.0 (ensimmäinen julkaisu) → 1.0.1 (pieni virhekorjaus) → 1.1.0 (pienempi uusi ominaisuus) → 2.0.0 (iso muutos). Irma pitää kirjaa mikä versio kullakin asiakkaalla on käytössä (esim. "Missukka – Novi 1.4.2, Parturi – Novi 1.4.2, Hieroja – Novi 1.3.8"), jotta näkee heti kuka tarvitsee päivityksen.
+
+*Päivitysprosessi, kun virhe löytyy tai ominaisuus lisätään (kaikille asiakkaille sama tapa):* (1) muutos tehdään Novin pääkoodiin kerran, (2) testataan omassa testiympäristössä, (3) otetaan varmuuskopio asiakkaan tietokannasta, (4) päivitetään asiakkaan palvelimen Novi-koodi uusimpaan versioon (esim. Git pull), (5) ajetaan Laravelin migraatiot jotka päivittävät asiakkaan tietokannan rakenteen automaattisesti tarvittaessa (esim. uusi kenttä "markkinointilupa" lisätään Missukan JA parturin tietokantaan samalla migraatiolla, kumpaakaan ei tarvitse käsin muokata), (6) tarkistetaan että kirjautuminen, varaus ja tärkeimmät toiminnot toimivat. Hyvin rakennettuna tämä on 10–30 minuutin huoltotoimenpide per asiakas, ei tuntikausien projekti – EI RIIPU siitä onko asiakkaita 10, 100 vai 1000, koska itse koodimuutos tehdään vain kerran.
+
+*Asiakaskohtainen ulkoasu/tiedot pysyvät koskemattomina päivityksissä.* Asiakkaan logo, värit, hinnat, varausmaksuprosentti yms. eivät ole koskaan Novin ydinkoodissa, vaan asiakaskohtaisissa asetuksissa/tiedostoissa (ks. kohta 8 "Tyylit" ja `project/brand.php`-mekanismi) – niinpä koko Novin ohjelmakoodin voi päivittää esim. versiosta 1.4 → 1.5 ilman että minkään asiakkaan brändi tai asetukset katoavat tai sekoittuvat.
+
+*Liiketoimintahyöty Irmalle:* koska päivitys on nopea ja sama joka asiakkaalle, Irma voi myydä sovittuja huoltokäyntejä (esim. 3–4 kertaa vuodessa per asiakas), joissa tarkistetaan palvelin/PHP/Laravel-versiot, riippuvuudet, varmuuskopiot, lokit, asennetaan uusin Novi-versio, ajetaan migraatiot, ja testataan kirjautuminen/varaus/sähköpostit/varmuuskopiointi. Asiakas maksaa vastuullisesta ylläpitotyöstä, vaikka itse tekninen päivitysaskel veisi vain 15–30 minuuttia – ja tämä malli skaalautuu 10:stä 1000:een asiakkaaseen ilman että ylläpitotyö kasvaa suhteettomasti, koska pohja+moduuli pysyy aina samana kaikilla.
+
+**Mitä tämä vaatii koodilta, jota EI vielä ole (rakennetaan pohja+moduuli-erottelun yhteydessä, ks. yllä "Päätetty etenemisjärjestys"):** oikea asetuksilla/ominaisuuslipuilla ohjattava järjestelmä (`Company.settings`-kenttää pitää laajentaa pelkistä hinnoittelutiedoista myös ominaisuuskytkimiin, esim. `lemmikkirekisteri_kaytossa`, `tyontekija_valinta_kaytossa`), ja eläin/laji-käsitteen (`Pet`, `species`) yleistäminen geneerisemmäksi käsitteeksi jota eri toimialat voivat käyttää eri tavoin. Ei toteuteta nyt – vasta erotteluvaiheessa.

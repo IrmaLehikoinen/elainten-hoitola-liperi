@@ -15,7 +15,7 @@
     </x-slot>
 
     <div class="py-8" x-data="dashboardPage">
-      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">  
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
             {{-- Rivi 1: Hoidossa tänään | Muistutukset --}}
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -35,7 +35,7 @@
                                     Ei lemmikkejä hoidossa
                                 @endif
                             </p>
-                            <p class="mt-1 text-sm text-gray-500">{{ $inCareToday->count() }} lemmikkiä juuri nyt</p>   
+                            <p class="mt-1 text-sm text-gray-500">{{ $inCareToday->count() }} lemmikkiä juuri nyt</p>
                         </div>
 
                    <span
@@ -44,7 +44,7 @@
                         >
                           <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" class="h-5 w-5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                            </svg>  
+                            </svg>
                         </span>
                     </div>
 
@@ -63,13 +63,20 @@
                             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
                             style="background-color: var(--brand-secondary);"
                         >
-                         <svg viewBox="0 0 24 24" fill="var(--brand-primary)" class="h-4 w-4">
-                                <ellipse cx="12" cy="16" rx="5" ry="4.2" />
-                                <ellipse cx="6" cy="9" rx="2.1" ry="2.6" />
-                                <ellipse cx="10.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="14.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="18" cy="9" rx="2.1" ry="2.6" />
-                            </svg>   
+                                                                 <svg viewBox="-2.25 0.5 21.47 21.47" fill="var(--brand-primary)" class="h-7 w-7">
+                                <g transform="translate(-5,2) rotate(-10) scale(0.62)">
+                                    <circle cx="7.5" cy="9" r="2.1"/>
+                                    <circle cx="12" cy="6.8" r="2.1"/>
+                                    <circle cx="16.5" cy="9" r="2.1"/>
+                                    <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                                </g>
+                                <g transform="translate(10,4) rotate(28) scale(0.62)">
+                                    <circle cx="7.5" cy="9" r="2.1"/>
+                                    <circle cx="12" cy="6.8" r="2.1"/>
+                                    <circle cx="16.5" cy="9" r="2.1"/>
+                                    <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                                </g>
+                            </svg>
                         </span>
                     </div>
 
@@ -136,7 +143,7 @@
 
                     <div class="mt-4">
                         <div class="w-full">
-                     @include('partials.calendar-grid', ['days' => $calendarDays, 'periodStart' => $calendarMonth])      
+                     @include('partials.calendar-grid', ['days' => $calendarDays, 'periodStart' => $calendarMonth])
                         </div>
                     </div>
 
@@ -203,7 +210,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
                         </svg>
                     </button>
-                </section> 
+                </section>
             </div>
 
             {{-- Rivi 3: Nopeat toiminnot | Huomenna hoitoon tulevat --}}
@@ -219,12 +226,19 @@
                             onclick="window.location.href='{{ route('calendar.index') }}?varaa=1'"
                             class="btn-brand flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold"
                         >
-                            <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
-                                <ellipse cx="12" cy="16" rx="5" ry="4.2" />
-                                <ellipse cx="6" cy="9" rx="2.1" ry="2.6" />
-                                <ellipse cx="10.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="14.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="18" cy="9" rx="2.1" ry="2.6" />
+                                                                     <svg viewBox="-2.25 0.5 21.47 21.47" fill="currentColor" class="h-7 w-7">
+                                <g transform="translate(-5,2) rotate(-10) scale(0.62)">
+                                    <circle cx="7.5" cy="9" r="2.1"/>
+                                    <circle cx="12" cy="6.8" r="2.1"/>
+                                    <circle cx="16.5" cy="9" r="2.1"/>
+                                    <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                                </g>
+                                <g transform="translate(10,4) rotate(28) scale(0.62)">
+                                    <circle cx="7.5" cy="9" r="2.1"/>
+                                    <circle cx="12" cy="6.8" r="2.1"/>
+                                    <circle cx="16.5" cy="9" r="2.1"/>
+                                    <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                                </g>
                             </svg>
                             Uusi varaus
                         </div>
@@ -234,12 +248,19 @@
                             class="flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold"
                             style="border-color: var(--brand-secondary); color: var(--brand-text);"
                         >
-                            <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
-                                <ellipse cx="12" cy="16" rx="5" ry="4.2" />
-                                <ellipse cx="6" cy="9" rx="2.1" ry="2.6" />
-                                <ellipse cx="10.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="14.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="18" cy="9" rx="2.1" ry="2.6" />
+                                                                        <svg viewBox="-2.25 0.5 21.47 21.47" fill="currentColor" class="h-7 w-7">
+                                <g transform="translate(-5,2) rotate(-10) scale(0.62)">
+                                    <circle cx="7.5" cy="9" r="2.1"/>
+                                    <circle cx="12" cy="6.8" r="2.1"/>
+                                    <circle cx="16.5" cy="9" r="2.1"/>
+                                    <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                                </g>
+                                <g transform="translate(10,4) rotate(28) scale(0.62)">
+                                    <circle cx="7.5" cy="9" r="2.1"/>
+                                    <circle cx="12" cy="6.8" r="2.1"/>
+                                    <circle cx="16.5" cy="9" r="2.1"/>
+                                    <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                                </g>
                             </svg>
                             Uusi kuitti
                         </div>
@@ -249,15 +270,22 @@
                             class="flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold"
                             style="border-color: var(--brand-secondary); color: var(--brand-text);"
                         >
-                            <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
-                                <ellipse cx="12" cy="16" rx="5" ry="4.2" />
-                                <ellipse cx="6" cy="9" rx="2.1" ry="2.6" />
-                                <ellipse cx="10.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="14.5" cy="6" rx="2" ry="2.5" />
-                                <ellipse cx="18" cy="9" rx="2.1" ry="2.6" />
+                                                                        <svg viewBox="-2.25 0.5 21.47 21.47" fill="currentColor" class="h-7 w-7">
+                                <g transform="translate(-5,2) rotate(-10) scale(0.62)">
+                                    <circle cx="7.5" cy="9" r="2.1"/>
+                                    <circle cx="12" cy="6.8" r="2.1"/>
+                                    <circle cx="16.5" cy="9" r="2.1"/>
+                                    <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                                </g>
+                                <g transform="translate(10,4) rotate(28) scale(0.62)">
+                                    <circle cx="7.5" cy="9" r="2.1"/>
+                                    <circle cx="12" cy="6.8" r="2.1"/>
+                                    <circle cx="16.5" cy="9" r="2.1"/>
+                                    <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                                </g>
                             </svg>
                             Uudet palvelut
-                        </div>   
+                        </div>
                     </div>
                 </section>
 
@@ -306,7 +334,7 @@
                             </div>
                         @empty
                             <p class="py-6 text-center text-sm text-gray-500">
-                                Ei huomenna saapuvia eläimiä.
+                                Ei huomenna saapuvia lemmikkejä.
                             </p>
                         @endforelse
                     </div>
@@ -335,7 +363,7 @@
                 <table class="min-w-full text-sm">
                     <thead>
                         <tr class="text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
-                            <th class="pb-2 pr-4">Eläin</th>
+                            <th class="pb-2 pr-4">Lemmikki</th>
                             <th class="pb-2 pr-4">Laji</th>
                             <th class="pb-2 pr-4">Asiakas</th>
                             <th class="pb-2 pr-4">Lähtöpäivä</th>
@@ -371,7 +399,7 @@
                         @empty
                             <tr>
                                 <td colspan="5" class="py-6 text-center text-gray-500">
-                                    Ei hoidossa olevia eläimiä tänään.
+                                    Ei hoidossa olevia lemmikkejä tänään.
                                 </td>
                             </tr>
                         @endforelse
@@ -384,7 +412,7 @@
         </div>
     </div>
 
-    <script>  
+    <script>
         document.addEventListener('alpine:init', () => {
         Alpine.data('dashboardPage', () => ({
               reminders: @json($todayReminders),

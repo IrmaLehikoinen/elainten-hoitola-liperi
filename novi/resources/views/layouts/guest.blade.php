@@ -7,16 +7,17 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <style>
+                <style>
+        /* Novi-hallintapaneelin OMAT, kiinteät värit — eivät koskaan riipu asiakkaan verkkosivun brändistä. */
     :root {
-        --brand-primary: {{ $brand['primary_color'] ?? '#4F46E5' }};
-        --brand-secondary: {{ $brand['secondary_color'] ?? '#111827' }};
-        --brand-accent: {{ $brand['accent_color'] ?? '#111827' }};
-        --brand-background: {{ $brand['background_color'] ?? '#F8F6F2' }};
-        --brand-text: {{ $brand['text_color'] ?? '#111827' }};
-        --brand-heading-font: '{{ $brand['font_heading'] ?? 'Figtree' }}', serif;
-        --brand-body-font: '{{ $brand['font_body'] ?? 'Figtree' }}', sans-serif;
-    }
+        --brand-primary: #3F4F3A;
+        --brand-secondary: #D8C6BD;
+        --brand-accent: #2A3428;
+        --brand-background: #F8F6F2;
+        --brand-text: #2A3428;
+        --brand-heading-font: 'Playfair Display', serif;
+        --brand-body-font: 'Inter', sans-serif;
+    }    
 
     body {
         font-family: var(--brand-body-font);

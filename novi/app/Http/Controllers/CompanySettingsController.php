@@ -26,6 +26,11 @@ class CompanySettingsController extends Controller
         ]);
     }
 
+    protected function backToTab(Request $request)
+    {
+        return redirect()->route('admin.settings.index', ['tab' => $request->query('tab', 'perushinta')]);
+    }
+
     public function updateDepositSettings(Request $request)
     {
         $validated = $request->validate([
@@ -38,7 +43,7 @@ class CompanySettingsController extends Controller
         $company->settings = $settings;
         $company->save();
 
-        return back()->with('status', 'Varausmaksun prosentti päivitetty.');
+        return $this->backToTab($request)->with('status', 'Varausmaksun prosentti päivitetty.');
     }
 
     public function updateBaseRate(Request $request)
@@ -53,7 +58,7 @@ class CompanySettingsController extends Controller
         $company->settings = $settings;
         $company->save();
 
-        return back()->with('status', 'Perushinta päivitetty.');
+        return $this->backToTab($request)->with('status', 'Perushinta päivitetty.');
     }
 
    public function updateCompanyInfo(Request $request)
@@ -84,7 +89,7 @@ class CompanySettingsController extends Controller
         $company->secondary_color = $validated['secondary_color'] ?? $company->secondary_color;
         $company->save();
 
-        return back()->with('status', 'Yritystiedot päivitetty.');
+        return $this->backToTab($request)->with('status', 'Yritystiedot päivitetty.');
     }
 
     public function storeResource(Request $request)
@@ -97,7 +102,7 @@ class CompanySettingsController extends Controller
 
         Resource::create($validated);
 
-        return back()->with('status', 'Eläinryhmä lisätty.');
+        return $this->backToTab($request)->with('status', 'Lemmikkiryhmä lisätty.');
     }
 
     public function updateResource(Request $request, Resource $resource)
@@ -110,14 +115,14 @@ class CompanySettingsController extends Controller
 
         $resource->update($validated);
 
-        return back()->with('status', 'Eläinryhmä päivitetty.');
+        return $this->backToTab($request)->with('status','Lemmikkiryhmä päivitetty.' );
     }
 
-    public function destroyResource(Resource $resource)
+    public function destroyResource(Request $request, Resource $resource)
     {
         $resource->delete();
 
-        return back()->with('status', 'Eläinryhmä poistettu.');
+        return $this->backToTab($request)->with('status', 'Lemmikkiryhmä poistettu.');
     }
 
     public function storeService(Request $request)
@@ -131,7 +136,7 @@ class CompanySettingsController extends Controller
 
         Service::create($validated);
 
-        return back()->with('status', 'Palvelu lisätty.');
+        return $this->backToTab($request)->with('status', 'Palvelu lisätty.');
     }
 
     public function updateService(Request $request, Service $service)
@@ -145,14 +150,14 @@ class CompanySettingsController extends Controller
 
         $service->update($validated);
 
-        return back()->with('status', 'Palvelu päivitetty.');
+        return $this->backToTab($request)->with('status', 'Palvelu päivitetty.');
     }
 
-    public function destroyService(Service $service)
+    public function destroyService(Request $request, Service $service)
     {
         $service->delete();
 
-        return back()->with('status', 'Palvelu poistettu.');
+        return $this->backToTab($request)->with('status', 'Palvelu poistettu.');
     }
 
     public function storeReminderType(Request $request)
@@ -165,7 +170,7 @@ class CompanySettingsController extends Controller
 
         ReminderType::create($validated);
 
-        return back()->with('status', 'Muistutustyyppi lisätty.');
+        return $this->backToTab($request)->with('status', 'Muistutustyyppi lisätty.');
     }
 
     public function updateReminderType(Request $request, ReminderType $reminderType)
@@ -177,18 +182,18 @@ class CompanySettingsController extends Controller
 
         $reminderType->update($validated);
 
-        return back()->with('status', 'Muistutustyyppi päivitetty.');
+        return $this->backToTab($request)->with('status', 'Muistutustyyppi päivitetty.');
     }
 
-    public function destroyReminderType(ReminderType $reminderType)
+    public function destroyReminderType(Request $request, ReminderType $reminderType)
     {
         if (Reminder::where('type', $reminderType->slug)->exists()) {
-            return back()->with('error', 'Tyyppiä ei voi poistaa, koska sitä käyttäviä muistutuksia on jo olemassa.');
+            return $this->backToTab($request)->with('error', 'Tyyppiä ei voi poistaa, koska sitä käyttäviä muistutuksia on jo olemassa.');
         }
 
         $reminderType->delete();
 
-        return back()->with('status', 'Muistutustyyppi poistettu.');
+        return $this->backToTab($request)->with('status', 'Muistutustyyppi poistettu.');
     }
 
     public function storeCareType(Request $request)
@@ -201,7 +206,7 @@ class CompanySettingsController extends Controller
 
         CareType::create($validated);
 
-        return back()->with('status', 'Hoitomuoto lisätty.');
+        return $this->backToTab($request)->with('status', 'Hoitomuoto lisätty.');
     }
 
     public function updateCareType(Request $request, CareType $careType)
@@ -213,13 +218,13 @@ class CompanySettingsController extends Controller
 
         $careType->update($validated);
 
-        return back()->with('status', 'Hoitomuoto päivitetty.');
+        return $this->backToTab($request)->with('status', 'Hoitomuoto päivitetty.');
     }
 
-    public function destroyCareType(CareType $careType)
+    public function destroyCareType(Request $request, CareType $careType)
     {
         $careType->delete();
 
-        return back()->with('status', 'Hoitomuoto poistettu.');
+        return $this->backToTab($request)->with('status', 'Hoitomuoto poistettu.');
     }
 }
