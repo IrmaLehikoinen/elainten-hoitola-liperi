@@ -11,6 +11,11 @@ class PaymentController extends Controller
     {
         $stripe = new StripeClient(config('services.stripe.secret'));
 
+        $customer = $stripe->customers->create([
+            'email' => $booking->customer->email,
+            'name' => $booking->customer->name,
+        ]);
+
         $session = $stripe->checkout->sessions->create([
             'payment_method_types' => ['card'],
             'line_items' => [[
@@ -24,10 +29,11 @@ class PaymentController extends Controller
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
+            'customer' => $customer->id,
             'metadata' => [
-    'booking_id' => $booking->id,
-],
-            'success_url' => url('/maksu/onnistui'),
+                'booking_id' => $booking->id,
+            ],
+            'success_url' => url('/maksu/onnistui') . '?booking=' . $booking->id,
             'cancel_url' => url('/maksu/peruttu'),
         ]);
 

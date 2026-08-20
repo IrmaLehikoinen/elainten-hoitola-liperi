@@ -21,10 +21,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::prefix('varaa')->name('public.booking.')->group(function () {
+Route::prefix('varaa')->name('public.booking.')->middleware('throttle:60,1')->group(function () {
     Route::get('/', [PublicBookingController::class, 'start'])->name('start');
+    Route::get('/vapaat-ajat', fn () => redirect()->route('public.booking.start'));
     Route::post('/vapaat-ajat', [PublicBookingController::class, 'availability'])->name('availability');
     Route::post('/hold', [PublicBookingController::class, 'hold'])->name('hold');
+    Route::post('/tunnista', [PublicBookingController::class, 'identify'])->name('identify')->middleware('throttle:5,1');
+    Route::get('/vahvista/{customer}', [PublicBookingController::class, 'verify'])->name('verify')->middleware('signed');
+    Route::post('/tallenna', [PublicBookingController::class, 'store'])->name('store');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -142,27 +146,6 @@ Route::post(
     ->middleware(['auth', 'verified'])
     ->name('admin.pets.store');
 
-Route::get(
-    '/admin/bookings/uusi',
-    [BookingWizardController::class, 'create']
-)
-    ->middleware(['auth', 'verified'])
-    ->name('admin.bookings.create');
-
-Route::post(
-    '/admin/bookings/availability',
-    [BookingWizardController::class, 'availability']
-)
-    ->middleware(['auth', 'verified'])
-    ->name('admin.bookings.availability');
-
-Route::post(
-    '/admin/bookings/wizard',
-    [BookingWizardController::class, 'store']
-)
-    ->middleware(['auth', 'verified'])
-    ->name('admin.bookings.wizard-store');
-
 Route::middleware(['auth', 'verified'])->prefix('admin/settings')->name('admin.settings.')->group(function () {
 Route::get('/', [CompanySettingsController::class, 'index'])->name('index');
 
@@ -202,12 +185,14 @@ Route::get('/kuitti/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->
 
 Route::get('/kuitti/{invoice}/tulosta', [InvoiceController::class, 'printPdf'])->name('invoices.print');
 
-Route::get('/maksu/onnistui', function () {
-    return 'Maksu onnistui! Kiitos varauksestasi.';
+Route::get('/maksu/onnistui', function (\Illuminate\Http\Request $request) {
+    $booking = \App\Models\Booking::find($request->query('booking'));
+
+    return view('public.booking.success', ['booking' => $booking]);
 });
 
 Route::get('/maksu/peruttu', function () {
-    return 'Maksu peruttiin.';
+    return view('public.booking.cancelled');
 });
 
 Route::get('/calendar', [CalendarController::class, 'index'])

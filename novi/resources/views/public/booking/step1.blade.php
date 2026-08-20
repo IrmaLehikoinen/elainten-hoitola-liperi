@@ -8,9 +8,15 @@
             while (this.animals.length > count) { this.animals.pop(); }
         }
     }">
-        <h2 class="text-2xl font-bold" style="font-family: var(--brand-heading-font); color: var(--brand-text); white-space: nowrap;">
+                @if (session('booking_error'))
+            <div style="background:#FEF2F2; border:1px solid #FCA5A5; color:#991B1B; padding:12px 16px; border-radius:8px; font-size:14px; margin-bottom:20px;">
+                {{ session('booking_error') }}
+            </div>
+        @endif
+
+        <h2 class="text-2xl font-bold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
             Kerro meille lemmikeistäsi ja hoidon kestosta
-        </h2>     
+        </h2>
                     <p class="text-sm" style="color: var(--brand-text); opacity: 0.6;">Täytä tiedot niin näet heti vapaana olevat ajat</p>
 
         <form method="POST" action="{{ route('public.booking.availability') }}" class="space-y-8">

@@ -59,6 +59,23 @@ class BookingWizardController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
+                    $requirements = collect($validated['animals'])
+            ->map(fn ($animal) => Pet::find($animal['pet_id']))
+            ->filter()
+            ->groupBy(fn ($pet) => mb_strtolower(trim($pet->species)))
+            ->map(fn ($group, $species) => ['species' => $species, 'count' => $group->count()])
+            ->values()
+            ->all();
+
+        $durationDays = \Carbon\Carbon::parse($validated['start_date'])
+            ->diffInDays(\Carbon\Carbon::parse($validated['end_date'])) + 1;
+
+        if (!app(AvailabilityService::class)->isAvailable($requirements, $validated['start_date'], $durationDays)) {
+            return response()->json([
+                'message' => 'Valitettavasti kapasiteetti on jo täynnä tälle ajalle. Tarkista kalenteri.',
+            ], 422);
+        }
+
         $booking = Booking::create([
             'customer_id' => $validated['customer_id'],
             'care_type' => $validated['care_type'],

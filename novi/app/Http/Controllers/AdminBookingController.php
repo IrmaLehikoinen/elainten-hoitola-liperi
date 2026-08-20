@@ -119,13 +119,31 @@ class AdminBookingController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        $customer = Customer::findOrFail($validated['customer_id']);
+                 $customer = Customer::findOrFail($validated['customer_id']);
 
         $arrivalAt = \Carbon\Carbon::parse($validated['arrival_at']);
         $pickupAt = \Carbon\Carbon::parse($validated['pickup_at']);
         $nights = max(1, $arrivalAt->diffInDays($pickupAt));
 
-        $company = $request->user()->company;
+        $startDate = $arrivalAt->toDateString();
+        $endDate = $pickupAt->toDateString();
+        $durationDays = $arrivalAt->copy()->startOfDay()->diffInDays($pickupAt->copy()->startOfDay()) + 1;
+
+        $requirements = collect($validated['animals'])
+            ->map(fn ($animal) => Pet::find($animal['pet_id']))
+            ->filter()
+            ->groupBy(fn ($pet) => mb_strtolower(trim($pet->species)))
+            ->map(fn ($group, $species) => ['species' => $species, 'count' => $group->count()])
+            ->values()
+            ->all();
+
+        if (!app(\App\Services\AvailabilityService::class)->isAvailable($requirements, $startDate, $durationDays)) {
+            return response()->json([
+                'message' => 'Valitettavasti kapasiteetti on jo täynnä tälle ajalle. Tarkista kalenteri.',
+            ], 422);
+        }
+
+        $company = $request->user()->company; 
         $settings = $company->settings ?? [];
         $baseDailyRate = (float) ($settings['base_daily_rate'] ?? 0);
         $dailyRate = $customer->custom_daily_rate !== null

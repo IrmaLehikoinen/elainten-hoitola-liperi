@@ -10,8 +10,8 @@ use Illuminate\Support\Carbon;
 
 class AvailabilityService
 {
-    protected int $searchWindowDays = 90;
-    protected int $maxResults = 20;
+    protected int $searchWindowDays = 365;
+    protected int $maxResults = 365;
 
     /**
      * Palauttaa listan [{iso: 'Y-m-d', display: 'd.m.Y'}] -olioita niistä
@@ -146,6 +146,24 @@ class AvailabilityService
             }
         }
 
-        return true;
+            return true;
+    }
+
+    /**
+     * Julkinen kätevyysmetodi: tarkistaa mahtuuko yksi aloituspäivä + kesto
+     * annettuihin vaatimuksiin juuri NYT (käytetään hold() ja store() -vaiheissa
+     * uudelleentarkistukseen, jotta kaksi samanaikaista varausta ei mene läpi).
+     */
+    public function isAvailable(array $requirements, string $startDate, int $durationDays): bool
+    {
+        $requirements = collect($requirements)
+            ->map(fn ($r) => ['species' => mb_strtolower(trim($r['species'])), 'count' => $r['count']])
+            ->all();
+
+        $capacities = $this->speciesCapacities();
+        $start = Carbon::parse($startDate);
+        $end = $start->copy()->addDays($durationDays - 1);
+
+        return $this->fits($requirements, $capacities, $start, $end);
     }
 }
