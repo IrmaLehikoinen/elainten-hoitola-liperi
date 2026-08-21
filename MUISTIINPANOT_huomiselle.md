@@ -323,3 +323,61 @@ Tarkistettu 20.8. muuten kunnossa olevaksi: `.env` on gitignoressa, Stripe-webho
 3. **Vasta tämän jälkeen: pohja + lemmikkihoitolan moduuli erotellaan omaksi kokonaisuudekseen**, ks. kohta 10 ("Novin liiketoimintamalli – pohja + toimialamoduulit") ja kohta 11 (Irman ei-neuvoteltava vaatimus: ei koskaan myydä poikkeavaa versiota, edes ensimmäiselle asiakkaalle). Tässä vaiheessa tehdään myös ensimmäinen virallinen versionumero: **Novi 1.0.0** (ks. kohta 10, kohta 4: "Git-versionumerot otetaan käyttöön VASTA kun pohja + lemmikkihoitolan moduuli on eroteltu – ei ennen").
 
 Järjestys on siis: #31 valmiiksi → koko systeemi tarkistetaan huolella → pohja/moduuli-erottelu → Novi 1.0.0.
+
+## 14. Muistiinpanot 21.8.2026 – täydellinen bugikierros TEHTY, varauslaatikko siistitty upotusta varten
+
+### Kohdan 13 kohta 2 ("koko järjestelmän perusteellinen lopputarkastus") NYT TEHTY
+
+Käytiin läpi koko koodikanta rivi riviltä: kaikki kontrollerit, kaikki mallit, kaikki reitit ja niiden suojaukset, config-tiedostot. Löytyi ja korjattiin viisi asiaa:
+
+1. **Etusivun minikalenterista puuttui "Uusi"-merkinnän laskenta** – `DashboardController::buildCalendarDays()` ei laskenut `has_new`/`new_booking_id`-tietoja, joten uudet nettivaraukset eivät näkyneet pinkkinä etusivulla, vain Kalenteri-sivulla. Korjattu, molemmat käyttävät nyt samaa logiikkaa.
+2. **Avoin `/register`-sivu poistettu kokonaan.** Kuka tahansa netissä olisi voinut luoda itselleen tunnukset hallintapaneeliin, koska sivu ei ollut rajoitettu eikä uusi käyttäjä saanut `company_id`:tä. `routes/auth.php`:sta poistettu rekisteröitymisreitit, `RegisteredUserController.php` ja `auth/register.blade.php` poistettu tiedostoina.
+3. **Vakava: IDOR-aukko julkisessa ajanvarauslomakkeessa.** `PublicBookingController::store()` haki lemmikkiä `pet_id`:n perusteella tarkistamatta kuuluuko se varauksen tekevälle asiakkaalle – piilokenttää muokkaamalla olisi voinut ylikirjoittaa KENEN TAHANSA toisen asiakkaan lemmikin tiedot. Korjattu: `Pet::where('customer_id', $customer->id)->find(...)`, ei löydy → luodaan uusi lemmikki sen sijaan.
+4. **Vakava: kuitit/laskut olivat julkisesti selattavissa ilman kirjautumista.** `/kuitti/{invoice}`, `/kuitti/{invoice}/pdf`, `/kuitti/{invoice}/tulosta` eivät olleet `auth`-suojattuja, ja koska ID:t ovat juoksevia numeroita, kuka tahansa olisi voinut selata läpi kaikkien asiakkaiden kuitit (nimi, hinta, ALV). Varmistettu ettei mikään sähköposti linkitä näihin (turvallista lukita). Nyt `auth`+`verified`-suojattu.
+5. **Maksun onnistumissivu paljasti asiakkaan sähköpostin.** `/maksu/onnistui?booking=X` näytti `$booking->customer->email`-arvon kenelle tahansa joka arvasi varauksen ID:n. Sähköpostin näyttäminen poistettu sivulta (pysyy julkisena reittinä, koska asiakas ohjautuu sinne Stripe-maksun jälkeen kirjautumatta, mutta ei enää näytä henkilötietoa).
+
+Kaikki committoitu ja pushattu GitHubiin (commit "Tietoturvakorjaukset: pet_id-omistajuustarkistus, kuittien/laskujen auth-suojaus, rekisteröitymisen poisto, etusivun uudet-varaukset-korjaus").
+
+**Kohta 13 kokonaisuudessaan päivitetty tilanne: jäljellä on enää kohta 1 (tehtävä #31) ennen pohja/moduuli-erottelua ja Novi 1.0.0:aa.**
+
+### Varauslaatikon tekninen siivous upotusta varten – TEHTY (kolme osaa)
+
+Ennen tehtävää #31 Irma halusi vielä viimeistellä sen mitä kohdassa "vaihe 2: korjataan varauslaatikko upotettavaksi siistiksi" oli sovittu. Kolme osaa tehtiin ja testattiin (Irma vahvisti: "kaikki toimii varaus vahvistettu"):
+
+**1. Ajanvarauslomakkeen kentät muokattaviksi per ostava lemmikkihoitola.** Uusi `novi/config/public_booking_fields.php` listaa 14 valinnaista lemmikkikenttää (rotu, syntymäaika, sukupuoli, paino, mikrosiru, allergiat, lääkitys, ruokintaohjeet, käytöstiedot, eläinlääkärin nimi/puhelin, hätätilanneohjeet, muuta huomioitavaa, lisätietoa hoitojaksolle). Nimi ja laji ovat aina pakollisia, ei muokattavissa. Yritysasetuksiin uusi "Ajanvarauslomake"-välilehti (`CompanySettingsController::updatePublicBookingFields()`), tallentaa valinnat `company.settings['public_booking_fields']`-kenttään (sama JSON-asetuskenttä jota `deposit_percentage`/`base_daily_rate` jo käyttävät – ei uutta migraatiota tarvittu). Oletuksena kaikki 14 kenttää päällä, joten olemassa oleva lomake ei muuttunut miltään osin. `public/booking/step4.blade.php` lukee nyt nämä asetukset ja näyttää/piilottaa kentät sen mukaisesti.
+
+**2. Varausmaksun päälle/pois-kytkin oli jo valmiiksi olemassa** – jos `deposit_percentage` asetetaan 0 %:iin, koko Stripe-maksuvaihe ohitetaan automaattisesti (`PublicBookingController::store()`). Ei vaatinut lisätyötä, todettiin vain toimivaksi.
+
+**3. Varauslaatikko eriytetty omaksi `<x-booking-widget>`-komponentiksi** (`novi/resources/views/components/booking-widget.blade.php`, uusi tiedosto). `components/layouts/public.blade.php` on nyt pelkkä ohut sivupohja (`<!DOCTYPE html>`/`<head>`/`<body>`), joka kutsuu `<x-booking-widget>`:a sisällään. Kaikki CSS-valitsimet skoopattu `.novi-booking-widget`-luokan alle (myös vaarallinen bare `body { ... }` -valitsin, joka olisi upotettaessa voinut rikkoa isäntäsivun tyylit). Värit/fontit tulevat edelleen `project/brand.php`:sta `$brand`-muuttujan kautta, tätä ei muutettu. Kun Missukan (tai minkä tahansa asiakkaan) verkkosivu joskus rakennetaan, sinne pudotetaan tästä eteenpäin vain `<x-booking-widget>`, ei koko sivupohjaa.
+
+### Kolmikerroksisen mallin tarkennus (21.8., Irman oma sanamuoto) – täydentää kohtaa 10 ja 11
+
+Irma tarkensi tänään kolmikerroksisen mallin (pohja / lemmikkihoitola-moduuli / ostavan lemmikkihoitolan pohja) yksityiskohtaisemmin kuin aiemmin oli kirjattu. Tämä EI muuta aiempaa päätöstä, vaan täsmentää mitä kukin kerros konkreettisesti pitää sisällään:
+
+- **Pohja** – puhtaasti tekninen perusta, huolehtii että kaikki moduulit toimivat samalla tavalla (kirjautuminen, reititys, perusrakenteet). Rakennettu niin että sitä on helppo päivittää jatkossa kaikille asiakkaille kerralla. Ei sisällä mitään lemmikkihoitola-spesifistä.
+- **Lemmikkihoitola-moduuli** – sisältää itse toiminnallisuuden (ajanvaraus, kalenteri, asiakas-/eläinkortit, laskutus), rakennettu niin että seuraava kerros (ostavan lemmikkihoitolan säädöt) voi sitä helposti mukauttaa:
+  - Kuvakkeet (esim. tassu) = Novin päättämiä ja kiinteitä, EI muokattavissa per asiakas.
+  - Rakenne = Irman/Novin luoma, enimmäkseen valmis paketti.
+  - Poikkeus: itse verkkosivulle upotettava laatikko (`<x-booking-widget>`) täytyy olla rakenteeltaan joustavampi kuin muu paneeli, koska sen pitää sopia visuaalisesti juuri sen asiakkaan verkkosivun tyyliin.
+  - Mitä lomakkeella kysytään asiakkaalta = muokattavissa per ostava lemmikkihoitola (TEHTY TÄNÄÄN, ks. yllä "Ajanvarauslomakkeen kentät").
+  - Toiminnot kuten varausmaksu = päälle/pois-kytkettävissä per ostava lemmikkihoitola (oli jo valmiina).
+- **Ostavan lemmikkihoitolan pohja** – tuo väri/fontit heidän omalta verkkosivultaan (`project/brand.php`, ei muutu), ja säätää lemmikkihoitola-moduulin joustavat kohdat: lomakekentät (nyt konfiguroitavissa asetussivulta), toimintojen päälle/pois-kytkennät, ja upotettavan laatikon rakenteen sovituksen heidän sivunsa tyyliin.
+
+**Tärkeä periaate joka nousi tästä keskustelusta:** moduulin koodiin pitää rakentaa "koukut" (asetuksia lukevat kohdat) jo ETUKÄTEEN, ei vasta pohja/moduuli-erottelun yhteydessä – muuten myöhempi asiakaskohtainen säätäminen vaatisi moduulin koodin muokkaamista uudestaan jokaiselle asiakkaalle, mikä rikkoisi periaatteen "ei koskaan rakenteellisesti eri versiota kenellekään" (ks. kohta 11). Tästä syystä lomakekenttien muokattavuus rakennettiin nyt asetuspohjaiseksi (`config/public_booking_fields.php` + `company.settings`), ei vasta myöhemmässä vaiheessa.
+
+### Vielä yksi pieni siivouskohta varauslaatikkoon, EI VIELÄ TEHTY (kirjattu 21.8., muistiin myöhempää varten)
+
+Julkisen lomakkeen alaosassa on vielä 4 kohdan "hyötynostot"-rivi (Rakkaudella hoidettu / Turvallinen ympäristö / Päivityksiä / Ammattitaidolla, ikoneina sydän/kilpi/kamera/mitali). Irma vahvisti 21.8.: nämä ovat upotuksessa tarpeettomia ja otetaan pois siistitystä kaavakkeesta. Ei poistettu vielä koodista – tehdään kun varauslaatikkoon palataan seuraavan kerran (todennäköisesti pohja/moduuli-erottelun yhteydessä tai juuri ennen sitä).
+
+### Vielä yksi löytynyt bugi, EI VIELÄ TEHTY (kirjattu 21.8., valmis diffi odottaa)
+
+Kalenterisivun "X uutta varausta" -pilli (otsikon alla, `calendar/index.blade.php`) ei tee mitään klikattaessa – pelkkä teksti, ei linkkiä. Pitäisi viedä kalenteri siihen kuukauteen/päivään jossa uusin käsittelemätön (online, ei kuitattu) varaus on, jonka jälkeen olemassa oleva "Uusi"-badge sillä päivällä (toimii jo) avaa asiakaskortin. Korjaus on jo suunniteltu ja valmiina liitettäväksi seuraavalla kerralla:
+
+- `app/Http/Controllers/CalendarController.php` `index()`-metodiin: uusi `$firstNewBookingDate`-muuttuja, haetaan varhaisin `start_date` niistä varauksista joissa `confirmation_channel = 'online'`, `acknowledged_at` on tyhjä, `status != 'cancelled'`, muotoillaan `Y-m-d`-merkkijonoksi ja välitetään näkymään.
+- `resources/views/calendar/index.blade.php`: pilli-`<span>` saa `onclick`-siirron `route('calendar.index', ['view' => 'month', 'date' => $firstNewBookingDate])`-osoitteeseen, jos `$firstNewBookingDate` on olemassa.
+
+Tarkka koodi on jo kirjoitettu edellisessä Claude-vastauksessa (Poistettava alue / Mitä liitetään tilalle -muodossa) – toistetaan se kun tähän palataan, ei tarvitse suunnitella uudelleen.
+
+### Seuraavaksi
+
+Kohdan 13 mukaisesti: **tehtävä #31 (Hoitojakson pidennys/lyhennys kesken hoidon)** on nyt ainoa jäljellä oleva kohta ennen pohja + lemmikkihoitolan moduuli -erottelua ja Novi 1.0.0:aa. Ei aloitettu vielä. Lisäksi kaksi pientä kirjattua siivouskohtaa odottaa (hyötynostot-rivin poisto, kalenterin "X uutta varausta" -pillin korjaus yllä) – tehdään kun varauslaatikkoon/kalenteriin seuraavan kerran palataan.
