@@ -183,6 +183,8 @@ Route::post('/base-rate', [CompanySettingsController::class, 'updateBaseRate'])-
     Route::post('/care-types', [CompanySettingsController::class, 'storeCareType'])->name('care-types.store');
     Route::patch('/care-types/{careType}', [CompanySettingsController::class, 'updateCareType'])->name('care-types.update');
     Route::delete('/care-types/{careType}', [CompanySettingsController::class, 'destroyCareType'])->name('care-types.destroy');
+
+    Route::post('/booking-fields', [CompanySettingsController::class, 'updatePublicBookingFields'])->name('booking-fields.update');
 });
 
     require __DIR__.'/auth.php';

@@ -40,13 +40,22 @@
                     Perushinta
                 </button>
 
-                <button
+                                <button
                     type="button"
                     @click="activeTab = 'varausmaksu'"
                     class="rounded-md px-4 py-2 text-sm font-medium"
                     :style="activeTab === 'varausmaksu' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
                 >
                     Varausmaksu
+                </button>
+
+                <button
+                    type="button"
+                    @click="activeTab = 'lomake'"
+                    class="rounded-md px-4 py-2 text-sm font-medium"
+                    :style="activeTab === 'lomake' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'color: var(--brand-text);'"
+                >
+                    Ajanvarauslomake
                 </button>
 
                 <button
@@ -141,7 +150,41 @@
                         @endforeach
                     </select>
 
-                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                                <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                        Tallenna
+                    </button>
+                </form>
+            </section>
+
+            {{-- Ajanvarauslomake --}}
+            <section x-show="activeTab === 'lomake'" x-cloak class="bg-white p-6 shadow-sm rounded-lg">
+                <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                    Ajanvarauslomake
+                </h2>
+                <p class="mt-1 text-sm text-gray-500">
+                    Valitse mitkä lisätiedot kysytään lemmikistä julkisella ajanvarauslomakkeella. Nimi ja laji kysytään aina.
+                </p>
+
+                <form method="POST" action="{{ route('admin.settings.booking-fields.update') }}" class="mt-4">
+                    @csrf
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach ($bookingFields as $key => $field)
+                            <label class="flex items-center gap-2 rounded-md border p-3" style="border-color: var(--brand-secondary);">
+                                <input
+                                    type="checkbox"
+                                    name="fields[]"
+                                    value="{{ $key }}"
+                                    @checked(in_array($key, $enabledBookingFields))
+                                    class="rounded border-gray-300"
+                                    style="accent-color: var(--brand-primary);"
+                                >
+                                <span class="text-sm" style="color: var(--brand-text);">{{ $field['label'] }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold mt-4">
                         Tallenna
                     </button>
                 </form>

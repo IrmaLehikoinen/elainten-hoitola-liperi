@@ -8,11 +8,19 @@ use Illuminate\Http\Request;
 
 class PublicBookingController extends Controller
 {
-    public function start()
+        public function start()
     {
              return view('public.booking.step1', [
             'careTypes' => CareType::orderBy('sort_order')->get(),
         ]);   
+    }
+
+    private function enabledBookingFields(): array
+    {
+        $company = \App\Models\Company::first();
+        $settings = $company->settings ?? [];
+
+        return $settings['public_booking_fields'] ?? array_keys(config('public_booking_fields'));
     }
 
     public function availability(Request $request, AvailabilityService $availability)
@@ -122,11 +130,14 @@ class PublicBookingController extends Controller
 
         $customer = \App\Models\Customer::where('email', $validated['email'])->first();
 
+                $enabledFields = $this->enabledBookingFields();
+
         if (!$customer) {
             return view('public.booking.step4', [
                 'customer' => null,
                 'animals' => session('public_booking.animals'),
                 'email' => $validated['email'],
+                'enabledFields' => $enabledFields,
             ]);
         }
 
@@ -154,12 +165,13 @@ class PublicBookingController extends Controller
             return redirect()->route('public.booking.start');
         }
 
-        session(['public_booking.customer_id' => $customer->id]);
+            session(['public_booking.customer_id' => $customer->id]);
 
             return view('public.booking.step4', [
             'customer' => $customer->load('pets'),
             'animals' => session('public_booking.animals'),
             'email' => $customer->email,
+            'enabledFields' => $this->enabledBookingFields(),
         ]);
     }
 

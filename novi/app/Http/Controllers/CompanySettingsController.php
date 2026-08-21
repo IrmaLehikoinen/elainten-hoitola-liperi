@@ -15,14 +15,20 @@ class CompanySettingsController extends Controller
      * Yritysasetukset-sivu: eläinryhmät/kapasiteetti, lisäpalvelut,
      * muistutustyypit ja hoitomuodot yhdestä paikasta muokattavaksi.
      */
-    public function index()
+        public function index()
     {
+        $company = request()->user()->company;
+        $bookingFields = config('public_booking_fields');
+        $enabledBookingFields = $company->settings['public_booking_fields'] ?? array_keys($bookingFields);
+
         return view('settings.index', [
-            'company' => request()->user()->company,
+            'company' => $company,
             'resources' => Resource::orderBy('type')->get(),
             'services' => Service::orderBy('name')->get(),
             'reminderTypes' => ReminderType::orderBy('sort_order')->get(),
             'careTypes' => CareType::orderBy('sort_order')->get(),
+            'bookingFields' => $bookingFields,
+            'enabledBookingFields' => $enabledBookingFields,
         ]);
     }
 
@@ -221,10 +227,28 @@ class CompanySettingsController extends Controller
         return $this->backToTab($request)->with('status', 'Hoitomuoto päivitetty.');
     }
 
-    public function destroyCareType(Request $request, CareType $careType)
+        public function destroyCareType(Request $request, CareType $careType)
     {
         $careType->delete();
 
         return $this->backToTab($request)->with('status', 'Hoitomuoto poistettu.');
+    }
+
+    public function updatePublicBookingFields(Request $request)
+    {
+        $allKeys = array_keys(config('public_booking_fields'));
+
+        $validated = $request->validate([
+            'fields' => ['nullable', 'array'],
+            'fields.*' => ['string', 'in:' . implode(',', $allKeys)],
+        ]);
+
+        $company = $request->user()->company;
+        $settings = $company->settings ?? [];
+        $settings['public_booking_fields'] = $validated['fields'] ?? [];
+        $company->settings = $settings;
+        $company->save();
+
+        return $this->backToTab($request)->with('status', 'Ajanvarauslomakkeen kentät päivitetty.');
     }
 }
