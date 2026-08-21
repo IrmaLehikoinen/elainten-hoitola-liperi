@@ -39,8 +39,8 @@ class ReportController extends Controller
                 ->orderByDesc('arrival_at')
                 ->get()
                 ->map(function ($booking) {
-                    $booking->nights = $booking->arrival_at && $booking->pickup_at
-                        ? max(1, $booking->arrival_at->diffInDays($booking->pickup_at))
+                                    $booking->nights = $booking->arrival_at && $booking->pickup_at
+                        ? max(1, $booking->arrival_at->diffInDays($booking->pickup_at) + 1)
                         : null;
 
                     $booking->servicesTotal = $booking->bookingServices->sum('price');

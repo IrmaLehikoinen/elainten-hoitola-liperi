@@ -192,11 +192,17 @@ use App\Http\Controllers\PaymentController;
 
 Route::get('/varaukset/{booking}/maksa', [PaymentController::class, 'checkout'])->name('payment.checkout');
 
-Route::get('/kuitti/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+Route::get('/kuitti/{invoice}', [InvoiceController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('invoices.show');
 
-Route::get('/kuitti/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
+Route::get('/kuitti/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])
+    ->middleware(['auth', 'verified'])
+    ->name('invoices.pdf');
 
-Route::get('/kuitti/{invoice}/tulosta', [InvoiceController::class, 'printPdf'])->name('invoices.print');
+Route::get('/kuitti/{invoice}/tulosta', [InvoiceController::class, 'printPdf'])
+    ->middleware(['auth', 'verified'])
+    ->name('invoices.print');
 
 Route::get('/maksu/onnistui', function (\Illuminate\Http\Request $request) {
     $booking = \App\Models\Booking::find($request->query('booking'));

@@ -10,12 +10,12 @@
             Varaus vahvistettu!
         </h1>
 
-        @if ($booking)
+                @if ($booking)
             <p style="color:#5A5A5A; font-size:15px; line-height:1.6; margin-bottom:8px;">
                 Varauksesi #{{ $booking->id }} on nyt vahvistettu.
             </p>
             <p style="color:#5A5A5A; font-size:15px; line-height:1.6; margin-bottom:32px;">
-                Vahvistusviesti on lähetetty osoitteeseen {{ $booking->customer->email }}.
+                Vahvistusviesti lähetetään sinulle sähköpostitse hetken kuluttua.
             </p>
         @else
             <p style="color:#5A5A5A; font-size:15px; line-height:1.6; margin-bottom:32px;">

@@ -29,7 +29,7 @@ class StripeWebhookController extends Controller
             if ($bookingId) {
                 $booking = Booking::find($bookingId);
 
-                if ($booking) {
+                if ($booking && $booking->status !== 'confirmed') {
                     $booking->deposit_paid_at = now();
                     $booking->status = 'confirmed';
                     $booking->save();

@@ -145,7 +145,7 @@ class AdminBookingController extends Controller
 
         $arrivalAt = \Carbon\Carbon::parse($validated['arrival_at']);
         $pickupAt = \Carbon\Carbon::parse($validated['pickup_at']);
-        $nights = max(1, $arrivalAt->diffInDays($pickupAt));
+        $nights = max(1, $arrivalAt->diffInDays($pickupAt) + 1);
 
         $startDate = $arrivalAt->toDateString();
         $endDate = $pickupAt->toDateString();

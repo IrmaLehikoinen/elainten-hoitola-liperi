@@ -281,8 +281,11 @@ class PublicBookingController extends Controller
                 'general_notes' => $petData['general_notes'] ?? null,
             ];
 
-            if (!empty($petData['pet_id'])) {
-                $pet = \App\Models\Pet::findOrFail($petData['pet_id']);
+                $pet = !empty($petData['pet_id'])
+                ? \App\Models\Pet::where('customer_id', $customer->id)->find($petData['pet_id'])
+                : null;
+
+            if ($pet) {
                 $pet->update($petFields);
             } else {
                 $pet = $customer->pets()->create($petFields);

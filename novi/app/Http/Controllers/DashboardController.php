@@ -116,12 +116,12 @@ class DashboardController extends Controller
         return $reminderType?->label ?? 'Muu tehtävä';
     }
 
-    private function buildCalendarDays(Carbon $monthStart)
+        private function buildCalendarDays(Carbon $monthStart)
     {
         $start = $monthStart->copy()->startOfMonth();
         $end = $monthStart->copy()->endOfMonth();
 
-        $participants = BookingParticipant::with('pet')
+        $participants = BookingParticipant::with(['pet', 'booking'])
             ->whereDate('start_date', '<=', $end)
             ->whereDate('end_date', '>=', $start)
             ->get();
@@ -147,11 +147,19 @@ class DashboardController extends Controller
                 fn ($count, $species) => $count >= ($capacities[$species] ?? PHP_INT_MAX)
             );
 
+            $newParticipant = $dayParticipants->first(
+                fn ($p) => $p->booking
+                    && $p->booking->confirmation_channel === 'online'
+                    && is_null($p->booking->acknowledged_at)
+            );
+
             $days[] = [
                 'date' => $date->copy(),
                 'count' => $dayParticipants->count(),
                 'participants' => $dayParticipants,
                 'isFull' => $isFull,
+                'has_new' => (bool) $newParticipant,
+                'new_booking_id' => $newParticipant?->booking_id,
             ];
         }
 
