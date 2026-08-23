@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\BookingPaymentExpired;
 use App\Models\Booking;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class CancelExpiredBookings extends Command
 {
@@ -12,7 +14,8 @@ class CancelExpiredBookings extends Command
 
     public function handle(): int
     {
-        $expired = Booking::where('status', 'pending')
+        $expired = Booking::with('customer')
+            ->where('status', 'pending')
             ->whereNotNull('payment_deadline')
             ->where('payment_deadline', '<', now())
             ->whereNull('deposit_paid_at')
@@ -20,6 +23,10 @@ class CancelExpiredBookings extends Command
 
         foreach ($expired as $booking) {
             $booking->update(['status' => 'cancelled']);
+
+            if ($booking->customer && $booking->customer->email) {
+                Mail::to($booking->customer->email)->send(new BookingPaymentExpired($booking));
+            }
         }
 
         $this->info($expired->count() . ' varausta peruttu.');

@@ -271,7 +271,7 @@ class PublicBookingController extends Controller
             'confirmation_channel' => 'online',
             'total_price' => $totalPrice,
             'deposit_amount' => $depositAmount,
-            'payment_deadline' => $requiresPayment ? now()->addDays(2) : null,
+                     'payment_deadline' => $requiresPayment ? now()->addMinutes(30) : null,   
         ]);
 
         foreach ($validated['pets'] as $petData) {

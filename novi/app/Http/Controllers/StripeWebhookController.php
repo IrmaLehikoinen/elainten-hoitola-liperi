@@ -29,11 +29,11 @@ class StripeWebhookController extends Controller
             if ($bookingId) {
                 $booking = Booking::find($bookingId);
 
-                if ($booking && $booking->status !== 'confirmed') {
+                            if ($booking && $booking->status === 'pending') {
                     $booking->deposit_paid_at = now();
                     $booking->status = 'confirmed';
                     $booking->save();
-                 Mail::to($booking->customer->email)->send(new BookingConfirmed($booking));   
+                    Mail::to($booking->customer->email)->send(new BookingConfirmed($booking));
                 }
             }
         }

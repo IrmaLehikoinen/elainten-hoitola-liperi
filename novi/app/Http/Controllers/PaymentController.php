@@ -16,6 +16,19 @@ class PaymentController extends Controller
             'name' => $booking->customer->name,
         ]);
 
+        // Stripen maksusivu saa olla voimassa korkeintaan 24h ja vähintään 30min
+        // (Stripen oma rajoitus). Käytetään varauksen omaa maksuaikaa, mutta
+        // pysytään näiden rajojen sisällä.
+        $expiresAt = now()->addHours(24);
+
+        if ($booking->payment_deadline && $booking->payment_deadline->lt($expiresAt)) {
+            $expiresAt = $booking->payment_deadline;
+        }
+
+        if ($expiresAt->lt(now()->addMinutes(30))) {
+            $expiresAt = now()->addMinutes(30);
+        }
+
         $session = $stripe->checkout->sessions->create([
             'payment_method_types' => ['card'],
             'line_items' => [[
@@ -33,6 +46,7 @@ class PaymentController extends Controller
             'metadata' => [
                 'booking_id' => $booking->id,
             ],
+            'expires_at' => $expiresAt->timestamp,
             'success_url' => url('/maksu/onnistui') . '?booking=' . $booking->id,
             'cancel_url' => url('/maksu/peruttu'),
         ]);
