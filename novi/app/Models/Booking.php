@@ -24,6 +24,7 @@ class Booking extends Model
         'priority',
         'confirmation_channel',
         'acknowledged_at',
+        'invoice_skipped_at',
         'total_price',
         'price_estimate',
        'deposit_amount',
@@ -47,6 +48,7 @@ class Booking extends Model
         'payment_deadline' => 'datetime',
         'locked_until' => 'datetime',
         'acknowledged_at' => 'datetime',
+        'invoice_skipped_at' => 'datetime',
         'send_email_confirmation' => 'boolean',
         'send_sms_confirmation' => 'boolean',
     ];

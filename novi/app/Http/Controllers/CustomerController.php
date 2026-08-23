@@ -136,8 +136,9 @@ class CustomerController extends Controller
             ? $activeBooking->bookingServices()->sum('price')
             : 0;
 
-        return view('customers.show', [
+            return view('customers.show', [
             'customer' => $customer,
+            'careTypeLabels' => \App\Models\CareType::pluck('label', 'slug'),
             'upcomingBookings' => $upcomingBookings,
             'pastBookings' => $pastBookings,
             'pendingSpecies' => $pendingSpecies,

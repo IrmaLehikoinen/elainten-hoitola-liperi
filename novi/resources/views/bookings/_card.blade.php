@@ -9,8 +9,8 @@
     $isPast = ($mode ?? 'future') === 'past';
 @endphp
 
-<div
-    onclick="window.location.href='{{ route('admin.bookings.show', $booking) }}'"
+    <div
+    onclick="window.location.href='{{ route('admin.customers.show', $booking->customer_id) }}'"
     class="cursor-pointer rounded-lg border p-4 transition hover:shadow-md {{ $isPast ? 'opacity-75 hover:opacity-100' : '' }}"
     style="border-color: var(--brand-secondary);"
 >

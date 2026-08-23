@@ -12,10 +12,11 @@ class InvoiceController extends Controller
 {
     public function index(Request $request)
     {
-        $readyToInvoice = Booking::with(['customer', 'participants'])
+            $readyToInvoice = Booking::with(['customer', 'participants'])
             ->whereNotNull('end_date')
             ->where('end_date', '<', today())
             ->whereDoesntHave('invoice')
+            ->whereNull('invoice_skipped_at')
             ->orderByDesc('end_date')
             ->get();
 
@@ -136,7 +137,14 @@ class InvoiceController extends Controller
             'issued_at' => now(),
         ]);
 
-        return redirect()->route('invoices.show', $invoice);
+               return redirect()->route('invoices.show', $invoice);
+    }
+
+    public function skip(Booking $booking)
+    {
+        $booking->update(['invoice_skipped_at' => now()]);
+
+        return back()->with('status', 'Merkitty ilman kuittia.');
     }
 
    public function show(Invoice $invoice)

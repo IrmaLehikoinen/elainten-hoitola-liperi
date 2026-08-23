@@ -30,7 +30,7 @@
 
                 <div class="mt-4 space-y-2">
                     @forelse ($readyToInvoice as $booking)
-                        <div class="flex items-center justify-between rounded-md border p-3" style="border-color: var(--brand-secondary);">
+                                        <div class="flex items-center justify-between rounded-md border p-3" style="border-color: var(--brand-secondary);">
                             <div>
                                 <p class="font-semibold" style="color: var(--brand-text);">
                                     {{ $booking->customer->name ?? 'Tuntematon asiakas' }}
@@ -41,12 +41,21 @@
                                 </p>
                             </div>
 
-                            <form method="POST" action="{{ route('admin.invoices.store', $booking) }}">
-                                @csrf
-                                <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
-                                    Tee kuitti
-                                </button>
-                            </form>
+                            <div class="flex items-center gap-2">
+                                <form method="POST" action="{{ route('admin.invoices.store', $booking) }}">
+                                    @csrf
+                                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                                        Tee kuitti
+                                    </button>
+                                </form>
+
+                                <form method="POST" action="{{ route('admin.invoices.skip', $booking) }}" onsubmit="return confirm('Merkitäänkö tämä ilman kuittia? Varaus poistuu listalta.');">
+                                    @csrf
+                                    <button type="submit" class="text-xs font-medium text-gray-400 hover:text-red-600" title="Ei kuittia">
+                                        ✕
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     @empty
                         <p class="text-sm text-gray-500">Ei laskuttamattomia hoitokertoja.</p>
@@ -90,7 +99,7 @@
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Ei vielä laskutettu</p>
 
                         @foreach ($customerReadyToInvoice as $booking)
-                            <div class="flex items-center justify-between rounded-md border p-3" style="border-color: var(--brand-secondary);">
+                                                <div class="flex items-center justify-between rounded-md border p-3" style="border-color: var(--brand-secondary);">
                                 <div>
                                     <p class="text-sm text-gray-700">
                                       {{ $booking->participants->pluck('name')->join(', ') ?: 'Ei lemmikkejä liitetty' }}  
@@ -100,12 +109,21 @@
                                     </p>
                                 </div>
 
-                                <form method="POST" action="{{ route('admin.invoices.store', $booking) }}">
-                                    @csrf
-                                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
-                                        Tee kuitti
-                                    </button>
-                                </form>
+                                <div class="flex items-center gap-2">
+                                    <form method="POST" action="{{ route('admin.invoices.store', $booking) }}">
+                                        @csrf
+                                        <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                                            Tee kuitti
+                                        </button>
+                                    </form>
+
+                                    <form method="POST" action="{{ route('admin.invoices.skip', $booking) }}" onsubmit="return confirm('Merkitäänkö tämä ilman kuittia? Varaus poistuu listalta.');">
+                                        @csrf
+                                        <button type="submit" class="text-xs font-medium text-gray-400 hover:text-red-600" title="Ei kuittia">
+                                            ✕
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         @endforeach
                     </div>

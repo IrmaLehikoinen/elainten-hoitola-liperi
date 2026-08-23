@@ -241,4 +241,64 @@ class AdminBookingController extends Controller
 
         return redirect()->route('admin.customers.show', $booking->customer_id);
     }
+
+    /**
+     * Muuttaa YHDEN lemmikin hoitojaksoa kesken varauksen (pidennys/lyhennys),
+     * riippumatta muista saman varauksen lemmikeistä. Kapasiteetti tarkistetaan
+     * vain niiltä päiviltä jotka eivät kuuluneet lemmikin vanhaan jaksoon.
+     */
+    public function updateParticipantPeriod(Request $request, \App\Models\BookingParticipant $participant)
+    {
+        $validated = $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+        ]);
+
+        $booking = $participant->booking;
+
+        if (!$booking || $booking->status === 'cancelled') {
+            return back()->with('error', 'Peruutetun varauksen hoitojaksoa ei voi muuttaa.');
+        }
+
+        $newStart = \Carbon\Carbon::parse($validated['start_date'])->startOfDay();
+        $newEnd = \Carbon\Carbon::parse($validated['end_date'])->startOfDay();
+        $oldStart = $participant->start_date->copy()->startOfDay();
+        $oldEnd = $participant->end_date->copy()->startOfDay();
+
+        $newDates = collect();
+        for ($d = $newStart->copy(); $d->lte($newEnd); $d->addDay()) {
+            if ($d->lt($oldStart) || $d->gt($oldEnd)) {
+                $newDates->push($d->copy());
+            }
+        }
+
+        if ($newDates->isNotEmpty()) {
+            $availability = app(\App\Services\AvailabilityService::class);
+            $requirements = [['species' => mb_strtolower(trim($participant->species)), 'count' => 1]];
+
+            foreach ($newDates as $date) {
+                if (!$availability->isAvailable($requirements, $date->toDateString(), 1)) {
+                    return back()->with('error', 'Uusi hoitojakso ei mahdu kapasiteettiin (' . $date->format('d.m.Y') . ').');
+                }
+            }
+        }
+
+        $participant->update([
+            'start_date' => $newStart->toDateString(),
+            'end_date' => $newEnd->toDateString(),
+        ]);
+
+        $booking->load('participants');
+        $minStart = $booking->participants->min('start_date');
+        $maxEnd = $booking->participants->max('end_date');
+
+        $booking->update([
+            'start_date' => $minStart,
+            'end_date' => $maxEnd,
+            'arrival_at' => $booking->arrival_at->copy()->setDate($minStart->year, $minStart->month, $minStart->day),
+            'pickup_at' => $booking->pickup_at->copy()->setDate($maxEnd->year, $maxEnd->month, $maxEnd->day),
+        ]);
+
+        return back()->with('status', 'Hoitojakso päivitetty.');
+    }
 }

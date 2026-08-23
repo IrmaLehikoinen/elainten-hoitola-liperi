@@ -245,6 +245,10 @@ Route::get('/admin/varaukset/{booking}', [AdminBookingController::class, 'show']
     ->middleware(['auth', 'verified'])
     ->name('admin.bookings.show');
 
+Route::patch('/admin/varaukset/lemmikit/{participant}/hoitojakso', [AdminBookingController::class, 'updateParticipantPeriod'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.participants.update-period');
+
 Route::get('/admin/palvelut', [ServiceSelectionController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('admin.services.index');
@@ -264,6 +268,10 @@ Route::get('/admin/laskutus', [InvoiceController::class, 'index'])
 Route::post('/admin/laskutus/{booking}/tee-kuitti', [InvoiceController::class, 'store'])
     ->middleware(['auth', 'verified'])
     ->name('admin.invoices.store');
+
+Route::post('/admin/laskutus/{booking}/ohita', [InvoiceController::class, 'skip'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.invoices.skip');
 
 use App\Http\Controllers\StripeWebhookController;
 

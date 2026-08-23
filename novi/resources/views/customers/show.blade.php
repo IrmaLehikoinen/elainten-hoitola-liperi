@@ -175,8 +175,17 @@
                 </div>   
             </section>   
 
-            {{-- Tulevat varaukset --}}
+                        {{-- Tulevat varaukset --}}
             <section class="bg-white p-6 shadow-sm rounded-lg">
+                @php
+                    $statusLabels = [
+                        'confirmed' => 'Vahvistettu',
+                        'pending' => 'Odottaa',
+                        'cancelled' => 'Peruttu',
+                        'completed' => 'Päättynyt',
+                    ];
+                @endphp
+
                 <h2
                     class="text-xl font-semibold"
                     style="font-family: var(--brand-heading-font); color: var(--brand-text);"
@@ -184,15 +193,132 @@
                     Tulevat varaukset
                 </h2>
 
+                @if (session('status'))
+                    <div class="mt-4 rounded-md bg-green-50 p-3 text-sm font-medium text-green-700">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="mt-4 rounded-md bg-red-50 p-3 text-sm font-medium text-red-700">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 <div class="mt-4 divide-y">
                     @forelse ($upcomingBookings as $booking)
                         <div class="py-3 text-sm">
-                            <p class="font-medium" style="color: var(--brand-text);">
-                                {{ $booking->start_date?->format('d.m.Y') }} – {{ $booking->end_date?->format('d.m.Y') }}
-                            </p>
-                            <p class="text-gray-500">
-                                {{ $booking->participants->pluck('name')->join(', ') ?: 'lemmikkiä ei liitetty' }}
-                            </p>
+                            <div class="flex flex-wrap items-start justify-between gap-2">
+                                <div>
+                                    <p class="font-medium" style="color: var(--brand-text);">
+                                        {{ $booking->start_date?->format('d.m.Y') }} – {{ $booking->end_date?->format('d.m.Y') }}
+                                    </p>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Saapuu: {{ $booking->arrival_at?->format('d.m.Y H:i') ?? '—' }}
+                                        · Noutaa: {{ $booking->pickup_at?->format('d.m.Y H:i') ?? '—' }}
+                                    </p>
+                                </div>
+
+                                <div class="flex shrink-0 items-center gap-2">
+                                    <span
+                                        class="rounded px-2 py-1 text-xs font-medium {{ $booking->status === 'cancelled' ? '' : 'text-white' }}"
+                                        style="{{ $booking->status === 'cancelled' ? 'background-color: var(--brand-secondary); color: var(--brand-text);' : 'background-color: var(--brand-primary);' }}"
+                                    >
+                                        {{ $statusLabels[$booking->status] ?? ucfirst($booking->status) }}
+                                    </span>
+
+                                    @if ($booking->status !== 'cancelled')
+                                        <form method="POST" action="{{ route('admin.bookings.cancel', $booking) }}" onsubmit="return confirm('Peruutetaanko tämä varaus?');">
+                                            @csrf
+                                            <button type="submit" class="text-xs font-medium text-red-600">
+                                                Peruuta varaus
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="mt-2 grid grid-cols-1 gap-1 text-xs text-gray-600 sm:grid-cols-2">
+                                <p>
+                                    <span class="font-medium" style="color: var(--brand-text);">Palvelu:</span>
+                                    {{ (($careTypeLabels[$booking->care_type] ?? null)) ?: ($booking->care_type ? ucfirst(str_replace('_', ' ', $booking->care_type)) : '—') }}
+                                </p>
+                                <p>
+                                    <span class="font-medium" style="color: var(--brand-text);">Summa:</span>
+                                    {{ $booking->total_price !== null ? number_format((float) $booking->total_price, 2, ',', ' ') . ' €' : '—' }}
+                                </p>
+                            </div>
+
+                            <div class="mt-1 flex items-center gap-2 text-xs">
+                                <span class="font-medium" style="color: var(--brand-text);">Ennakkomaksu:</span>
+                                @if ((float) $booking->deposit_amount > 0)
+                                    <span class="rounded px-2 py-0.5 text-xs font-medium text-white" style="background-color: {{ $booking->deposit_paid_at ? 'var(--brand-primary)' : '#b45309' }};">
+                                        {{ number_format((float) $booking->deposit_amount, 2, ',', ' ') }} €
+                                        {{ $booking->deposit_paid_at ? '· Maksettu' : '· Odottaa maksua' }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">Ei käytössä</span>
+                                @endif
+                            </div>
+
+                            @if ($booking->notes)
+                                <p class="mt-2 rounded-md bg-gray-50 p-2 text-xs text-gray-600">
+                                    {{ $booking->notes }}
+                                </p>
+                            @endif
+
+                            <div class="mt-3 space-y-2">
+                                @foreach ($booking->participants as $participant)
+                                    <div class="rounded-md border p-3" style="border-color: var(--brand-secondary);" x-data="{ editing: false }">
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <div>
+                                                <span class="font-medium" style="color: var(--brand-text);">{{ $participant->name }}</span>
+                                                <span class="text-gray-500">
+                                                    · {{ $participant->start_date?->format('d.m.Y') }} – {{ $participant->end_date?->format('d.m.Y') }}
+                                                </span>
+                                            </div>
+
+                                            @if ($booking->status !== 'cancelled')
+                                                <button
+                                                    type="button"
+                                                    @click="editing = !editing"
+                                                    class="text-xs font-semibold shrink-0"
+                                                    style="color: var(--brand-primary);"
+                                                >
+                                                    <span x-text="editing ? 'Sulje' : 'Muokkaa hoitojaksoa'"></span>
+                                                </button>
+                                            @endif
+                                        </div>
+
+                                        @if ($booking->status !== 'cancelled')
+                                            <form
+                                                x-show="editing"
+                                                x-cloak
+                                                method="POST"
+                                                action="{{ route('admin.bookings.participants.update-period', $participant) }}"
+                                                class="mt-3 flex flex-wrap items-end gap-3"
+                                            >
+                                                @csrf
+                                                @method('PATCH')
+
+                                                <div>
+                                                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Saapumispäivä</label>
+                                                    <input type="date" name="start_date" value="{{ $participant->start_date?->format('Y-m-d') }}" class="mt-1 rounded-md border-gray-300 shadow-sm">
+                                                </div>
+
+                                                <div>
+                                                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Lähtöpäivä</label>
+                                                    <input type="date" name="end_date" value="{{ $participant->end_date?->format('Y-m-d') }}" class="mt-1 rounded-md border-gray-300 shadow-sm">
+                                                </div>
+
+                                                <button type="submit" class="btn-brand rounded-md px-3 py-2 text-sm font-semibold">
+                                                    Tallenna
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     @empty
                         <p class="py-4 text-sm text-gray-500">Ei tulevia varauksia.</p>
