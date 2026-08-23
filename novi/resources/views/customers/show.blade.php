@@ -120,10 +120,54 @@
                         >
                     </div>
 
-                    <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
+                                        <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">
                         Tallenna tiedot
                     </button>
                 </form>
+
+                                <div class="mt-6 rounded-md border p-4" style="border-color: var(--brand-secondary);">
+                                    <p class="text-sm font-semibold" style="color: var(--brand-text);">Tietopyyntö (GDPR)</p>
+                    <p class="mt-1 text-xs text-gray-500">Kokoaa kaikki asiakkaasta tallennetut tiedot yhdelle sivulle, jos asiakas pyytää nähdä tietonsa.</p>
+
+                    <label class="mt-2 flex items-center gap-2 text-xs text-gray-600">
+                        <input type="checkbox" id="include-internal-notes" class="rounded border-gray-300">
+                        Sisällytä hoitolan sisäiset muistiinpanot
+                    </label>
+
+                    <div class="mt-2 flex gap-3">
+                        <button type="button" onclick="openDataExport()" class="text-xs font-semibold underline" style="color: var(--brand-primary);">
+                            Näytä/tulosta
+                        </button>
+                        <button type="button" onclick="downloadDataExportPdf()" class="text-xs font-semibold underline" style="color: var(--brand-primary);">
+                            Lataa PDF
+                        </button>
+                    </div>
+
+                    <script>
+                        function openDataExport() {
+                            const includeInternal = document.getElementById('include-internal-notes').checked ? '1' : '0';
+                            window.open('{{ route('admin.customers.data-export', $customer) }}?include_internal=' + includeInternal, '_blank');
+                        }
+                        function downloadDataExportPdf() {
+                            const includeInternal = document.getElementById('include-internal-notes').checked ? '1' : '0';
+                            window.location.href = '{{ route('admin.customers.data-export.pdf', $customer) }}?include_internal=' + includeInternal;
+                        }
+                    </script>
+                </div>
+
+                <div class="mt-6 rounded-md border border-red-200 bg-red-50 p-4">
+                    <p class="text-sm font-semibold text-red-700">Vaarallinen toiminto</p>
+                    <p class="mt-1 text-xs text-red-600">
+                        Poistaa asiakkaan henkilö- ja lemmikkitiedot pysyvästi (tietosuojapyyntöä varten). Jos asiakkaalla on kuitteja/laskuja, ne säilyvät kirjanpitolain vuoksi ilman henkilötietoja — muuten koko asiakas poistuu kokonaan.
+                    </p>
+                    <form method="POST" action="{{ route('admin.customers.destroy', $customer) }}" class="mt-3" onsubmit="return confirm('Poistetaanko asiakkaan {{ $customer->name }} henkilötiedot pysyvästi? Tätä ei voi perua.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-xs font-semibold text-red-700 underline">
+                            Poista asiakastiedot
+                        </button>
+                    </form>
+                </div>
             </section>
 
             {{-- Eläimet --}}

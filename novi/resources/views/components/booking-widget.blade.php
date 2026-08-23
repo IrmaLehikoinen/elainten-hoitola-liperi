@@ -265,9 +265,15 @@
             @endisset
         </div>
 
-        <div class="public-card">
+                <div class="public-card">
             {{ $slot }}
         </div>
+
+        <p style="margin-top: 20px; text-align: center; font-size: 12px; opacity: 0.6;">
+            <button type="button" onclick="window.open('{{ route('legal.privacy') }}', '_blank')" style="background: none; border: none; cursor: pointer; color: var(--brand-text); text-decoration: underline; font-family: var(--brand-body-font); font-size: 12px;">
+                Tietosuojaseloste
+            </button>
+        </p>
 
         @isset($footer)
             <div style="margin-top: 64px;">

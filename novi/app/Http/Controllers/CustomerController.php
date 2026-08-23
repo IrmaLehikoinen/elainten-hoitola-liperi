@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BookingParticipant;
 use App\Models\Customer;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -145,6 +146,53 @@ class CustomerController extends Controller
             'activeBooking' => $activeBooking,
             'selectedServicesTotal' => $selectedServicesTotal,
         ]);
+    }
+
+             /**
+     * Kokoaa kaiken asiakkaasta tallennetun tiedon yhdelle sivulle
+     * tietosuojan tarkastuspyyntöä varten (GDPR art. 15).
+     */
+           public function dataExport(Request $request, Customer $customer)
+    {
+        $customer->load(['pets', 'bookings.participants', 'invoices' => fn ($q) => $q->orderByDesc('issued_at')]);
+
+        return view('customers.data-export', [
+            'customer' => $customer,
+            'includeInternal' => $request->boolean('include_internal'),
+        ]);
+    }
+
+    /**
+     * Sama tietopyyntökooste PDF-tiedostona ladattavaksi/lähetettäväksi.
+     */
+    public function dataExportPdf(Request $request, Customer $customer)
+    {
+        $customer->load(['pets', 'bookings.participants', 'invoices' => fn ($q) => $q->orderByDesc('issued_at')]);
+
+        $pdf = Pdf::loadView('customers.data-export', [
+            'customer' => $customer,
+            'isPdf' => true,
+            'includeInternal' => $request->boolean('include_internal'),
+        ]);
+
+        return $pdf->download('asiakastiedot-' . \Illuminate\Support\Str::slug($customer->name) . '.pdf');
+    } 
+
+    /**
+     * Poistaa asiakkaan henkilötiedot (tietosuoja-pyyntö). Katso
+     * Customer::eraseForPrivacy() mallista tarkka logiikka.
+     */
+    public function destroy(Customer $customer)
+    {
+        $hadInvoices = $customer->invoices()->exists();
+
+        $customer->eraseForPrivacy();
+
+        return redirect()
+            ->route('admin.customers.index')
+            ->with('status', $hadInvoices
+                ? 'Asiakkaan henkilötiedot poistettu. Varaus- ja laskuhistoria säilytettiin kirjanpitolain mukaisesti ilman henkilötietoja.'
+                : 'Asiakas poistettu kokonaan.');
     }
 
     /**

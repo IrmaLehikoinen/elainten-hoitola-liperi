@@ -9,6 +9,10 @@ class PaymentController extends Controller
 {
     public function checkout(Booking $booking)
     {
+        if ($booking->status !== 'pending' || $booking->deposit_paid_at) {
+            abort(404);
+        }
+
         $stripe = new StripeClient(config('services.stripe.secret'));
 
         $customer = $stripe->customers->create([

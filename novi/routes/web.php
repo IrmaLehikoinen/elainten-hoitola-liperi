@@ -117,6 +117,27 @@ Route::patch(
     ->middleware(['auth', 'verified'])
     ->name('admin.customers.update');
 
+Route::delete(
+    '/admin/customers/{customer}',
+    [CustomerController::class, 'destroy']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.customers.destroy');
+
+Route::get(
+    '/admin/customers/{customer}/tietopyynto',
+    [CustomerController::class, 'dataExport']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.customers.data-export');
+
+Route::get(
+    '/admin/customers/{customer}/tietopyynto/pdf',
+    [CustomerController::class, 'dataExportPdf']
+)
+    ->middleware(['auth', 'verified'])
+    ->name('admin.customers.data-export.pdf');
+
 Route::get(
     '/admin/pets/{pet}',
     [PetController::class, 'show']
@@ -192,7 +213,9 @@ Route::post('/base-rate', [CompanySettingsController::class, 'updateBaseRate'])-
 
 use App\Http\Controllers\PaymentController;
 
-Route::get('/varaukset/{booking}/maksa', [PaymentController::class, 'checkout'])->name('payment.checkout');
+Route::get('/varaukset/{booking}/maksa', [PaymentController::class, 'checkout'])
+    ->middleware('throttle:30,1')
+    ->name('payment.checkout');
 
 Route::get('/kuitti/{invoice}', [InvoiceController::class, 'show'])
     ->middleware(['auth', 'verified'])
@@ -215,6 +238,12 @@ Route::get('/maksu/onnistui', function (\Illuminate\Http\Request $request) {
 Route::get('/maksu/peruttu', function () {
     return view('public.booking.cancelled');
 });
+
+Route::get('/tietosuoja', function () {
+    return view('legal.tietosuoja', [
+        'companyRecord' => \App\Models\Company::first(),
+    ]);
+})->name('legal.privacy');
 
 Route::get('/calendar', [CalendarController::class, 'index'])
     ->middleware(['auth', 'verified'])
