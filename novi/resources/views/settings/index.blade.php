@@ -420,8 +420,13 @@
                 <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
                     Yritystiedot
                 </h2>
-                <p class="mt-1 text-sm text-gray-500">
+                                        <p class="mt-1 text-sm text-gray-500">
                     Nämä tiedot näkyvät asiakkaille lähetettävillä kuiteilla.
+                </p>
+
+                <p class="mt-3 text-sm">
+                    <span class="font-semibold" style="color: var(--brand-text);">Toimiala:</span>
+                    <span style="color: var(--brand-text);">{{ config('industries.' . $company->industry . '.label', $company->industry) }}</span>
                 </p>
 
                 <form method="POST" action="{{ route('admin.settings.company-info.update') }}" class="mt-4 space-y-4 max-w-md">
