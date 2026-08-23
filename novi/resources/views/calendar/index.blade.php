@@ -12,18 +12,9 @@
                     Kalenteri
                 </h1>
 
-                            <p class="mt-1 text-sm text-gray-500">
+                <p class="mt-1 text-sm text-gray-500">
                     Varaukset ja vapaat ajat
                 </p>
-
-                @if ($newBookingsCount > 0)
-                    <span
-                        class="mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold text-white"
-                        style="background-color: #D98C7A;"
-                    >
-                        {{ $newBookingsCount }} uutta varausta
-                    </span>
-                @endif
             </div>
 
             <button
@@ -101,13 +92,25 @@
                             </svg>
                         </div>
 
-                        <div
+                                            <div
                             onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => today()->format('Y-m-d')]) }}'"
                             class="ml-1 cursor-pointer rounded-md px-2 py-1 text-xs font-medium"
                             style="border: 1px solid var(--brand-secondary); color: var(--brand-text);"
                         >
                             Tänään
                         </div>
+
+                        @if ($newBookingsCount > 0)
+                            <span
+                                @if ($firstNewBookingDate)
+                                    onclick="window.location.href='{{ route('calendar.index', ['view' => 'month', 'date' => $firstNewBookingDate]) }}'"
+                                @endif
+                                class="ml-1 inline-block rounded-full px-3 py-1 text-xs font-semibold text-white"
+                                style="background-color: #D98C7A; {{ $firstNewBookingDate ? 'cursor:pointer;' : '' }}"
+                            >
+                                {{ $newBookingsCount }} uutta varausta
+                            </span>
+                        @endif
                     </div>
 
                     <div class="flex items-center gap-2">

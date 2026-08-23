@@ -8,11 +8,11 @@
                 Etusivu
             </h1>
 
-            <p class="mt-1 text-sm text-gray-500">
+                <p class="mt-1 text-sm text-gray-500">
                 {{ $today->translatedFormat('l j.n.Y') }}
             </p>
         </div>
-    </x-slot>
+    </x-slot> 
 
     <div class="py-8" x-data="dashboardPage">
       <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -151,7 +151,7 @@
                                 </svg>
                             </div>
 
-                            @if (!$calendarMonth->isSameMonth(today()))
+                                                        @if (!$calendarMonth->isSameMonth(today()))
                                 <div
                                     onclick="window.location.href='{{ route('dashboard') }}'"
                                     class="cursor-pointer rounded-md px-2 py-1 text-xs font-medium"
@@ -159,6 +159,18 @@
                                 >
                                     Tänään
                                 </div>
+                            @endif
+
+                            @if ($newBookingsCount > 0)
+                                <span
+                                    @if ($firstNewBookingDate)
+                                        onclick="window.location.href='{{ route('dashboard', ['date' => $firstNewBookingDate]) }}'"
+                                    @endif
+                                    class="ml-1 inline-block rounded-full px-3 py-1 text-xs font-semibold text-white"
+                                    style="background-color: #D98C7A; {{ $firstNewBookingDate ? 'cursor:pointer;' : '' }}"
+                                >
+                                    {{ $newBookingsCount }} uutta varausta
+                                </span>
                             @endif
                         </div>
 

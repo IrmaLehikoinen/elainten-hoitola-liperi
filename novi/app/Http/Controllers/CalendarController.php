@@ -62,10 +62,18 @@ class CalendarController extends Controller
             ];
         }
 
-        $newBookingsCount = \App\Models\Booking::where('confirmation_channel', 'online')
+                 $newBookingsCount = \App\Models\Booking::where('confirmation_channel', 'online')
             ->whereNull('acknowledged_at')
             ->where('status', '!=', 'cancelled')
             ->count();
+
+        $firstNewBookingDate = \App\Models\Booking::where('confirmation_channel', 'online')
+            ->whereNull('acknowledged_at')
+            ->where('status', '!=', 'cancelled')
+            ->orderBy('start_date')
+            ->value('start_date');
+
+        $firstNewBookingDate = $firstNewBookingDate ? Carbon::parse($firstNewBookingDate)->format('Y-m-d') : null;
 
         return view('calendar.index', [
             'calendarView' => $view,
@@ -75,6 +83,7 @@ class CalendarController extends Controller
             'calendarDays' => $days,
             'careTypes' => \App\Models\CareType::orderBy('sort_order')->get(),
             'newBookingsCount' => $newBookingsCount,
+            'firstNewBookingDate' => $firstNewBookingDate,
         ]);
     }
 

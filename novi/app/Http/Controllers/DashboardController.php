@@ -13,10 +13,23 @@ class DashboardController extends Controller
             $today = Carbon::today();
         $tomorrow = $today->copy()->addDay();
 
-        $calendarAnchor = request('date')
+            $calendarAnchor = request('date')
             ? Carbon::createFromFormat('Y-m-d', request('date'))->startOfDay()
             : $today->copy();
         $monthStart = $calendarAnchor->copy()->startOfMonth(); 
+
+        $newBookingsCount = \App\Models\Booking::where('confirmation_channel', 'online')
+            ->whereNull('acknowledged_at')
+            ->where('status', '!=', 'cancelled')
+            ->count();
+
+        $firstNewBookingDate = \App\Models\Booking::where('confirmation_channel', 'online')
+            ->whereNull('acknowledged_at')
+            ->where('status', '!=', 'cancelled')
+            ->orderBy('start_date')
+            ->value('start_date');
+
+        $firstNewBookingDate = $firstNewBookingDate ? Carbon::parse($firstNewBookingDate)->format('Y-m-d') : null;
 
         return view('dashboard', [
             'today' => $today,
@@ -26,6 +39,8 @@ class DashboardController extends Controller
             'arrivingTomorrow' => $this->participantsArrivingOn($tomorrow),
             'calendarMonth' => $monthStart,
             'calendarDays' => $this->buildCalendarDays($monthStart),
+            'newBookingsCount' => $newBookingsCount,
+            'firstNewBookingDate' => $firstNewBookingDate,
         ]);
     }
 
