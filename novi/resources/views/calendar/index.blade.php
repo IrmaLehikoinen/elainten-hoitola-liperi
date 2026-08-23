@@ -804,14 +804,16 @@
                             }),
                         });
 
-                        const data = await response.json();
+                    const data = await response.json();
 
                         this.availableStartDates = data.dates || [];
                     } catch (error) {
                         this.availableStartDates = [];
                     }
 
-                    this.resultsMonth = new Date();
+                    this.resultsMonth = this.availableStartDates.length > 0
+                        ? new Date(this.availableStartDates[0].iso + 'T00:00:00')
+                        : new Date();
                     this.availabilityChecked = true;
                     this.checkingAvailability = false;
                 },
@@ -886,7 +888,8 @@
                     );
                 },
 
-             openBookingModal(displayDate, isoDate) {
+                    openBookingModal(displayDate, isoDate) {
+                    this.releaseHold();
                     this.resetBookingForm();
 
                     this.selectedDate = displayDate;
@@ -921,7 +924,7 @@
                     this.createHold(isoDate, durationDays);
                 },
 
-                async createHold(isoDate, durationDays) {
+                            async createHold(isoDate, durationDays) {
                     try {
                         const response = await fetch(this.holdStoreUrl, {
                             method: 'POST',
@@ -941,6 +944,10 @@
 
                         if (response.ok) {
                             this.activeHoldIds = data.hold_ids || [];
+                        } else {
+                            this.activeHoldIds = [];
+                            this.saveSucceeded = false;
+                            this.saveMessage = data.message || 'Tämä päivä ei olekaan enää vapaa.';
                         }
                     } catch (error) {
                         this.activeHoldIds = [];
@@ -1121,12 +1128,14 @@
                     }
                 },
 
-                async searchCustomer() {   
+                                async searchCustomer() {   
                     this.customer = null;
                     this.customerNotFound = false;
                     this.pets = [];
                     this.bookingAnimals = [];
                     this.searchMessage = '';
+                    this.saveMessage = '';
+                    this.saveSucceeded = false;
 
                     const phone = this.customerPhone.trim();
                     const email = this.customerEmail.trim();
@@ -1156,8 +1165,9 @@
                             throw new Error('Asiakashaku epäonnistui.');
                         }
 
-                        const data = await response.json();
+                                                const data = await response.json();
                         this.customer = data;
+                        this.customerEmail = data.email || this.customerEmail;
                         this.pets = Array.isArray(data.pets) ? data.pets : [];
                         this.buildBookingAnimals();
                     } catch (error) {
@@ -1211,7 +1221,7 @@
                             pet_id: animal.petId,
                         }));
 
-                        const response = await fetch(this.bookingStoreUrl, {
+                                            const response = await fetch(this.bookingStoreUrl, {
                             method: 'POST',
                             headers: {
                                 Accept: 'application/json',
@@ -1225,6 +1235,7 @@
                                 pickup_at: pickupAt,
                                 care_type: this.careType,
                                 notes: this.notes,
+                                hold_ids: this.activeHoldIds,
                             }),
                         });
 

@@ -11,7 +11,7 @@ class BookingParticipant extends Model
         'pet_id',
         'resource_id',
         'name',
-        'species',
+        'resource_type',
         'start_date',
         'end_date',
         'daily_rate',

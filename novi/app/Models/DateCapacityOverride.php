@@ -9,10 +9,10 @@ class DateCapacityOverride extends Model
 {
     use BelongsToCompany;
 
-    protected $fillable = [
+        protected $fillable = [
         'company_id',
         'date',
-        'species',
+        'resource_type',
         'capacity',
         'note',
     ];

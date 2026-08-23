@@ -71,11 +71,12 @@ class DashboardController extends Controller
     {
         $items = collect();
 
-        foreach ($this->participantsArrivingOn($today) as $participant) {
+            foreach ($this->participantsArrivingOn($today) as $participant) {
             $items->push([
                 'time' => optional($participant->booking)->arrival_at?->format('H:i') ?? '--:--',
                 'label' => 'Saapuu tänään',
                 'name' => $participant->name,
+                'species' => $participant->resource_type,
                 'customer' => optional(optional($participant->booking)->customer)->name,
                 'pet_id' => $participant->pet_id,
             ]);
@@ -90,6 +91,7 @@ class DashboardController extends Controller
                 'time' => optional($participant->booking)->pickup_at?->format('H:i') ?? '--:--',
                 'label' => 'Lähtee tänään',
                 'name' => $participant->name,
+                'species' => $participant->resource_type,
                 'customer' => optional(optional($participant->booking)->customer)->name,
                 'pet_id' => $participant->pet_id,
             ]);
@@ -154,8 +156,8 @@ class DashboardController extends Controller
                 fn ($p) => $p->start_date->lte($date) && $p->end_date->gte($date)
             )->values();
 
-            $speciesCounts = $dayParticipants
-                ->groupBy(fn ($p) => mb_strtolower(trim($p->species)))
+                $speciesCounts = $dayParticipants
+                ->groupBy(fn ($p) => mb_strtolower(trim($p->resource_type)))
                 ->map(fn ($group) => $group->count());
 
             $isFull = $speciesCounts->some(

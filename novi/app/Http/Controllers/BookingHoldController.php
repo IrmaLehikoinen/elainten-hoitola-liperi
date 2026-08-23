@@ -12,7 +12,7 @@ class BookingHoldController extends Controller
      * -ikkuna avataan, jottei kaksi työntekijää voi varata samaa
      * paikkaa päällekkäin kesken lomakkeen täytön.
      */
-    public function store(Request $request)
+        public function store(Request $request, \App\Services\AvailabilityService $availability)
     {
         $validated = $request->validate([
             'animals' => ['required', 'array', 'min:1'],
@@ -28,11 +28,22 @@ class BookingHoldController extends Controller
         $grouped = collect($validated['animals'])
             ->groupBy(fn ($a) => mb_strtolower(trim($a['species'])));
 
+        $requirements = $grouped
+            ->map(fn ($group, $species) => ['resource_type' => $species, 'count' => $group->count()])
+            ->values()
+            ->all();
+
+        if (!$availability->isAvailable($requirements, $startDate, $validated['duration_days'])) {
+            return response()->json([
+                'message' => 'Valitettavasti tämä päivä ei olekaan enää vapaa. Hae vapaat ajat uudelleen.',
+            ], 422);
+        }
+
         $holdIds = [];
 
         foreach ($grouped as $species => $group) {
             $hold = BookingHold::create([
-                'species' => $species,
+                'resource_type' => $species,
                 'quantity' => $group->count(),
                 'start_date' => $startDate,
                 'end_date' => $endDate,

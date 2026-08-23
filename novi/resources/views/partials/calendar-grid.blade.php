@@ -19,8 +19,8 @@
         @php
             $dayHref = route('admin.calendar.day', $day['date']->format('Y-m-d'));
             $usage = $availabilityService->usageForDate($day['date']);
-            $isBlocked = \App\Models\DateCapacityOverride::whereDate('date', $day['date']->toDateString())
-                ->whereNull('species')
+                        $isBlocked = \App\Models\DateCapacityOverride::whereDate('date', $day['date']->toDateString())
+                ->whereNull('resource_type')
                 ->where('capacity', 0)
                 ->exists();
         @endphp
@@ -52,12 +52,13 @@
 
             @foreach ($usage as $species => $info)
                 @if ($info['used'] > 0 || $info['overridden'])
-                    <div
+                    @php $isFull = $info['used'] >= $info['capacity']; @endphp
+                                     <div
                         class="mt-1 truncate rounded px-1.5 py-0.5 text-[11px] font-medium text-white"
                         style="background-color: var(--brand-primary);"
-                    >   
-                        {{ ucfirst($species) }} {{ $info['used'] }}/{{ $info['capacity'] }}
-                    </div>
+                    >
+                        {{ ucfirst($species) }} {{ $info['used'] }}/{{ $info['capacity'] }}{{ $isFull ? ' · Täynnä' : '' }}
+                    </div>   
                 @endif
             @endforeach
         </div>

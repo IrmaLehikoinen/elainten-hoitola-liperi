@@ -414,3 +414,54 @@ Tarkka koodi on jo kirjoitettu edellisessä Claude-vastauksessa (Poistettava alu
 ### Seuraavaksi
 
 Kohdan 13 mukaisesti: **tehtävä #31 (Hoitojakson pidennys/lyhennys kesken hoidon)** on nyt ainoa jäljellä oleva kohta ennen pohja + lemmikkihoitolan moduuli -erottelua ja Novi 1.0.0:aa. Ei aloitettu vielä. Lisäksi kaksi pientä kirjattua siivouskohtaa odottaa (hyötynostot-rivin poisto, kalenterin "X uutta varausta" -pillin korjaus yllä) – tehdään kun varauslaatikkoon/kalenteriin seuraavan kerran palataan.
+
+**PÄIVITYS 23.8. myöhäisilta: tehtävä #31, kaikki turvallisuus-/GDPR-korjaukset ja koko "perusteellinen lopputarkastus" on nyt TEHTY.** Pohja + lemmikkihoitolan moduuli -erottelu on käynnissä (aloitettu 23.8. illalla). Jatka tästä alla olevien kohtien mukaisesti, älä suunnittele uudelleen.
+
+## 15. Pohja + lemmikkihoitolan moduuli -erottelu, KÄYNNISSÄ (aloitettu 23.8. illalla)
+
+`muistiinpano_pohjanaloitus` — tästä kohdasta alkaa pohja/moduuli-erottelutyö. Jos etsit mistä tämä työ alkoi, hae tämä tunniste tiedostosta.
+
+### Tarkka raja pohjan ja moduulin välillä (Irman itse 21.8. kirjoittama määritelmä, tämä on lopullinen)
+
+**Pohja** = kirjautuminen, reititys, perusrakenteet, JA geneeriset toiminnot yleisluonteisilla nimillä (ei mitään lemmikkisanaa):
+- `app/Http/Controllers/Auth/*`, `User`-malli, `bootstrap/app.php`
+- Brändijärjestelmä: `project/brand.php`/`project/company.php`, `App\Core\Branding\BrandManager`, `ShareCompanyBranding`-middleware, `config/branding.php`
+- `Company`-malli + asetuspohjan runko (`CompanySettingsController`)
+- Laskutus/kuitit (PDF, ALV, viitenumero) — `Invoice`-malli, `InvoiceController` (paitsi `species`-viittaukset, ks. alla)
+- Maksut: `PaymentController`, `StripeWebhookController`
+- Muistutusjärjestelmän runko (`Reminder`, `ReminderType`, `ReminderController`)
+- **Kapasiteettimoottori `AvailabilityService` + kolme taulua `booking_participants`/`booking_holds`/`date_capacity_overrides`** — ALGORITMI on geneerinen, mutta ne käyttivät ennen `species`-saraketta/nimeä; erottelutyö nimeää nämä `resource_type`:ksi jotta pohja ei enää "tiedä" lajeista.
+
+**Lemmikkihoitola-moduuli** = itse toiminnallisuus, lemmikki-/laji-spesifi sanasto:
+- `Pet`-malli, `PetController`, `pets/*.blade.php` — EI KOSKETA, pysyy nimellä "species" pysyvästi (oikeutettua omaa sanastoa).
+- `config/public_booking_fields.php` (lemmikkikentät julkiselle lomakkeelle)
+- Julkisen lomakkeen (`public/booking/step1-6.blade.php`) oma "laji"-sanasto
+- `CareType`-malli, `Resource`-mallin UI-tekstit ("Lemmikkiryhmät")
+- Kaikki kontrollerit jotka KÄÄNTÄVÄT moduulin sanaston pohjan geneeriseksi sarakkeeksi: `AdminBookingController`, `PublicBookingController`, `CalendarController`, `DashboardController`, `BookingHoldController`, `CalendarCapacityController` — nämä lukevat `Pet::species`:ä normaalisti mutta kirjoittavat `resource_type`-sarakkeeseen pohjan tauluihin.
+
+### Työn eteneminen — TARKKA TILANNE 23.8. illalla
+
+**Vaihe 1/5 — TEHTY (odottaa Irman "tehty"-vahvistusta):** kolme migraatiota jotka nimeävät `species`→`resource_type`:
+- `database/migrations/2026_08_23_120000_rename_species_to_resource_type_on_booking_participants_table.php`
+- `database/migrations/2026_08_23_120100_rename_species_to_resource_type_on_booking_holds_table.php`
+- `database/migrations/2026_08_23_120200_rename_species_to_resource_type_on_date_capacity_overrides_table.php`
+
+Kaikki kolme käyttävät `$table->renameColumn('species', 'resource_type')`. Muista tarkistaa VS Codesta että Irma tallensi ne oikealla `.php`-päätteellä (aiemmin unohtui kerran) ja että `php artisan migrate` on ajettu.
+
+**Vaihe 2/5 — EI VIELÄ TEHTY:** `app/Services/AvailabilityService.php` KOKO TIEDOSTON KORVAUS — kaikki `species`-viittaukset (parametrinimet, taulukkoavaimet `['species' => ..., 'count' => ...]`, `whereRaw('LOWER(species) = ?', ...)` × 3 kohtaa, `speciesCapacities()`-metodin nimi) muutetaan `resource_type`:ksi. HUOM: `Resource.type`-sarake (jo geneerinen, ei muutu) on eri asia kuin `resource_type`-sarake kolmessa taulussa — älä sekoita näitä kahta.
+
+**Vaihe 3/5 — EI VIELÄ TEHTY:** kontrollerit jotka kutsuvat `AvailabilityService`:ä tai kirjoittavat/lukevat noita kolmea taulua suoraan:
+- `AdminBookingController.php` — `availability()` (rivi ~23-30, `groupBy('species')`), `store()` (rivi ~145-151, `requirements`-taulukko + `$booking->participants()->create(['species' => $pet->species, ...])` → muuttuu `'resource_type' => $pet->species`), `updateParticipantPeriod()` (rivi ~290, `mb_strtolower(trim($participant->species))` → `$participant->resource_type`).
+- `PublicBookingController.php` — `availability()`, `hold()` (BookingHold-luonti `'species' => $species`), `store()` (BookingParticipant-luonti).
+- `CalendarController.php`, `DashboardController.php` — tarkista tarkkaan mitä nämä oikeasti käyttävät (aiempi haku löysi "species"-sanan näistä, mutta ei vielä tarkistettu rivikohtaisesti mihin se liittyy).
+- `BookingHoldController.php`, `CalendarCapacityController.php` — CRUD-toiminnot joissa `species`/`resource_type` esiintyy.
+- `InvoiceController.php` — `$participant->name . ' (' . $participant->species . ')'` -rivi kuittien rivitekstissä → `$participant->resource_type`.
+- Mallit: `BookingHold.php`, `DateCapacityOverride.php`, `BookingParticipant.php` — `$fillable`-listojen `species`→`resource_type`.
+
+**Vaihe 4/5 — EI VIELÄ TEHTY:** näkymät jotka näyttävät suoraan näiden kolmen taulun dataa: `dashboard.blade.php`, `calendar/index.blade.php`, `calendar/day.blade.php`, `partials/calendar-grid.blade.php`, `customers/show.blade.php` (tarkista mitkä kohdat oikeasti viittaavat `$participant->species`, EI `$pet->species`-kenttään).
+
+**Vaihe 5/5 — EI VIELÄ TEHTY:** `config/industries.php` rakennetaan (määrittää toimialan sanaston: mikä malli edustaa "varattavaa kohdetta", mitkä kenttäasetukset, mitkä oletusmuistutustyypit), ja `Company.industry`-sarake otetaan oikeasti käyttöön (nyt olemassa muttei tee mitään, oletusarvo `'lemmikkihoitola'`).
+
+### Lopuksi: erillinen kansio "Novi 1.0.0" (Irman vahvistama päätös 23.8. illalla)
+
+Kun kaikki 5 vaihetta on tehty ja testattu tässä samassa `novi`-kansiossa: merkitään koodi git-versiotagilla `pohja-1.0.0`. TÄMÄN JÄLKEEN luodaan KOKONAAN OMA, ERILLINEN kansio (esim. `~/Herd/novi-pohja-1.0.0`) kloonaamalla sama git-repositorio uudestaan ja ottamalla siinä käyttöön juuri tuo `pohja-1.0.0`-tagi. `novi`-kansio jää Irman jatkuvaksi kehitysympäristöksi, `novi-pohja-1.0.0` jää pysyväksi, koskemattomaksi myytäväksi versioksi — nämä kaksi eivät enää "kulje mukana" toistensa kanssa. Tarkat git-komennot annetaan vasta kun vaiheet 1-5 on valmiit ja testattu.

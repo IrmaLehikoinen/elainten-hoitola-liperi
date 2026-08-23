@@ -82,7 +82,7 @@ class InvoiceController extends Controller
 
             $lineItems[] = [
                 'type' => 'care',
-                'label' => $participant->name . ' (' . $participant->species . ')',
+                                'label' => $participant->name . ' (' . $participant->resource_type . ')',
                 'days' => $days,
                 'rate' => (float) $participant->daily_rate,
                 'subtotal' => $rowSubtotal,

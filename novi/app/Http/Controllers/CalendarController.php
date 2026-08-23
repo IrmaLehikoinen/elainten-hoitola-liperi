@@ -126,7 +126,7 @@ class CalendarController extends Controller
             ->get();
 
                 $overrides = DateCapacityOverride::whereDate('date', $day->toDateString())->get();
-        $dayBlockOverride = $overrides->first(fn ($o) => $o->species === null && (int) $o->capacity === 0);
+                $dayBlockOverride = $overrides->first(fn ($o) => $o->resource_type === null && (int) $o->capacity === 0);
 
         // Kun yrittäjä avaa päivän, sen uudet nettivaraukset merkitään nähdyiksi.
         \App\Models\Booking::whereIn('id', $participants->pluck('booking_id')->unique())

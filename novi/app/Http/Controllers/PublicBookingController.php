@@ -43,9 +43,9 @@ class PublicBookingController extends Controller
             'public_booking.duration_days' => $durationDays,
         ]);
 
-        $requirements = collect($validated['animals'])
+            $requirements = collect($validated['animals'])
             ->groupBy(fn ($a) => mb_strtolower(trim($a['species'])))
-            ->map(fn ($group, $species) => ['species' => $species, 'count' => $group->count()])
+            ->map(fn ($group, $species) => ['resource_type' => $species, 'count' => $group->count()])
             ->values()
             ->all();
 
@@ -69,15 +69,15 @@ class PublicBookingController extends Controller
             return redirect()->route('public.booking.start');
         }
 
-        $requirements = collect($animals)
+            $requirements = collect($animals)
             ->groupBy(fn ($a) => mb_strtolower(trim($a['species'])))
-            ->map(fn ($group, $species) => ['species' => $species, 'count' => $group->count()])
+            ->map(fn ($group, $species) => ['resource_type' => $species, 'count' => $group->count()])
             ->values()
             ->all();
 
-        if (!$availability->isAvailable($requirements, $validated['start_date'], $durationDays)) {
+            if (!$availability->isAvailable($requirements, $validated['start_date'], $durationDays)) {
             return redirect()->route('public.booking.start')
-                ->with('booking_error', 'Valitettavasti tämä aika ehdittiin juuri varata. Yritä hakea vapaat ajat uudelleen.');
+                ->with('booking_error', 'Valitettavasti tälle päivälle ei ole enää vapaita aikoja. Valitse kalenterista toinen vapaa ajankohta.');
         }
 
         $startDate = $validated['start_date'];
@@ -89,10 +89,10 @@ class PublicBookingController extends Controller
 
                     $companyId = \App\Models\Company::first()->id;
 
-        foreach ($grouped as $species => $group) {
+                foreach ($grouped as $species => $group) {
             $hold = \App\Models\BookingHold::create([
                 'company_id' => $companyId,
-                'species' => $species,
+                'resource_type' => $species,
                 'quantity' => $group->count(),
                 'start_date' => $startDate,
                 'end_date' => $endDate,
@@ -232,17 +232,17 @@ class PublicBookingController extends Controller
         // itseään kahteen kertaan kapasiteetissa.
         \App\Models\BookingHold::whereIn('id', session('public_booking.hold_ids', []))->delete();
 
-        $requirements = collect(session('public_booking.animals'))
+            $requirements = collect(session('public_booking.animals'))
             ->groupBy(fn ($a) => mb_strtolower(trim($a['species'])))
-            ->map(fn ($group, $species) => ['species' => $species, 'count' => $group->count()])
+            ->map(fn ($group, $species) => ['resource_type' => $species, 'count' => $group->count()])
             ->values()
             ->all();
 
         $availability = app(\App\Services\AvailabilityService::class);
 
-        if (!$availability->isAvailable($requirements, $startDate, $durationDays)) {
+            if (!$availability->isAvailable($requirements, $startDate, $durationDays)) {
             return redirect()->route('public.booking.start')
-                ->with('booking_error', 'Valitettavasti tämä aika ehdittiin varata juuri ennen kuin varauksesi vahvistui. Yritä uudelleen.');
+                ->with('booking_error', 'Valitettavasti tälle päivälle ei ole enää vapaita aikoja. Valitse kalenterista toinen vapaa ajankohta.');
         }
 
         $settings = $company->settings ?? [];
@@ -302,11 +302,10 @@ class PublicBookingController extends Controller
             } else {
                 $pet = $customer->pets()->create($petFields);
             }
-
-            $booking->participants()->create([
+                        $booking->participants()->create([
                 'pet_id' => $pet->id,
                 'name' => $pet->name,
-                'species' => $pet->species,
+                'resource_type' => $pet->species,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'daily_rate' => $dailyRate,

@@ -9,9 +9,9 @@ class BookingHold extends Model
 {
     use BelongsToCompany;
 
-    protected $fillable = [
+        protected $fillable = [
         'company_id',
-        'species',
+        'resource_type',
         'quantity',
         'start_date',
         'end_date',

@@ -331,7 +331,7 @@
                         @foreach ($overrides as $override)
                             <div class="flex items-center justify-between py-2 text-sm">
                                 <span style="color: var(--brand-text);">
-                                    {{ $override->species ? ucfirst($override->species) : 'Kaikki lajit' }}: {{ $override->capacity }}
+                                                                    {{ $override->resource_type ? ucfirst($override->resource_type) : 'Kaikki lajit' }}: {{ $override->capacity }}    
                                     @if ($override->note)
                                         <span class="text-gray-400">– {{ $override->note }}</span>
                                     @endif

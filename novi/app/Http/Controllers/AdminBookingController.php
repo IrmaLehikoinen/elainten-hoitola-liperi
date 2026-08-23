@@ -20,10 +20,10 @@ class AdminBookingController extends Controller
             'duration_days' => ['required', 'integer', 'min:1'],
         ]);
 
-        $requirements = collect($validated['animals'])
+                $requirements = collect($validated['animals'])
             ->groupBy('species')
             ->map(fn ($group, $species) => [
-                'species' => $species,
+                'resource_type' => $species,
                 'count' => $group->count(),
             ])
             ->values()
@@ -122,7 +122,7 @@ class AdminBookingController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+            $validated = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
             'animals' => ['required', 'array', 'min:1'],
             'animals.*.pet_id' => ['required', 'exists:pets,id'],
@@ -130,6 +130,8 @@ class AdminBookingController extends Controller
             'pickup_at' => ['required', 'date', 'after_or_equal:arrival_at'],
             'care_type' => ['required', 'exists:care_types,slug'],
             'notes' => ['nullable', 'string'],
+            'hold_ids' => ['nullable', 'array'],
+            'hold_ids.*' => ['integer'],
         ]);
 
                  $customer = Customer::findOrFail($validated['customer_id']);
@@ -142,17 +144,23 @@ class AdminBookingController extends Controller
         $endDate = $pickupAt->toDateString();
         $durationDays = $arrivalAt->copy()->startOfDay()->diffInDays($pickupAt->copy()->startOfDay()) + 1;
 
+        // Vapautetaan oma hold ennen uudelleentarkistusta, jotta se ei laske
+        // itseään kahteen kertaan kapasiteetissa (sama periaate kuin julkisessa lomakkeessa).
+        if (!empty($validated['hold_ids'])) {
+            \App\Models\BookingHold::whereIn('id', $validated['hold_ids'])->delete();
+        }
+
         $requirements = collect($validated['animals'])
             ->map(fn ($animal) => Pet::find($animal['pet_id']))
             ->filter()
             ->groupBy(fn ($pet) => mb_strtolower(trim($pet->species)))
-            ->map(fn ($group, $species) => ['species' => $species, 'count' => $group->count()])
+            ->map(fn ($group, $species) => ['resource_type' => $species, 'count' => $group->count()])
             ->values()
             ->all();
 
         if (!app(\App\Services\AvailabilityService::class)->isAvailable($requirements, $startDate, $durationDays)) {
             return response()->json([
-                'message' => 'Valitettavasti kapasiteetti on jo täynnä tälle ajalle. Tarkista kalenteri.',
+                             'message' => 'Valitettavasti tälle päivälle ei ole enää vapaita paikkoja valitulle lajille. Valitse toinen ajankohta kalenterista.',   
             ], 422);
         }
 
@@ -193,10 +201,10 @@ class AdminBookingController extends Controller
         foreach ($validated['animals'] as $animal) {
             $pet = Pet::findOrFail($animal['pet_id']);
 
-            $booking->participants()->create([
+                $booking->participants()->create([
                 'pet_id' => $pet->id,
                 'name' => $pet->name,
-                'species' => $pet->species,
+                'resource_type' => $pet->species,
                 'start_date' => $booking->start_date,
                 'end_date' => $booking->end_date,
                 'daily_rate' => $dailyRate,
@@ -287,7 +295,7 @@ class AdminBookingController extends Controller
 
         if ($newDates->isNotEmpty()) {
             $availability = app(\App\Services\AvailabilityService::class);
-            $requirements = [['species' => mb_strtolower(trim($participant->species)), 'count' => 1]];
+            $requirements = [['resource_type' => mb_strtolower(trim($participant->resource_type)), 'count' => 1]];
 
             foreach ($newDates as $date) {
                 if (!$availability->isAvailable($requirements, $date->toDateString(), 1)) {

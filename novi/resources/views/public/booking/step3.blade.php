@@ -13,7 +13,7 @@
                 Tarkista sähköpostisi
             </p>
             <p class="text-sm" style="color: var(--brand-text); opacity: 0.7;">
-                Lähetimme kirjautumislinkin osoitteeseen <strong>{{ $email }}</strong>. Klikkaa sähköpostissa olevaa linkkiä jatkaaksesi — tietosi ovat jo valmiiksi täytettynä.
+                             Olet jo asiakkaamme. Lähetimme kirjautumislinkin osoitteeseen <strong>{{ $email }}</strong>. Avaa siellä oleva linkki jatkaaksesi varauksen tekemistä. Asiakas- ja lemmikkitietosi ovat valmiina, joten sinun ei tarvitse täyttää niitä uudelleen.   
             </p>
         </div>
     @else

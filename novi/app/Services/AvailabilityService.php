@@ -8,6 +8,14 @@ use App\Models\DateCapacityOverride;
 use App\Models\Resource;
 use Illuminate\Support\Carbon;
 
+/**
+ * POHJA-luokka: geneerinen kapasiteettimoottori. Ei tiedä mitään
+ * eläinlajeista tms. — laskee vain "mahtuuko N kappaletta resurssia
+ * tyyppiä X aikavälille". $requirements-taulukoiden avain on aina
+ * 'resource_type', ja kutsuvan moduulin (esim. lemmikkihoitola) vastuulla
+ * on kääntää oma sanastonsa (esim. eläimen laji) tähän geneeriseen
+ * avaimeen ennen kutsua.
+ */
 class AvailabilityService
 {
     protected int $searchWindowDays = 365;
@@ -23,15 +31,15 @@ class AvailabilityService
             return [];
         }
 
-        // Normalisoidaan lajit pieniksi kirjaimiksi, jotta "Koira" ja "koira" täsmäävät.
+        // Normalisoidaan resurssityyppi pieniksi kirjaimiksi, jotta "Koira" ja "koira" täsmäävät.
         $requirements = collect($requirements)
-            ->map(fn ($r) => ['species' => mb_strtolower(trim($r['species'])), 'count' => $r['count']])
+            ->map(fn ($r) => ['resource_type' => mb_strtolower(trim($r['resource_type'])), 'count' => $r['count']])
             ->all();
 
-        $capacities = $this->speciesCapacities();
+        $capacities = $this->resourceTypeCapacities();
 
         foreach ($requirements as $requirement) {
-            $capacity = $capacities[$requirement['species']] ?? 0;
+            $capacity = $capacities[$requirement['resource_type']] ?? 0;
 
             if ($capacity === 0 || $requirement['count'] > $capacity) {
                 return [];
@@ -61,10 +69,10 @@ class AvailabilityService
     }
 
     /**
-     * Kokonaiskapasiteetti eläinlajeittain, avaimet pienillä kirjaimilla.
+     * Kokonaiskapasiteetti resurssityypeittäin, avaimet pienillä kirjaimilla.
      * Tämä on se yksi paikka (resources-taulu) mistä kapasiteetti luetaan.
      */
-    protected function speciesCapacities(): array
+    protected function resourceTypeCapacities(): array
     {
         return Resource::query()
             ->get(['type', 'capacity'])
@@ -73,14 +81,14 @@ class AvailabilityService
             ->all();
     }
 
-    protected function capacityForDate(string $species, Carbon $date, int $default): int
+    protected function capacityForDate(string $resourceType, Carbon $date, int $default): int
     {
         $override = DateCapacityOverride::query()
             ->whereDate('date', $date->toDateString())
-            ->where(function ($query) use ($species) {
-                $query->where('species', $species)->orWhereNull('species');
+            ->where(function ($query) use ($resourceType) {
+                $query->where('resource_type', $resourceType)->orWhereNull('resource_type');
             })
-            ->orderByRaw('species IS NULL')
+            ->orderByRaw('resource_type IS NULL')
             ->first();
 
         return $override ? (int) $override->capacity : $default;
@@ -88,14 +96,14 @@ class AvailabilityService
 
     public function usageForDate(Carbon $date): array
     {
-        $capacities = $this->speciesCapacities();
+        $capacities = $this->resourceTypeCapacities();
         $result = [];
 
-        foreach ($capacities as $species => $defaultCapacity) {
-            $capacity = $this->capacityForDate($species, $date, $defaultCapacity);
+        foreach ($capacities as $resourceType => $defaultCapacity) {
+            $capacity = $this->capacityForDate($resourceType, $date, $defaultCapacity);
 
             $used = BookingParticipant::query()
-                ->whereRaw('LOWER(species) = ?', [$species])
+                ->whereRaw('LOWER(resource_type) = ?', [$resourceType])
                 ->whereHas('booking', function ($query) {
                     $query->where('status', '!=', 'cancelled');
                 })
@@ -103,7 +111,7 @@ class AvailabilityService
                 ->whereDate('end_date', '>=', $date)
                 ->count();
 
-            $result[$species] = [
+            $result[$resourceType] = [
                 'used' => $used,
                 'capacity' => $capacity,
                 'default' => $defaultCapacity,
@@ -117,15 +125,15 @@ class AvailabilityService
     protected function fits(array $requirements, array $capacities, Carbon $startDate, Carbon $endDate): bool
     {
         foreach ($requirements as $requirement) {
-            $species = $requirement['species'];
+            $resourceType = $requirement['resource_type'];
             $needed = $requirement['count'];
-            $defaultCapacity = $capacities[$species] ?? 0;
+            $defaultCapacity = $capacities[$resourceType] ?? 0;
 
             for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-                $capacity = $this->capacityForDate($species, $date, $defaultCapacity);
+                $capacity = $this->capacityForDate($resourceType, $date, $defaultCapacity);
 
                 $booked = BookingParticipant::query()
-                    ->whereRaw('LOWER(species) = ?', [$species])
+                    ->whereRaw('LOWER(resource_type) = ?', [$resourceType])
                     ->whereHas('booking', function ($query) {
                         $query->where('status', '!=', 'cancelled');
                     })
@@ -134,7 +142,7 @@ class AvailabilityService
                     ->count();
 
                 $held = (int) BookingHold::query()
-                    ->whereRaw('LOWER(species) = ?', [$species])
+                    ->whereRaw('LOWER(resource_type) = ?', [$resourceType])
                     ->where('expires_at', '>', now())
                     ->whereDate('start_date', '<=', $date)
                     ->whereDate('end_date', '>=', $date)
@@ -157,10 +165,10 @@ class AvailabilityService
     public function isAvailable(array $requirements, string $startDate, int $durationDays): bool
     {
         $requirements = collect($requirements)
-            ->map(fn ($r) => ['species' => mb_strtolower(trim($r['species'])), 'count' => $r['count']])
+            ->map(fn ($r) => ['resource_type' => mb_strtolower(trim($r['resource_type'])), 'count' => $r['count']])
             ->all();
 
-        $capacities = $this->speciesCapacities();
+        $capacities = $this->resourceTypeCapacities();
         $start = Carbon::parse($startDate);
         $end = $start->copy()->addDays($durationDays - 1);
 

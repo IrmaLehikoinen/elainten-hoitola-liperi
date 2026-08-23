@@ -22,11 +22,11 @@ class CalendarCapacityController extends Controller
         $end = isset($validated['end_date']) ? Carbon::parse($validated['end_date']) : $start->copy();
         $species = !empty($validated['species']) ? mb_strtolower(trim($validated['species'])) : null;
 
-        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+                for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
             DateCapacityOverride::updateOrCreate(
                 [
                     'date' => $date->toDateString(),
-                    'species' => $species,
+                    'resource_type' => $species,
                 ],
                 [
                     'capacity' => $validated['capacity'],

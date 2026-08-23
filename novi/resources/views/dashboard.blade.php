@@ -86,7 +86,7 @@
                                 <span class="w-14 shrink-0 text-sm font-semibold" style="color: var(--brand-primary);" x-text="item.time"></span>
 
                                 <div class="min-w-0 flex-1">
-                                    <p class="truncate text-sm font-medium" style="color: var(--brand-text);" x-text="item.label + (item.name ? ' – ' + item.name : '')"></p>
+                                                                     <p class="truncate text-sm font-medium" style="color: var(--brand-text);" x-text="item.label + (item.name ? ' – ' + item.name : '') + (item.species ? ' (' + item.species + ')' : '')"></p>   
                                     <p class="truncate text-xs text-gray-500" x-show="item.customer" x-text="item.customer"></p>
                                 </div>
 
@@ -364,7 +364,7 @@
                                         @else
                                             {{ $participant->name }}
                                         @endif
-                                        <span class="text-gray-400">· {{ $participant->species }}</span>
+                                                                                <span class="text-gray-400">· {{ $participant->resource_type }}</span>
                                     </p>
 
                                     <p class="truncate text-xs text-gray-500">
@@ -427,7 +427,7 @@
                                         {{ $participant->name }}
                                     @endif
                                 </td>
-                                <td class="py-2 pr-4">{{ $participant->species }}</td>
+                                                                   <td class="py-2 pr-4">{{ $participant->resource_type }}</td> 
                                 <td class="py-2 pr-4">
                                     @if ($customer && Route::has('admin.customers.show'))
                                         <span onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}'" class="cursor-pointer" style="color: var(--brand-primary);">
