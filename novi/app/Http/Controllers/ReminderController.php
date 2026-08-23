@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reminder;
+use App\Models\ReminderType;
 use Illuminate\Http\Request;
 
 class ReminderController extends Controller
@@ -15,9 +16,11 @@ class ReminderController extends Controller
      */
     public function store(Request $request)
     {
+        $allowedTypes = ReminderType::pluck('slug')->all();
+
         $validated = $request->validate([
             'pet_id' => ['required', 'exists:pets,id'],
-            'type' => ['required', 'string', 'in:medication,feeding,wash,nails,vet,walk,other'],
+            'type' => ['required', 'string', 'in:' . implode(',', $allowedTypes)],
             'title' => ['nullable', 'string', 'max:255'],
             'due_at' => ['required', 'date'],
         ]);

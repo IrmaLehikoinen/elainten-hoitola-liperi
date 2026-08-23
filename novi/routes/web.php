@@ -241,13 +241,13 @@ Route::post('/admin/varaukset/{booking}/peruuta', [AdminBookingController::class
     ->middleware(['auth', 'verified'])
     ->name('admin.bookings.cancel');
 
-Route::get('/admin/varaukset/{booking}', [AdminBookingController::class, 'show'])
-    ->middleware(['auth', 'verified'])
-    ->name('admin.bookings.show');
-
 Route::patch('/admin/varaukset/lemmikit/{participant}/hoitojakso', [AdminBookingController::class, 'updateParticipantPeriod'])
     ->middleware(['auth', 'verified'])
     ->name('admin.bookings.participants.update-period');
+
+Route::post('/admin/varaukset/{booking}/merkitse-maksetuksi', [AdminBookingController::class, 'markDepositPaid'])
+    ->middleware(['auth', 'verified'])
+    ->name('admin.bookings.mark-deposit-paid');
 
 Route::get('/admin/palvelut', [ServiceSelectionController::class, 'index'])
     ->middleware(['auth', 'verified'])

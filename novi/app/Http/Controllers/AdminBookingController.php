@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\BookingConfirmed;
 use App\Mail\BookingPaymentRequired;
 use App\Models\Booking;
 use App\Models\Customer;
@@ -119,16 +120,6 @@ class AdminBookingController extends Controller
         ]);
     }
 
-    public function show(Booking $booking)
-    {
-        $booking->load(['customer', 'participants.pet', 'bookingServices.service', 'invoice']);
-
-        return view('bookings.show', [
-            'booking' => $booking,
-            'careTypeLabels' => \App\Models\CareType::pluck('label', 'slug'),
-        ]);
-    }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -226,12 +217,34 @@ class AdminBookingController extends Controller
         ], 201);
     }
 
-    public function cancel(Booking $booking)
+           public function cancel(Booking $booking)
     {
         $booking->update(['status' => 'cancelled']);
 
         return back()->with('status', 'Varaus peruttu.');
     }
+
+    /**
+     * Merkitsee ennakkomaksun manuaalisesti maksetuksi, kun asiakas on
+     * maksanut muuta kautta kuin Stripella (esim. käteinen, tilisiirto).
+     */
+    public function markDepositPaid(Booking $booking)
+    {
+        if ($booking->status !== 'pending') {
+            return back()->with('error', 'Vain odottava varaus voidaan merkitä maksetuksi.');
+        }
+
+        $booking->update([
+            'deposit_paid_at' => now(),
+            'status' => 'confirmed',
+        ]);
+
+        if ($booking->customer && $booking->customer->email) {
+            Mail::to($booking->customer->email)->send(new BookingConfirmed($booking));
+        }
+
+        return back()->with('status', 'Ennakkomaksu merkitty maksetuksi ja varaus vahvistettu.');
+    } 
 
     public function acknowledge(Booking $booking)
     {

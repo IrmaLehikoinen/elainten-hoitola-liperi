@@ -249,13 +249,21 @@
                                 </p>
                             </div>
 
-                            <div class="mt-1 flex items-center gap-2 text-xs">
+                                                        <div class="mt-1 flex items-center gap-2 text-xs">
                                 <span class="font-medium" style="color: var(--brand-text);">Ennakkomaksu:</span>
                                 @if ((float) $booking->deposit_amount > 0)
                                     <span class="rounded px-2 py-0.5 text-xs font-medium text-white" style="background-color: {{ $booking->deposit_paid_at ? 'var(--brand-primary)' : '#b45309' }};">
                                         {{ number_format((float) $booking->deposit_amount, 2, ',', ' ') }} €
                                         {{ $booking->deposit_paid_at ? '· Maksettu' : '· Odottaa maksua' }}
                                     </span>
+                                    @if (!$booking->deposit_paid_at && $booking->status !== 'cancelled')
+                                        <form method="POST" action="{{ route('admin.bookings.mark-deposit-paid', $booking) }}" onsubmit="return confirm('Merkitäänkö ennakkomaksu maksetuksi (esim. käteinen tai tilisiirto)?');">
+                                            @csrf
+                                            <button type="submit" class="text-xs font-medium underline" style="color: var(--brand-primary);">
+                                                Merkitse maksetuksi
+                                            </button>
+                                        </form>
+                                    @endif
                                 @else
                                     <span class="text-gray-400">Ei käytössä</span>
                                 @endif
