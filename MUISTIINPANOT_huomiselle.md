@@ -470,8 +470,66 @@ Pelkkä nimilista, EI mitään toimialakohtaista logiikkaa (Irma vahvisti erikse
 
 **Testauksen aikana löytyi ja korjattiin yksi aito, tätä työtä edeltänyt arkkitehtuuribugi** (ei liity itse rename-työhön, mutta löytyi vasta nyt perusteellisessa testauksessa): `AdminBookingController::store()` ei aiemmin vapauttanut omaa väliaikaisvarausta (`BookingHold`) ennen lopullista kapasiteettitarkistusta, jolloin oma hold laski itsensä kahteen kertaan → näytti siltä että kapasiteetti on täynnä vaikka ei ollut. Korjattu lähettämällä `hold_ids` mukana tallennuspyynnössä ja poistamalla ne ennen tarkistusta (sama periaate kuin julkisessa lomakkeessa oli jo valmiiksi). Lisäksi `BookingHoldController::store()` ei aiemmin tarkistanut kapasiteettia ollenkaan ennen holdin luontia — korjattu.
 
-**Committoitu ja pushattu 23.8. myöhäisiltana** (commit "Pohja/moduuli-erottelu vaiheet 3-4: species -> resource_type kontrollereissa, malleissa ja näkymissä", 20 tiedostoa). Vaihe 5/5:n (config/industries.php + Yritysasetukset-rivi) commit vielä tekemättä — muista committoida myös se ennen pakkausvaihetta.
+**Committoitu ja pushattu 23.8. myöhäisiltana** kahdessa commitissa: "Pohja/moduuli-erottelu vaiheet 3-4: species -> resource_type kontrollereissa, malleissa ja näkymissä" (20 tiedostoa, commit `ee356d8`) ja vaihe 5/5 (`config/industries.php` + Yritysasetukset-rivi, commit `f5f237d`). Molemmat pushattu.
 
-### Lopuksi: erillinen kansio "Novi 1.0.0" (Irman vahvistama päätös 23.8. illalla) — SEURAAVA ASKEL
+### Erillinen kansio "novi-pohja-1.0.0" — TEHTY 23.8. yönä, MUTTA EI VIELÄ OIKEA MYYTÄVÄ POHJA
 
-Kaikki 5 vaihetta on nyt tehty ja testattu. Seuraava askel (ei vielä tehty): merkitään koodi git-versiotagilla `pohja-1.0.0`. TÄMÄN JÄLKEEN luodaan KOKONAAN OMA, ERILLINEN kansio (esim. `~/Herd/novi-pohja-1.0.0`) kloonaamalla sama git-repositorio uudestaan ja ottamalla siinä käyttöön juuri tuo `pohja-1.0.0`-tagi. `novi`-kansio jää Irman jatkuvaksi kehitysympäristöksi, `novi-pohja-1.0.0` jää pysyväksi, koskemattomaksi myytäväksi versioksi — nämä kaksi eivät enää "kulje mukana" toistensa kanssa. Tarkat git-komennot annetaan seuraavaksi, kun vaihe 5/5 on committoitu.
+Git-tagi `pohja-1.0.0` luotu ja pushattu commitista `f5f237d`. Uusi, kokonaan erillinen kansio `~/Herd/novi-pohja-1.0.0` luotu kloonaamalla sama repositorio ja ottamalla käyttöön tuo tagi (`git checkout pohja-1.0.0`, detached HEAD — tämä on odotettu, ei virhe). `novi`-kansio jää Irman jatkuvaksi kehitysympäristöksi.
+
+**TÄRKEÄ HUOMIO:** `novi-pohja-1.0.0` on tässä vaiheessa vain JÄÄDYTETTY TÄYSKOPIO koko koodista (pohja + lemmikkihoitolan moduuli yhdessä, samoissa kansioissa kuin `novi`:ssakin) — EI vielä oikeasti erillinen, lemmikkihoitolasta tyhjä pohja. `species`→`resource_type`-nimeäminen teki vain TIETOKANNAN sarakkeet geneerisiksi, ei erottanut yhtään tiedostoa fyysisesti. Tämä huomattiin ja korjattiin ymmärryksessä 23.8. yöllä, ks. alla.
+
+### KORJAUS 23.8. yö: tarkka raja pohjan ja moduulin välillä VÄÄRIN edellä, tässä oikea
+
+Irma korjasi yllä olevan (kohdassa 424-440 kuvatun) rajauksen: **jos tiedosto tai tietokantataulu viittaa varaukseen, lemmikkiin tai asiakkaaseen millään tavalla, se kuuluu lemmikkihoitolan moduuliin — ei pohjaan, vaikka tuntuisi "tekniseltä perusjutulta".** Aiempi rajaus (kohta 424) oli väärin siltä osin että se laittoi laskutuksen (`Invoice`, `PaymentController`) ja muistutukset (`Reminder`) pohjaan, vaikka ne viittaavat varaukseen/lemmikkiin — nämä kuuluvat moduuliin.
+
+**Syy vaatimukselle (Irman oma perustelu 23.8. yö):** kun samaa järjestelmää myydään jatkossa sadoille asiakkaille, pohjan ja lemmikkihoitolan moduulin täytyy olla erilliset, omalla versionumerollaan päivitettävät palaset — muuten päivitysten tekeminen sadoille erillisille asennuksille ei ole hallittavissa.
+
+**Korjattu, lopullinen raja:**
+- **Pohja** (nolla riippuvuutta varauksesta/lemmikistä/asiakkaasta): kirjautuminen (`Auth/*`, `User`-malli, `bootstrap/app.php`), brändijärjestelmä (`project/brand.php`, `BrandManager`, `ShareCompanyBranding`, `config/branding.php`), `Company`-malli + `CompanySettingsController`-runko, `config/industries.php`, peruslayout/navigaatio.
+- **Lemmikkihoitolan moduuli** (kaikki loput, myös nämä jotka aiemmin virheellisesti laitettiin pohjaan): `Customer`-malli/kontrolleri, `Pet`-malli/kontrolleri, `Booking`/`BookingParticipant`/`BookingHold`/`DateCapacityOverride`-mallit + `AvailabilityService`, `Invoice`/`InvoiceController`/`PaymentController`, `Reminder`/`ReminderType`/`ReminderController`, kaikki kalenteri-/dashboard-/asiakas-/lemmikkinäkymät, koko julkinen varaussivusto, `CareType`, `config/public_booking_fields.php`.
+
+**TÄRKEIN PÄÄTÖS 23.8. yö (Irman oma sanamuoto, prioriteettijärjestys):** lemmikkihoitolan järjestelmän pitää toimia kokonaisuutena oikein ENSIN — ei mitään muun toimialan (esim. parturi) järjestelmiä ensin. Fyysinen tiedostojen erottelu omiin kansioihin/paketteihin on ISO, RISKIALTIS muutos (osa koodista, esim. laskutus ja muistutukset, viittaa suoraan varauksiin tietokantatasolla — tätä ei voi hetkessä muuttaa ilman ison osan koodin uudelleenrakentamista). **EI TEHTY 23.8. iltana, EI aloitettu.** Ei kosketa yhteenkään `novi`-kansion tiedostoon ennen kuin fyysinen erottelu tehdään omana, rauhassa suunniteltuna työnä myöhemmin — silloin käytetään yllä olevaa korjattua rajaa, ei kohdan 424 vanhentunutta listaa.
+
+`novi-pohja-1.0.0`-kansio pitää tehdä uudestaan (uusi tagi) sitten kun fyysinen erottelu on oikeasti tehty — nykyinen `novi-pohja-1.0.0` ei kelpaa myytäväksi pohjaksi, se on vain täyskopio.
+
+## 16. FYYSINEN POHJA/MODUULI-EROTTELU TEHTY JA TESTATTU (23.8. yö → 24.8. aamuyö, samana yönä jatkettu)
+
+Kohdan 15 lopussa (491) kirjattu "EI TEHTY, EI aloitettu" on VANHENTUNUT — Irma vaati saman yön aikana että työ tehdään loppuun heti, ei siirretä. Koko fyysinen siirto tehtiin ja testattiin valmiiksi samana yönä. Käytettiin kohdan 15 KORJATTUA rajaa (kohta "Korjattu, lopullinen raja", ei vanhaa kohdan 424 listaa).
+
+**Tehty, kaikki vahvistettu Read/Glob-tarkistuksin + Irman "tehty"-vahvistuksin:**
+
+1. **15 mallitiedostoa** siirretty `app/Models/` → `app/Modules/Lemmikkihoitola/Models/`, namespace `App\Modules\Lemmikkihoitola\Models`: Customer, Pet, Booking, BookingParticipant, BookingHold, DateCapacityOverride, BookingService, ParticipantService, Invoice, CareType, Reminder, ReminderType, Resource, Service, PetHistoryEntry. Pohjaan jäi vain `Company.php`, `User.php`, `Concerns/`.
+2. **6 ei-siirtyvää tiedostoa** päivitetty käyttämään uutta mallien namespacea (`use`-rivit): `AvailabilityService.php`, `CancelExpiredBookings.php`, ja 4 Mail-luokkaa.
+3. **13 kontrolleria** siirretty `app/Http/Controllers/` → `app/Modules/Lemmikkihoitola/Http/Controllers/`, namespace `App\Modules\Lemmikkihoitola\Http\Controllers`, jokainen tuo lisäksi `use App\Http\Controllers\Controller;` pohjan kantaluokkaa varten.
+4. **`routes/web.php`** korvattu kokonaan — kaikkien siirrettyjen kontrollerien `use`-rivit osoittavat uuteen namespaceen, `ProfileController`/`CompanySettingsController`/`StripeWebhookController` pysyivät pohjan namespacessa (eivät liity varaukseen/lemmikkiin/asiakkaaseen suoraan).
+5. **5 muuta löytynyttä vanhaa viittausta** korjattu koko koodikannasta grepillä: 2 Blade-näkymää (`DashboardController::typeLabel`), 1 Blade-näkymä (`DateCapacityOverride::`), `StripeWebhookController.php` ja `CompanySettingsController.php`.
+6. **`AppServiceProvider::boot()`**: lisätty `View::addLocation(resource_path('views/modules/lemmikkihoitola'));` — tämän ansiosta kaikki `view('pets.show')`-tyyliset kutsut löytävät näkymät automaattisesti uudesta kansiosta ilman että itse Blade-tiedostojen sisältöä tarvitsi muuttaa lainkaan, vain siirtää.
+7. **Kaikki 28 näkymätiedostoa siirretty** `resources/views/modules/lemmikkihoitola/`-kansioon (emails/, invoices/, bookings/, customers/, services/, reports/, pets/, calendar/, dashboard.blade.php, partials/, public/booking/, components/layouts/public.blade.php, components/booking-widget.blade.php, legal/tietosuoja.blade.php). Pohjaan jäi vain: auth/, komponentit joissa ei ole varaus/lemmikki-riippuvuutta, layouts/, profile/, settings/, welcome.blade.php.
+   - Yksi virhe siirron aikana: `partials/calendar-grid.blade.php` katosi hetkeksi kokonaan kun vanha poistettiin ennen kuin uusi oli oikeasti luotu — huomattiin Glob-tarkistuksella heti, korjattu luomalla tiedosto uudelleen oikeaan paikkaan.
+   - Toinen virhe: julkisen varauslomakkeen 6 tiedostoa (step1-4, cancelled, success) luotiin ensin väärään polkuun `modules/lemmikkihoitola/booking/` (puuttui `public`-välikansio). Koodi hakee näitä nimellä `view('public.booking.step1')` jne. (vahvistettu greppaamalla `PublicBookingController.php`), joten oikea polku on `modules/lemmikkihoitola/public/booking/`. Irma korjasi siirtämällä `booking`-kansion `public`-kansion sisään VS Codessa (kansion raahaus hyväksyttiin poikkeuksena, koska kyse oli yhden kokonaisen kansion siirrosta saman projektin sisällä, ei tiedostosisällön käsin kopioinnista).
+
+**KOKO JÄRJESTELMÄ TESTATTU TOIMIVAKSI erottelun jälkeen (Irma, 24.8. aamuyö): "kaikki toimii", "testailin äksen kaikki ja ne kaikki toimi"** — mukaan lukien julkinen varauspolku kokonaan taikalinkkeineen (testattu oikealla asiakkaalla "Anna Partanen", taikalinkki haettu `storage/logs/laravel.log`-tiedostosta greppaamalla "vahvista").
+
+**Tehtävälistan tilanne päivitetty:** #43–#48 kaikki merkitty valmiiksi (mallit, use-viittaukset, kontrollerit, reitit, näkymät, koko järjestelmän testaus).
+
+**Riippumattomuustarkastus TEHTY 24.8. aamuyö — kolme aitoa riippuvuutta löytyi, KORJAUS TIETOISESTI SIIRRETTY MYÖHEMPÄÄN KERTAAN (Irman päätös):**
+
+Käytiin koko koodikanta läpi (`grep "Lemmikkihoitola"` + `Company.php`/`User.php` erikseen tarkistettuna). `Company.php`, `User.php` ja brändijärjestelmä ovat täysin puhtaita — nolla riippuvuutta moduuliin. Kolme aitoa riippuvuutta löytyi pohjan tiedostoista moduuliin:
+
+1. **`app/Http/Controllers/CompanySettingsController.php`** (pohja) tuo suoraan moduulin 5 mallia: `CareType`, `Reminder`, `ReminderType`, `Resource`, `Service`. Syy: kontrolleri hoitaa SEKÄ pohjan asetuksia (yritystiedot, värit, ALV, IBAN, maksuehto) ETTÄ moduulin asetuksia (lemmikkiryhmät/kapasiteetti, palvelut, muistutustyypit, hoitomuodot, ajanvarauslomakkeen kentät) samassa tiedostossa. Korjaus vaatii kontrollerin JAKAMISEN kahtia + vastaavien asetusvälilehtien siirron + reittien päivityksen + jokaisen välilehden uudelleentestauksen. **Arvioitu aika: 45–90 min.**
+2. **`app/Http/Controllers/StripeWebhookController.php`** (pohja) tuo suoraan moduulin `Booking`-mallin. Tämä oli oikeastaan jäänyt vahingossa pohjan namespaceen kun `PaymentController` jo siirrettiin moduuliin aiemmin illalla — looginen korjaus on siirtää `StripeWebhookController` samaan moduulin namespaceen kuin `PaymentController`. **Arvioitu aika: 10–15 min.**
+3. **`resources/views/layouts/navigation.blade.php`** (pohjan sivuvalikko) sisältää kovakoodatun `$navItems`-taulukon jossa on suoraan moduulin route-nimet (`calendar.index`, `admin.bookings.index`, `admin.customers.index`, `admin.services.index`, `admin.invoices.index`, `admin.reports.index`) ja niiden lemmikkihoitola-spesifit tekstit. Oikea korjaus vaatii pienen rekisteröintimekanismin (moduuli ilmoittaa omat valikkokohteensa pohjalle sen sijaan että pohja kovakoodaa ne). **Arvioitu aika: 20–30 min.**
+
+**Yhteensä n. 1,5–2,5 tuntia jos korjataan kaikki kolme.** Irma päätti 24.8. aamuyöllä: EI korjata nyt, koska mikään näistä ei riko mitään käytännössä ennen kuin pelkkää pohjaa yritetään oikeasti asentaa ilman lemmikkihoitolan moduulia (eli vasta kun aletaan rakentaa toista toimialaa, esim. parturi). Palataan tähän silloin — käytä yllä olevaa kolmen kohdan listaa suoraan, ei tarvitse tutkia uudelleen.
+
+## 17. Versionumerot TEHTY (24.8. aamuyö) — pohja v1.0.0 ja lemmikkihoitola-moduuli v1.0.0
+
+Irma pyysi tekemään versionumerot heti erottelun jälkeen, ei jätetty myöhemmäksi. Tehty ja vahvistettu:
+
+- Uusi `novi/config/versions.php`: `['pohja' => '1.0.0', 'lemmikkihoitola_moduuli' => '1.0.0']` — koodissa näkyvä, yksiselitteinen paikka kummallekin versionumerolle, nostetaan jatkossa ERIKSEEN kun vain toista kerrosta muutetaan.
+- Committoitu ja pushattu (commit `4d18b95`, "Lisää pohjan ja lemmikkihoitolan moduulin versionumerot (1.0.0)").
+- Kaksi git-tagia luotu SAMASTA commitista `4d18b95`: `pohja-1.0.0` ja `lemmikkihoitola-moduuli-1.0.0`. Molemmat pushattu GitHubiin, vahvistettu `git log -1`:llä että kumpikin osoittaa oikeaan commitiin.
+  - **Mutkan kautta:** `pohja-1.0.0`-tagi oli jo olemassa entuudestaan vanhasta commitista `dfb9614` (luotu ennen fyysistä erottelua, ks. kohta 15/16) — ensimmäinen `git tag -a pohja-1.0.0` epäonnistui ("tag already exists"). Korjattu: `git tag -d pohja-1.0.0` + `git push origin :refs/tags/pohja-1.0.0` (poisto paikallisesti ja GitHubista) + uusi tagi samasta oikeasta commitista kuin moduulin tagi.
+- Vanha `~/Herd/novi-pohja-1.0.0`-kansio (joka oli vanhentunut täyskopio, ks. kohta 15/16) poistettu (`rm -rf`) ja korvattu tuoreella kloonilla: `git clone` + `git checkout pohja-1.0.0`, vahvistettu että `HEAD is now at 4d18b95` — eli kansio sisältää nyt oikeasti eritellyn koodin ja version numerot.
+
+**Git-versionumero Novi 1.0.0 -kokonaisuutena (ks. kohta 10, kohta 4) on nyt käytännössä paikallaan** kahtena erillisenä, itsenäisesti päivitettävänä tagina saman repositorion sisällä.

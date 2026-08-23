@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
+use App\Modules\Lemmikkihoitola\Models\Booking;
 use Illuminate\Http\Request;
 use Stripe\Webhook;
 use App\Mail\BookingConfirmed;

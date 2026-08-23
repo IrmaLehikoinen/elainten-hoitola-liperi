@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Customer;
+use App\Modules\Lemmikkihoitola\Models\Customer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;

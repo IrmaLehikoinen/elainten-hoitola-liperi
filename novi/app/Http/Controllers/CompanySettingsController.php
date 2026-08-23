@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CareType;
-use App\Models\Reminder;
-use App\Models\ReminderType;
-use App\Models\Resource;
-use App\Models\Service;
+use App\Modules\Lemmikkihoitola\Models\CareType;
+use App\Modules\Lemmikkihoitola\Models\Reminder;
+use App\Modules\Lemmikkihoitola\Models\ReminderType;
+use App\Modules\Lemmikkihoitola\Models\Resource;
+use App\Modules\Lemmikkihoitola\Models\Service;
 use Illuminate\Http\Request;
 
 class CompanySettingsController extends Controller

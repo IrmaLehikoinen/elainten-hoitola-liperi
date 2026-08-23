@@ -2,19 +2,19 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminBookingController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ReminderController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\PetController;
-use App\Http\Controllers\CalendarController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\AdminBookingController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\DashboardController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\ReminderController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\CustomerController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\PetController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\CalendarController;
 use App\Http\Controllers\CompanySettingsController;
-use App\Http\Controllers\BookingHoldController;
-use App\Http\Controllers\ServiceSelectionController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\CalendarCapacityController;
-use App\Http\Controllers\PublicBookingController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\BookingHoldController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\ServiceSelectionController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\ReportController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\InvoiceController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\CalendarCapacityController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\PublicBookingController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -211,7 +211,7 @@ Route::post('/base-rate', [CompanySettingsController::class, 'updateBaseRate'])-
     require __DIR__.'/auth.php';
 
 
-use App\Http\Controllers\PaymentController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\PaymentController;
 
 Route::get('/varaukset/{booking}/maksa', [PaymentController::class, 'checkout'])
     ->middleware('throttle:30,1')
@@ -230,7 +230,7 @@ Route::get('/kuitti/{invoice}/tulosta', [InvoiceController::class, 'printPdf'])
     ->name('invoices.print');
 
 Route::get('/maksu/onnistui', function (\Illuminate\Http\Request $request) {
-    $booking = \App\Models\Booking::find($request->query('booking'));
+    $booking = \App\Modules\Lemmikkihoitola\Models\Booking::find($request->query('booking'));
 
     return view('public.booking.success', ['booking' => $booking]);
 });

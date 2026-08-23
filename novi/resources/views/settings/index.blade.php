@@ -176,8 +176,8 @@
                                     name="fields[]"
                                     value="{{ $key }}"
                                     @checked(in_array($key, $enabledBookingFields))
-                                    class="rounded border-gray-300"
-                                    style="accent-color: var(--brand-primary);"
+                                                                     class="rounded border-gray-300"
+                                    style="accent-color: var(--brand-primary); color: var(--brand-primary);"   
                                 >
                                 <span class="text-sm" style="color: var(--brand-text);">{{ $field['label'] }}</span>
                             </label>

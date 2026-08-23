@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Mail\BookingPaymentExpired;
-use App\Models\Booking;
+use App\Modules\Lemmikkihoitola\Models\Booking;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 

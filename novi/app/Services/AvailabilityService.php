@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\BookingHold;
-use App\Models\BookingParticipant;
-use App\Models\DateCapacityOverride;
-use App\Models\Resource;
+use App\Modules\Lemmikkihoitola\Models\BookingHold;
+use App\Modules\Lemmikkihoitola\Models\BookingParticipant;
+use App\Modules\Lemmikkihoitola\Models\DateCapacityOverride;
+use App\Modules\Lemmikkihoitola\Models\Resource;
 use Illuminate\Support\Carbon;
 
 /**
