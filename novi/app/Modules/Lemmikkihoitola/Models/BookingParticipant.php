@@ -2,6 +2,7 @@
 
 namespace App\Modules\Lemmikkihoitola\Models;
 
+use App\Models\Resource;
 use Illuminate\Database\Eloquent\Model;
 
 class BookingParticipant extends Model

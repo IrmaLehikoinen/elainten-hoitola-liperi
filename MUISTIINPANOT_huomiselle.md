@@ -520,7 +520,23 @@ Käytiin koko koodikanta läpi (`grep "Lemmikkihoitola"` + `Company.php`/`User.p
 2. **`app/Http/Controllers/StripeWebhookController.php`** (pohja) tuo suoraan moduulin `Booking`-mallin. Tämä oli oikeastaan jäänyt vahingossa pohjan namespaceen kun `PaymentController` jo siirrettiin moduuliin aiemmin illalla — looginen korjaus on siirtää `StripeWebhookController` samaan moduulin namespaceen kuin `PaymentController`. **Arvioitu aika: 10–15 min.**
 3. **`resources/views/layouts/navigation.blade.php`** (pohjan sivuvalikko) sisältää kovakoodatun `$navItems`-taulukon jossa on suoraan moduulin route-nimet (`calendar.index`, `admin.bookings.index`, `admin.customers.index`, `admin.services.index`, `admin.invoices.index`, `admin.reports.index`) ja niiden lemmikkihoitola-spesifit tekstit. Oikea korjaus vaatii pienen rekisteröintimekanismin (moduuli ilmoittaa omat valikkokohteensa pohjalle sen sijaan että pohja kovakoodaa ne). **Arvioitu aika: 20–30 min.**
 
-**Yhteensä n. 1,5–2,5 tuntia jos korjataan kaikki kolme.** Irma päätti 24.8. aamuyöllä: EI korjata nyt, koska mikään näistä ei riko mitään käytännössä ennen kuin pelkkää pohjaa yritetään oikeasti asentaa ilman lemmikkihoitolan moduulia (eli vasta kun aletaan rakentaa toista toimialaa, esim. parturi). Palataan tähän silloin — käytä yllä olevaa kolmen kohdan listaa suoraan, ei tarvitse tutkia uudelleen.
+**Yhteensä n. 1,5–2,5 tuntia jos korjataan kaikki kolme.** Irma päätti alun perin 24.8. aamuyöllä olla korjaamatta heti — MUTTA muutti mielensä saman yön aikana ja halusi ne tehtyä heti. Ks. alla "KAIKKI KOLME KORJATTU JA TESTATTU".
+
+### KAIKKI KOLME RIIPPUVUUTTA KORJATTU JA TESTATTU (24.8. aamuyö, samana yönä)
+
+1. **`StripeWebhookController` siirretty moduuliin.** Se käytti `Booking`-mallia ja kuuluu loogisesti samaan paikkaan kuin `PaymentController`. Pieni, nopea siirto — yksi tiedosto, yksi `routes/web.php`-rivi.
+2. **Sivuvalikko ei enää kovakoodaa moduulin reittejä.** Uusi "koukku"-mekanismi: `config/navigation.php` (pohja, tyhjä lista oletuksena) + uusi `App\Modules\Lemmikkihoitola\LemmikkihoitolaServiceProvider` (rekisteröity `bootstrap/providers.php`:ssa) joka ilmoittaa `boot()`-metodissaan omat 7 valikkokohteensa (myös "Etusivu", koska `DashboardController` on jo moduulissa). `navigation.blade.php` lukee nyt `config('navigation.items')`. Pohjalle jäi vain "Asetukset"-kohta, koska Company-asetusten runko on aidosti yleinen.
+3. **`CompanySettingsController` jaettu — MUTTA Irma korjasi suunnitelmani kesken työn.** Ehdotin aluksi että Yritystiedot-välilehti (nimi, puhelin, Y-tunnus, IBAN, ALV, maksuehto, brändivärit) jäisi pohjaan, koska "Company-malli + CompanySettingsController-runko" oli listattu pohjaan jo kohdassa 424/487. Irma korjasi: **väärin** — tarkistettiin koodista, että NÄMÄ KENTÄT käyttää yksinomaan laskutus (`InvoiceController`, `Invoice`-malli, `invoices/pdf.blade.php`, `invoices/show.blade.php`), joka on moduulin asia. Pohja ei tarvitse Y-tunnusta/IBANia/ALV%:a mihinkään omaan tarkoitukseensa. **Lopputulos: KOKO `CompanySettingsController` (kaikki 8 välilehteä, myös Yritystiedot) siirtyi moduuliin.** Pohjalle ei jäänyt tästä kontrollerista mitään — tiedosto `app/Http/Controllers/CompanySettingsController.php` on kokonaan poistettu. Myös `settings/index.blade.php` siirtyi `modules/lemmikkihoitola/settings/index.blade.php`-kansioon (sama näkymä, ei sisältömuutoksia, sivu näyttää käyttäjälle täsmälleen samalta).
+
+**Tärkeä oppi kirjattuna tulevaa varten:** kohdan 424/487 "pohja = Company-malli + CompanySettingsController-runko" -kirjaus oli osin harhaanjohtava. Oikea testi ei ole "onko tämä Company-mallin kenttä", vaan "KÄYTTÄÄKÖ jotain moduulin ominaisuutta (esim. laskutusta) näitä tietoja". `Company`-malli ITSE (name, industry, slug-sarakkeet) on edelleen pohjaa, mutta sen `settings`-JSON-kentän SISÄLTÖ ja hallintakontrolleri voi silti kuulua moduulille, jos sisältöä käyttää vain moduulin ominaisuus.
+
+**Sivutuotteena löytyi ja korjattiin myös yksi aito bugi (ei liity erotteluun):** testauksen aikana ilmeni että kalenterin "Uusi varaus" -hold saattoi jäädä voimaan jos selainikkuna suljettiin kesken lomakkeen täytön ilman "Peruuta"-nappia — tämä esti näennäisesti vapaan päivän varaamisen 10 minuutin ajaksi, eikä näkynyt mitenkään kapasiteettinäkymässä (joka näyttää vain vahvistettuja varauksia, ei holdeja). Korjattu lisäämällä `navigator.sendBeacon()`-pohjainen automaattinen holdin vapautus `pagehide`-tapahtumaan (`calendar/index.blade.php` + uusi `POST /admin/bookings/hold/beacon`-reitti samaan `BookingHoldController::destroy()`-metodiin).
+
+**Lopputarkastus 24.8. aamuyöllä:** koko `app`-kansio grepattu `Lemmikkihoitola`-sanalla — pohjan puolella enää vain kaksi harmitonta mainintaa: `AppServiceProvider.php`:n kommentti (ei koodiriippuvuus) ja `AvailabilityService.php` (jo aiemmin luokiteltu moduulin omaksi luokaksi, asuu vain fyysisesti yleisessä `app/Services/`-kansiossa — sama koskee `app/Mail/*.php`- ja `CancelExpiredBookings.php`-tiedostoja). Näiden fyysinen siirto omaan moduulikansioonsa on pelkkää siisteyttä, ei kiireellinen, voidaan tehdä joskus myöhemmin jos halutaan.
+
+**Kaikki testattu selaimessa toimivaksi:** sivuvalikko (kaikki 7 kohdetta + Asetukset), koko 8-välilehtinen Yritysasetukset-sivu, ja uusi hold-vapautus (suljettiin selainikkuna kesken lomakkeen, testattiin että sama päivä vapautui heti uudelleen käytettäväksi). Irma vahvisti: "kaikki toimii".
+
+**MUISTA COMMITTAA TÄMÄ ILLAN TYÖ** (mallia edellisestä kerrasta, kun fyysinen erottelu jäi kerran vahingossa committoimatta) — tarkista `git status` ennen kuin oletat mitään olevan tallennettuna.
 
 ## 17. Versionumerot TEHTY (24.8. aamuyö) — pohja v1.0.0 ja lemmikkihoitola-moduuli v1.0.0
 
@@ -533,3 +549,15 @@ Irma pyysi tekemään versionumerot heti erottelun jälkeen, ei jätetty myöhem
 - Vanha `~/Herd/novi-pohja-1.0.0`-kansio (joka oli vanhentunut täyskopio, ks. kohta 15/16) poistettu (`rm -rf`) ja korvattu tuoreella kloonilla: `git clone` + `git checkout pohja-1.0.0`, vahvistettu että `HEAD is now at 4d18b95` — eli kansio sisältää nyt oikeasti eritellyn koodin ja version numerot.
 
 **Git-versionumero Novi 1.0.0 -kokonaisuutena (ks. kohta 10, kohta 4) on nyt käytännössä paikallaan** kahtena erillisenä, itsenäisesti päivitettävänä tagina saman repositorion sisällä.
+
+### KORJAUS 24.8. aamuyö: koko fyysinen erottelu oli jäänyt committoimatta — nyt korjattu
+
+Tagien teon jälkeen huomattiin `git status`-tarkistuksella, että koko illan ISO fyysinen siirto (15 mallia, 13 kontrolleria, kaikki näkymät, `routes/web.php`, `AppServiceProvider.php`) oli koko ajan pelkkinä paikallisina, tallentamattomina muutoksina — ei committoitu, ei pushattu. Tämä tarkoitti että äsken tehdyt tagit ja ensimmäinen `novi-pohja-1.0.0`-klooni eivät SISÄLTÄNEET fyysistä erottelua lainkaan, vain versionumerot + `species`→`resource_type`-nimeämisen.
+
+Korjattu täydessä laajuudessa:
+- `git add -A` + commit `15ffb3a` ("Fyysinen pohja/moduuli-erottelu: 15 mallia + 13 kontrolleria + kaikki näkymät siirretty app/Modules/Lemmikkihoitola-nimiavaruuteen, routes/web.php ja AppServiceProvider päivitetty") — 68 tiedostoa, pushattu GitHubiin.
+- Molemmat tagit (`pohja-1.0.0`, `lemmikkihoitola-moduuli-1.0.0`) poistettu ja luotu uudelleen tästä oikeasta commitista, pushattu.
+- `~/Herd/novi-pohja-1.0.0` poistettu ja kloonattu uudelleen tuoreena — vahvistettu `HEAD is now at 15ffb3a`.
+- `git status --short` `novi`-kansiossa on nyt tyhjä — ei mitään tallentamatonta.
+
+**Tämän jälkeen kaikki kolme paikkaa (GitHubin `main`-haara, `pohja-1.0.0`-tagi, `lemmikkihoitola-moduuli-1.0.0`-tagi, `~/Herd/novi-pohja-1.0.0`-kansio) osoittavat samaan, oikeaan, täydellisen fyysisen erottelun sisältävään commitiin `15ffb3a`.** Muistiopetus jatkoa varten: aina kun tehdään tageja/kloonauksia ison työn jälkeen, tarkista ENSIN `git status` ettei mitään ole jäänyt committoimatta — tämä unohtui kertaalleen tänä yönä.

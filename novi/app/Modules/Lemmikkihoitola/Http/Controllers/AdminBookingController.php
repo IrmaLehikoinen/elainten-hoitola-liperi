@@ -3,8 +3,8 @@
 namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Mail\BookingConfirmed;
-use App\Mail\BookingPaymentRequired;
+use App\Modules\Lemmikkihoitola\Mail\BookingConfirmed;
+use App\Modules\Lemmikkihoitola\Mail\BookingPaymentRequired;
 use App\Modules\Lemmikkihoitola\Models\Booking;
 use App\Modules\Lemmikkihoitola\Models\Customer;
 use App\Modules\Lemmikkihoitola\Models\Pet;
@@ -148,7 +148,7 @@ class AdminBookingController extends Controller
         // Vapautetaan oma hold ennen uudelleentarkistusta, jotta se ei laske
         // itseään kahteen kertaan kapasiteetissa (sama periaate kuin julkisessa lomakkeessa).
         if (!empty($validated['hold_ids'])) {
-            \App\Modules\Lemmikkihoitola\Models\BookingHold::whereIn('id', $validated['hold_ids'])->delete();
+        \App\Models\BookingHold::whereIn('id', $validated['hold_ids'])->delete();    
         }
 
         $requirements = collect($validated['animals'])

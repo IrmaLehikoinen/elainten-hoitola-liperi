@@ -2,24 +2,36 @@
 
 namespace App\Services;
 
-use App\Modules\Lemmikkihoitola\Models\BookingHold;
-use App\Modules\Lemmikkihoitola\Models\BookingParticipant;
-use App\Modules\Lemmikkihoitola\Models\DateCapacityOverride;
-use App\Modules\Lemmikkihoitola\Models\Resource;
+use App\Models\BookingHold;
+use App\Models\DateCapacityOverride;
+use App\Models\Resource;
 use Illuminate\Support\Carbon;
 
 /**
  * POHJA-luokka: geneerinen kapasiteettimoottori. Ei tiedä mitään
- * eläinlajeista tms. — laskee vain "mahtuuko N kappaletta resurssia
- * tyyppiä X aikavälille". $requirements-taulukoiden avain on aina
- * 'resource_type', ja kutsuvan moduulin (esim. lemmikkihoitola) vastuulla
- * on kääntää oma sanastonsa (esim. eläimen laji) tähän geneeriseen
- * avaimeen ennen kutsua.
+ * varauksista, lemmikeistä tai asiakkaista — laskee vain "mahtuuko N
+ * kappaletta resurssia tyyppiä X aikavälille". $requirements-taulukoiden
+ * avain on aina 'resource_type'.
+ *
+ * Ainoa tieto jota tämä luokka ei voi itse hakea on "kuinka moni on jo
+ * VAHVISTETUSTI varattu" — se riippuu aina toimialamoduulin omasta
+ * varauskäsitteestä (esim. lemmikkihoitolassa Booking/BookingParticipant).
+ * Sen takia se annetaan konstruktorissa injektoituna funktiona, jonka
+ * kutsuva moduuli toimittaa (ks. LemmikkihoitolaServiceProvider::register()).
  */
 class AvailabilityService
 {
     protected int $searchWindowDays = 365;
     protected int $maxResults = 365;
+
+    /**
+     * @param \Closure(string, Carbon): int $confirmedUsageCounter
+     *        Palauttaa vahvistettujen (ei peruttujen) varausten määrän
+     *        annetulle resurssityypille annettuna päivänä.
+     */
+    public function __construct(protected \Closure $confirmedUsageCounter)
+    {
+    }
 
     /**
      * Palauttaa listan [{iso: 'Y-m-d', display: 'd.m.Y'}] -olioita niistä
@@ -102,14 +114,7 @@ class AvailabilityService
         foreach ($capacities as $resourceType => $defaultCapacity) {
             $capacity = $this->capacityForDate($resourceType, $date, $defaultCapacity);
 
-            $used = BookingParticipant::query()
-                ->whereRaw('LOWER(resource_type) = ?', [$resourceType])
-                ->whereHas('booking', function ($query) {
-                    $query->where('status', '!=', 'cancelled');
-                })
-                ->whereDate('start_date', '<=', $date)
-                ->whereDate('end_date', '>=', $date)
-                ->count();
+            $used = ($this->confirmedUsageCounter)($resourceType, $date);
 
             $result[$resourceType] = [
                 'used' => $used,
@@ -132,14 +137,7 @@ class AvailabilityService
             for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
                 $capacity = $this->capacityForDate($resourceType, $date, $defaultCapacity);
 
-                $booked = BookingParticipant::query()
-                    ->whereRaw('LOWER(resource_type) = ?', [$resourceType])
-                    ->whereHas('booking', function ($query) {
-                        $query->where('status', '!=', 'cancelled');
-                    })
-                    ->whereDate('start_date', '<=', $date)
-                    ->whereDate('end_date', '>=', $date)
-                    ->count();
+                $booked = ($this->confirmedUsageCounter)($resourceType, $date);
 
                 $held = (int) BookingHold::query()
                     ->whereRaw('LOWER(resource_type) = ?', [$resourceType])

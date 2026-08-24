@@ -718,8 +718,11 @@
                 holdStoreUrl:
                     @json(route('admin.bookings.hold.store')),
 
-                holdReleaseUrl:
+                                holdReleaseUrl:
                     @json(route('admin.bookings.hold.destroy')),
+
+                holdBeaconUrl:
+                    @json(route('admin.bookings.hold.beacon')),
 
                                 csrfToken:
                     @json(csrf_token()),
@@ -1285,5 +1288,33 @@
                 }
             }
         };
+
+        // Vapauttaa aktiiviset hold-varaukset luotettavasti myös silloin kun
+        // selainikkuna suljetaan tai sivulta poistutaan kesken lomakkeen
+        // täytön (ei vain kun klikataan "Peruuta"). navigator.sendBeacon on
+        // selaimen oma työkalu juuri tähän tilanteeseen - se ehtii lähettää
+        // pyynnön vaikka sivu on jo sulkeutumassa, toisin kuin tavallinen fetch.
+        window.addEventListener('pagehide', function () {
+            var root = document.getElementById('booking-calendar-root');
+
+            if (!root || !window.Alpine) {
+                return;
+            }
+
+            var data = window.Alpine.$data(root);
+
+            if (!data || !data.activeHoldIds || !data.activeHoldIds.length) {
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('_token', data.csrfToken);
+
+            data.activeHoldIds.forEach(function (id) {
+                formData.append('hold_ids[]', id);
+            });
+
+            navigator.sendBeacon(data.holdBeaconUrl, formData);
+        });
     </script>
 </x-app-layout>

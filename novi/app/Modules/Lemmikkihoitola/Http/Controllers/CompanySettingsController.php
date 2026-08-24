@@ -1,21 +1,24 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Lemmikkihoitola\Models\CareType;
 use App\Modules\Lemmikkihoitola\Models\Reminder;
 use App\Modules\Lemmikkihoitola\Models\ReminderType;
-use App\Modules\Lemmikkihoitola\Models\Resource;
+use App\Models\Resource;
 use App\Modules\Lemmikkihoitola\Models\Service;
 use Illuminate\Http\Request;
 
 class CompanySettingsController extends Controller
 {
     /**
-     * Yritysasetukset-sivu: eläinryhmät/kapasiteetti, lisäpalvelut,
-     * muistutustyypit ja hoitomuodot yhdestä paikasta muokattavaksi.
+     * Yritysasetukset-sivu kokonaan lemmikkihoitola-moduulin vastuulla.
+     * Myös yritystiedot (Y-tunnus, IBAN, ALV, maksuehto, brändivärit) kuuluvat
+     * tänne, koska niitä käyttää yksinomaan laskutus (Invoice/InvoiceController),
+     * joka on moduulin asia — pohja ei tarvitse näitä mihinkään.
      */
-        public function index()
+    public function index()
     {
         $company = request()->user()->company;
         $bookingFields = config('public_booking_fields');
@@ -67,7 +70,7 @@ class CompanySettingsController extends Controller
         return $this->backToTab($request)->with('status', 'Perushinta päivitetty.');
     }
 
-   public function updateCompanyInfo(Request $request)
+    public function updateCompanyInfo(Request $request)
     {
         $validated = $request->validate([
             'official_name' => ['nullable', 'string', 'max:255'],
@@ -227,7 +230,7 @@ class CompanySettingsController extends Controller
         return $this->backToTab($request)->with('status', 'Hoitomuoto päivitetty.');
     }
 
-        public function destroyCareType(Request $request, CareType $careType)
+    public function destroyCareType(Request $request, CareType $careType)
     {
         $careType->delete();
 

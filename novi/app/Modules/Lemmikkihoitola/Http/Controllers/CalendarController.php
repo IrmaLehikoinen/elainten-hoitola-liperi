@@ -4,7 +4,7 @@ namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Lemmikkihoitola\Models\BookingParticipant;
-use App\Modules\Lemmikkihoitola\Models\DateCapacityOverride;
+use App\Models\DateCapacityOverride;
 use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 

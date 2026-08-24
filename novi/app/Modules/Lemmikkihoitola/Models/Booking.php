@@ -6,6 +6,14 @@ use App\Models\Concerns\BelongsToCompany;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * MALLIESIMERKKI: tämä on lemmikkihoitolan oma toteutus geneerisestä
+ * "varaus"-käsitteestä (asiakas + ajanjakso + hinta + maksu). Toinen
+ * toimiala (esim. parturi) EI voi käyttää tätä suoraan — sillä on oma
+ * varauskäsitteensä (esim. "Appointment") — mutta tämän tiedoston
+ * RAKENNE (kentät, tilat pending/confirmed/cancelled, ennakkomaksuvirta)
+ * kannattaa katsoa mallina.
+ */
 class Booking extends Model
 {
     use BelongsToCompany;

@@ -19,7 +19,7 @@
         @php
             $dayHref = route('admin.calendar.day', $day['date']->format('Y-m-d'));
             $usage = $availabilityService->usageForDate($day['date']);
-            $isBlocked = \App\Modules\Lemmikkihoitola\Models\DateCapacityOverride::whereDate('date', $day['date']->toDateString())           
+            $isBlocked = \App\Models\DateCapacityOverride::whereDate('date', $day['date']->toDateString())          
                 ->whereNull('resource_type')
                 ->where('capacity', 0)
                 ->exists();

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Mail;
+namespace App\Modules\Lemmikkihoitola\Mail;
 
 use App\Modules\Lemmikkihoitola\Models\Booking;
 use Illuminate\Bus\Queueable;
@@ -9,25 +9,25 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class BookingPaymentExpired extends Mailable
+class BookingPaymentRequired extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Booking $booking)
+    public function __construct(public Booking $booking, public string $paymentUrl)
     {
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Varauksesi on peruuntunut',
+            subject: 'Varausmaksu odottaa maksua',
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.booking-payment-expired',
+            view: 'emails.booking-payment-required',
         );
     }
 }

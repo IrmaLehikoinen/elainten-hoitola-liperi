@@ -144,7 +144,7 @@ class DashboardController extends Controller
             ->whereDate('end_date', '>=', $start)
             ->get();
 
-        $capacities = \App\Modules\Lemmikkihoitola\Models\Resource::query()
+            $capacities = \App\Models\Resource::query()
             ->get(['type', 'capacity'])
             ->groupBy(fn ($resource) => mb_strtolower(trim($resource->type)))
             ->map(fn ($group) => (int) $group->sum('capacity'))

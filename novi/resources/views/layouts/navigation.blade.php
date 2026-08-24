@@ -28,16 +28,13 @@
         class="fixed inset-0 z-40 bg-black/40 sm:hidden"
     ></div>
 
-    @php
-        $navItems = [
-            ['route' => 'dashboard', 'active' => request()->routeIs('dashboard'), 'label' => 'Etusivu', 'icon' => 'home'],
-            ['route' => 'calendar.index', 'active' => request()->routeIs('calendar.*'), 'label' => 'Kalenteri', 'icon' => 'calendar'],
-            ['route' => 'admin.bookings.index', 'active' => request()->routeIs('admin.bookings.index'), 'label' => 'Varaukset', 'icon' => 'check'],
-            ['route' => 'admin.customers.index', 'active' => request()->routeIs('admin.customers.*'), 'label' => 'Asiakkaat', 'icon' => 'users'],
-            ['route' => 'admin.services.index', 'active' => request()->routeIs('admin.services.*'), 'label' => 'Palvelut', 'icon' => 'shield'],
-            ['route' => 'admin.invoices.index', 'active' => request()->routeIs('admin.invoices.*'), 'label' => 'Laskutus', 'icon' => 'euro'],
-            ['route' => 'admin.reports.index', 'active' => request()->routeIs('admin.reports.*'), 'label' => 'Raportit', 'icon' => 'chart'],
-        ];
+        @php
+        // Valikkokohteet tulevat asennetuilta moduuleilta (ks. config/navigation.php),
+        // pohja ei enää tiedä niistä mitään suoraan.
+        $navItems = array_map(function ($item) {
+            $item['active'] = request()->routeIs($item['active_pattern'] ?? $item['route']);
+            return $item;
+        }, config('navigation.items', []));
     @endphp
 
     <!-- Vasen sivuvalikko -->
@@ -90,9 +87,13 @@
                                 @case('euro')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6a6.5 6.5 0 1 0 0 12M6.5 10h7M6.5 14h6" /></svg>
                                     @break
-                                @case('chart')
+                                                                    @case('chart')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5h16M8 19V10M13 19V5M18 19v-7" /></svg>
                                     @break
+                                                                    @case('gear')
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><circle cx="12" cy="12" r="3" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.4 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.5-2.6-1.9.6a7.7 7.7 0 0 0-2.6-1.5L14.6 3h-3l-.4 2-.1-.1a7.6 7.6 0 0 0-2.6 1.5l-1.9-.6-1.5 2.6L6.6 10a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.5 2.6 1.9-.6a7.7 7.7 0 0 0 2.6 1.5l.4 2h3l.4-2a7.7 7.7 0 0 0 2.6-1.5l1.9.6 1.5-2.6-1.6-1.2Z" /></svg>
+                                    @break
+
                             @endswitch
                         </span>
                         <span>{{ $item['label'] }}</span>
@@ -100,22 +101,7 @@
                 @endforeach
             </div>
 
-            <p class="mb-3 mt-8 px-3 text-xs font-semibold uppercase tracking-wider text-white/50">
-                Järjestelmä
-            </p>
-
-            <div class="space-y-1">
-                <div
-                    onclick="window.location.href='{{ route('admin.settings.index') }}'"
-                    class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs('admin.settings.*') ? 'bg-white/20 text-white' : 'text-white/80 hover:bg-white/10' }}"
-                >
-                    <span class="flex h-5 w-5 shrink-0 items-center justify-center">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><circle cx="12" cy="12" r="3" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.4 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.5-2.6-1.9.6a7.7 7.7 0 0 0-2.6-1.5L14.6 3h-3l-.4 2-.1-.1a7.6 7.6 0 0 0-2.6 1.5l-1.9-.6-1.5 2.6L6.6 10a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.5 2.6 1.9-.6a7.7 7.7 0 0 0 2.6 1.5l.4 2h3l.4-2a7.7 7.7 0 0 0 2.6-1.5l1.9.6 1.5-2.6-1.6-1.2Z" /></svg>
-                    </span>
-                    <span>Asetukset</span>
-                </div>
-            </div>
-        </div>
+                 </div>   
 
         <!-- Käyttäjä ja uloskirjautuminen -->
         <div class="border-t border-white/15 p-4">

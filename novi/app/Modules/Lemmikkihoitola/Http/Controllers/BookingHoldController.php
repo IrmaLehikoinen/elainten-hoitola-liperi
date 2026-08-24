@@ -3,7 +3,7 @@
 namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Lemmikkihoitola\Models\BookingHold;
+use App\Models\BookingHold;
 use Illuminate\Http\Request;
 
 class BookingHoldController extends Controller

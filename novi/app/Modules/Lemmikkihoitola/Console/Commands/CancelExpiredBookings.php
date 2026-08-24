@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Modules\Lemmikkihoitola\Console\Commands;
 
-use App\Mail\BookingPaymentExpired;
+use App\Modules\Lemmikkihoitola\Mail\BookingPaymentExpired;
 use App\Modules\Lemmikkihoitola\Models\Booking;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;

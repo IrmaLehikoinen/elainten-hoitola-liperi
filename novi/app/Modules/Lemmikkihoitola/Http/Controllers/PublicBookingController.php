@@ -91,7 +91,7 @@ class PublicBookingController extends Controller
                     $companyId = \App\Models\Company::first()->id;
 
                 foreach ($grouped as $species => $group) {
-            $hold = \App\Modules\Lemmikkihoitola\Models\BookingHold::create([
+                $hold = \App\Models\BookingHold::create([
                 'company_id' => $companyId,
                 'resource_type' => $species,
                 'quantity' => $group->count(),
@@ -149,7 +149,7 @@ class PublicBookingController extends Controller
         );
 
         \Illuminate\Support\Facades\Mail::to($customer->email)->send(
-            new \App\Mail\BookingMagicLink($customer, $signedUrl)
+                    new \App\Modules\Lemmikkihoitola\Mail\BookingMagicLink($customer, $signedUrl)
         );
 
         return view('public.booking.step3', [
@@ -231,7 +231,7 @@ class PublicBookingController extends Controller
 
                 // Vapautetaan oma hold ennen uudelleentarkistusta, jotta se ei laske
         // itseään kahteen kertaan kapasiteetissa.
-        \App\Modules\Lemmikkihoitola\Models\BookingHold::whereIn('id', session('public_booking.hold_ids', []))->delete();
+        \App\Models\BookingHold::whereIn('id', session('public_booking.hold_ids', []))->delete();
 
             $requirements = collect(session('public_booking.animals'))
             ->groupBy(fn ($a) => mb_strtolower(trim($a['species'])))

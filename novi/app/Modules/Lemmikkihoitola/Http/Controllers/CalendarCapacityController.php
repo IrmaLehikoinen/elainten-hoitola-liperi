@@ -3,7 +3,7 @@
 namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Lemmikkihoitola\Models\DateCapacityOverride;
+use App\Models\DateCapacityOverride;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 

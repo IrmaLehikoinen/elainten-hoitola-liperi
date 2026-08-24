@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Modules\Lemmikkihoitola\Models\Booking;
+use App\Events\StripeCheckoutCompleted;
 use Illuminate\Http\Request;
 use Stripe\Webhook;
-use App\Mail\BookingConfirmed;
-use Illuminate\Support\Facades\Mail;
 
 class StripeWebhookController extends Controller
 {
@@ -24,18 +22,10 @@ class StripeWebhookController extends Controller
 
         if ($event->type === 'checkout.session.completed') {
             $session = $event->data->object;
-            $bookingId = $session->metadata->booking_id ?? null;
 
-            if ($bookingId) {
-                $booking = Booking::find($bookingId);
-
-                            if ($booking && $booking->status === 'pending') {
-                    $booking->deposit_paid_at = now();
-                    $booking->status = 'confirmed';
-                    $booking->save();
-                    Mail::to($booking->customer->email)->send(new BookingConfirmed($booking));
-                }
-            }
+            event(new StripeCheckoutCompleted(
+                (array) ($session->metadata ?? [])
+            ));
         }
 
         return response('OK', 200);
