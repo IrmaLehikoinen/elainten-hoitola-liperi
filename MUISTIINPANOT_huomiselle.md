@@ -561,3 +561,43 @@ Korjattu täydessä laajuudessa:
 - `git status --short` `novi`-kansiossa on nyt tyhjä — ei mitään tallentamatonta.
 
 **Tämän jälkeen kaikki kolme paikkaa (GitHubin `main`-haara, `pohja-1.0.0`-tagi, `lemmikkihoitola-moduuli-1.0.0`-tagi, `~/Herd/novi-pohja-1.0.0`-kansio) osoittavat samaan, oikeaan, täydellisen fyysisen erottelun sisältävään commitiin `15ffb3a`.** Muistiopetus jatkoa varten: aina kun tehdään tageja/kloonauksia ison työn jälkeen, tarkista ENSIN `git status` ettei mitään ole jäänyt committoimatta — tämä unohtui kertaalleen tänä yönä.
+
+## 18. Muistiinpanot 31.8.2026 – Kurssit-moduulin ilta
+
+### Illan VIIMEINEN palaute — ei vielä korjattu, jatka TÄSTÄ huomenna ensimmäisenä
+Kurssin julkisella esittelysivulla (`resources/views/modules/kurssit/public/register.blade.php`), kun kurssin esitystapa on "Lataa valmis esite" (`presentation_type = 'brochure'`):
+- NYKYINEN (väärä) tila: ylimpänä nimi/päivä/hinta-laatikko, sen alla pelkkä "Avaa esite" -nappi joka avaa esitteen lightbox-ikkunaan.
+- IRMAN HALUAMA järjestys: esite (PDF tai kuva) näkyy heti sivun YLIMPÄNÄ, AUKI ilman että nappia tarvitsee painaa (ei lightboxia, ei nappia) → sen ALLA laatikko jossa kurssin nimi + päivä + hinta → sen ALLA ilmoittautumislomake.
+- Ei vielä korjattu koodissa. Sama korjaus kannattaa tehdä samalla myös tarkistaen ettei riko olemassa olevaa hero-kuva-logiikkaa (`presentation_type = 'blocks'` -kursseilla, joissa ensimmäinen `image_full`-lohko toimii jo herona ylimpänä — tämä toimii oikein, ei koske tätä korjausta).
+
+### Tehty ja vahvistettu tänään (31.8.) — Kurssit-moduuli (Sydänpolku)
+- Kurssit-moduulin Etusivu (`kurssit.dashboard`): näyttää nyt tulevat kurssit listana (nimi, päivä, hinta, paikkatilanne, "täynnä/odottaa maksuja" -tila). Vahvistettu koodista.
+- Sivuvalikon "Kurssit" → "Uudet kurssit" nimenvaihto. Vahvistettu koodista.
+- "Uudet kurssit" -listasivu: "+ Uusi kurssi" -nappi poistettu oikeasta yläkulmasta, uuden kurssin lomake (koko lohkoeditori, kuvanpakkaus, HEIC-tuki) on nyt suoraan sivulla näkyvissä listaus yläpuolella. Muokkaussivu (`/muokkaa`) käyttää samaa jaettua lomakepohjaa (`courses/_form.blade.php`), toimii ennallaan. Vahvistettu koodista.
+- Course-mallin `confirmedCount()` / `isTemporarilyFull()` (kannustava "kokeile myöhemmin" -viesti kun kurssi on täynnä vain maksamattomien pending-varausten takia). Vahvistettu koodista.
+- Stripe-maksun iframe-ohitus (`public/redirecting.blade.php`, `window.top.location.href`) — korjaa aiemman bugin jossa Stripe jäi jumiin lightbox-iframen sisällä. Vahvistettu koodista, EI vielä testattu oikealla maksulla läpi asti.
+- Julkisen kurssilistan (`/kurssit`) korttiruudukko: 3 saraketta desktopilla, neliömäiset kuvat, normaali sivuleveys (960px, responsiivinen 1→2→3 saraketta). Vahvistettu koodista.
+- Julkisen Kurssit-layoutin brändivärit skoopattu oikein `.kurssit-public`-luokkaan asiakkaan omasta brändistä — EI enää Novin omaa vihreää. Vahvistettu koodista.
+- Vanha kaksoiskappale-tiedosto `resources/views/modules/courses/index.blade.php` (puuttui "kurssit"-kansiotaso) poistettu.
+
+### Annettu illalla, EI VIELÄ Irman vahvistamaa "tehty" — tarkista tila huomenna ensimmäisenä
+1. **Raportti-sivu** (menneet kurssit, osallistujamäärät, hakukenttä): `ReportController.php` + `reports/index.blade.php` + reitti `kurssit.reports.index` + valikkolinkki. Koodi annettu, ei vahvistettu sovelletuksi.
+2. **Laskutus-sivu**: `InvoiceController.php` + `invoices/index.blade.php` + `invoices/pdf.blade.php` + reitit (`kurssit.invoices.index/mark-paid/pdf/print`) + valikkolinkki + migraatio joka lisää `course_registrations`-tauluun `payment_method`, `paid_at`, `invoice_number`, `issued_at`. Kuitti/lasku-PDF samassa suomalaisessa muodossa kuin Lemmikkihoitolassa (oma erillinen toteutus, ei jaettua koodia moduulien välillä). "Merkitse maksetuksi paikan päällä" -nappi pending-ilmoittautumisille. Koodi annettu, ei vahvistettu sovelletuksi, migraatiota ei vahvistettu ajetuksi.
+
+### Lahjakortti — suunnittelu valmis, EI VIELÄ YHTÄÄN KOODIA ANNETTU
+Pitkä keskustelu illalla, lopputulos:
+- Vain Sydänpolun/Kurssit-moduulin oma ominaisuus — EI Lemmikkihoitolaan, EI pohjaan (Irma korjasi tämän kesken keskustelun: "tehdäänpä niin ettei lemmikkihoitolalle laiteta lahjakorttia kun siellä vaan varausmaksu vaan sydänpolulle").
+- Fyysiset, valmiiksi PAINETUT kortit (numero on jo kortissa ennen myyntiä, ei järjestelmän arpoma) — etuliite (esim. "S", vaihdettavissa itse kun sarja loppuu) + numeroväli (esim. 001–100), aktivoidaan admin-sivulla KERRALLA koko sarja yhdellä lomakkeella (etuliite + alkunumero + loppunumero + arvo), ei yksitellen.
+- Arvot: 20 € ja 50 € (karsittiin 35€/100€ pois illalla, Irman päätös).
+- Verkosta ostetuille lahjakorteille OMA, painetuista korteista erillinen numerosarja (esim. aina "V-alkuinen"), jotta sama koodi ei voi koskaan olla sekä painetussa kortissa että jonkun sähköpostissa — näille koodin arpoo järjestelmä automaattisesti Stripe-maksun onnistuttua ja lähettää sähköpostilla.
+- Jos lahjakortin arvo ei riitä koko summaan, loppuosa ohjataan maksettavaksi Stripellä samassa maksutapahtumassa (osittainen lahjakorttimaksu + Stripe-täydennys) — tämä on teknisesti se osuus joka pitää suunnitella tarkimmin kun aloitetaan.
+- Ei vielä migraatiota, mallia, kontrolleria eikä näkymiä — aloitetaan tästä puhtaalta pöydältä kun jatketaan.
+
+### Tämän illan commit (31.8.)
+Irma pyysi committaamaan illan työn ennen lopettamista. Commit-komennot annettu chatissa, Irma ajaa ne itse.
+
+### Huomenna ensimmäisenä
+1. Korjaa esitteen (`brochure`) auto-avautuva sijoittelu register.blade.php:lla (ks. yllä, "Illan VIIMEINEN palaute").
+2. Tarkista `git status` / kysy Irmalta onko Raportti- ja Laskutus-koodi jo liitetty tiedostoihin ja migraatio ajettu — Read-varmista aina ennen kuin oletetaan tehdyksi.
+3. Jatka lahjakortti-ominaisuudesta yllä olevan suunnitelman mukaisesti.
+4. Tehtävä #77 "Kolmiosainen loppytestaus" on edelleen auki koko Kurssit-moduulille.

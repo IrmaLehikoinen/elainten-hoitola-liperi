@@ -75,7 +75,7 @@ class CourseRegistrationController extends Controller
             return redirect()->route('kurssit.public.success');
         }
 
-        $url = $checkout->createSessionUrl([
+                $url = $checkout->createSessionUrl([
             'email' => $registration->email,
             'name' => $registration->name,
             'amount' => (float) $course->price,
@@ -86,6 +86,6 @@ class CourseRegistrationController extends Controller
             'cancel_url' => route('kurssit.public.cancelled'),
         ]);
 
-        return redirect($url);
+        return view('kurssit::public.redirecting', ['url' => $url]);
     }
 }

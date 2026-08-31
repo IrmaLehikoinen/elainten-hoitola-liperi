@@ -32,7 +32,7 @@ class KurssitServiceProvider extends ServiceProvider
             Config::get('navigation.items', []),
             array_map(fn ($item) => $item + ['industry' => 'kurssit'], [
                 ['route' => 'kurssit.dashboard', 'active_pattern' => 'kurssit.dashboard', 'label' => 'Etusivu', 'icon' => 'home'],
-                ['route' => 'kurssit.courses.index', 'active_pattern' => 'kurssit.courses.*', 'label' => 'Kurssit', 'icon' => 'calendar'],
+                                ['route' => 'kurssit.courses.index', 'active_pattern' => 'kurssit.courses.*', 'label' => 'Uudet kurssit', 'icon' => 'calendar'],
             ])
         ));
 

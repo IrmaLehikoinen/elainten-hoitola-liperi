@@ -11,9 +11,27 @@
     <link href="https://fonts.bunny.net/css?family=playfair-display:600,700|inter:400,500,600&display=swap" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        .kurssit-public {
+            --brand-primary: {{ $brand['primary_color'] ?? '#3F4F3A' }};
+            --brand-secondary: {{ $brand['secondary_color'] ?? '#D8C6BD' }};
+            --brand-accent: {{ $brand['accent_color'] ?? '#2A3428' }};
+            --brand-background: {{ $brand['background_color'] ?? '#F8F6F2' }};
+            --brand-text: {{ $brand['text_color'] ?? '#2A3428' }};
+            --brand-heading-font: '{{ $brand['font_heading'] ?? 'Playfair Display' }}', serif;
+            --brand-body-font: '{{ $brand['font_body'] ?? 'Inter' }}', sans-serif;
+            --brand-radius: {{ $brand['border_radius'] ?? '16px' }};
+
+            margin: 0;
+            font-family: var(--brand-body-font);
+            color: var(--brand-text);
+            background-color: var(--brand-background);
+        }
+    </style>
 </head>
-<body style="margin:0; background: var(--brand-background, #F8F6F2); font-family: var(--brand-body-font, sans-serif);">
-    <div style="max-width: 640px; margin: 0 auto; padding: 48px 24px;">
+<body class="kurssit-public">
+         <div style="max-width: 960px; margin: 0 auto; padding: 48px 24px;">   
         {{ $slot }}
     </div>
 </body>

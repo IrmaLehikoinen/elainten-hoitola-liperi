@@ -22,9 +22,7 @@ Route::middleware('web')->group(function () {
 
     // Hallintapaneeli — vaatii kirjautumisen.
     Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/kurssit/hallinta', function () {
-            return view('kurssit::dashboard');
-        })->name('kurssit.dashboard');
+            Route::get('/kurssit/hallinta', [CourseController::class, 'dashboard'])->name('kurssit.dashboard');
 
         Route::get('/kurssit/hallinta/kurssit', [CourseController::class, 'index'])->name('kurssit.courses.index');
         Route::get('/kurssit/hallinta/kurssit/uusi', [CourseController::class, 'create'])->name('kurssit.courses.create');
