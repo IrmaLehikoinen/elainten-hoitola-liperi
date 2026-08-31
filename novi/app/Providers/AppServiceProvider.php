@@ -20,8 +20,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Lemmikkihoitola-moduulin näkymät löytyvät tästä kansiosta, pohjan
-        // näkymien (resources/views) lisäksi. Laravel etsii molemmista.
-        View::addLocation(resource_path('views/modules/lemmikkihoitola'));
+        //
     }
 }
