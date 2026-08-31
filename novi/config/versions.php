@@ -1,10 +1,11 @@
 <?php
 
-// Pohjan ja lemmikkihoitolan moduulin versionumerot.
-// Näitä nostetaan ERIKSEEN aina kun jompaakumpaa kerrosta muutetaan —
-// jos vain moduulia päivitetään, pohja-numero pysyy ennallaan, ja päinvastoin.
+// Pohjan ja moduulien versionumerot.
+// Näitä nostetaan ERIKSEEN aina kun jotakin kerrosta muutetaan —
+// jos vain yhtä moduulia päivitetään, muut numerot pysyvät ennallaan.
 
 return [
     'pohja' => '1.0.0',
     'lemmikkihoitola_moduuli' => '1.0.0',
+    'kurssit_moduuli' => '1.0.0',
 ];
