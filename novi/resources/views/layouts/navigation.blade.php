@@ -28,14 +28,20 @@
         class="fixed inset-0 z-40 bg-black/40 sm:hidden"
     ></div>
 
-        @php
+            @php
         // Valikkokohteet tulevat asennetuilta moduuleilta (ks. config/navigation.php),
-        // pohja ei enää tiedä niistä mitään suoraan.
-        $navItems = array_map(function ($item) {
-            $item['active'] = request()->routeIs($item['active_pattern'] ?? $item['route']);
-            return $item;
-        }, config('navigation.items', []));
-    @endphp
+        // pohja ei enää tiedä niistä mitään suoraan. Näytetään vain
+        // aktiivisen yrityksen oman toimialan kohteet.
+        $activeIndustry = $company['industry'] ?? null;
+
+        $navItems = collect(config('navigation.items', []))
+            ->filter(fn ($item) => ($item['industry'] ?? null) === $activeIndustry)
+            ->map(function ($item) {
+                $item['active'] = request()->routeIs($item['active_pattern'] ?? $item['route']);
+                return $item;
+            })
+            ->all();
+    @endphp    
 
     <!-- Vasen sivuvalikko -->
     <aside
@@ -50,10 +56,35 @@
                 <span class="text-lg font-semibold" style="font-family: var(--brand-heading-font);">Novi</span>
             </div>
 
-            <p class="mt-2 text-sm leading-tight text-white/70">
-                {{ $company['name'] ?? 'Yrityksen nimi' }}
-            </p>
-        </div>
+                    @php
+                $accessibleCompanies = Auth::check() ? Auth::user()->accessibleCompanies() : collect();
+                $activeCompanyId = $company['id'] ?? null;
+            @endphp
+
+            @if ($accessibleCompanies->count() > 1)
+                <p class="mt-2 text-base font-semibold leading-tight text-white">
+                    {{ $company['name'] ?? 'Yrityksen nimi' }}
+                </p>
+
+                <div class="mt-1 space-y-0.5">
+                    @foreach ($accessibleCompanies->where('id', '!=', $activeCompanyId) as $otherCompany)
+                        <form method="POST" action="{{ route('company.switch', $otherCompany) }}">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="text-xs text-white/60 underline decoration-white/30 underline-offset-2 transition hover:text-white"
+                            >
+                                Vaihda: {{ $otherCompany->name }}
+                            </button>
+                        </form>
+                    @endforeach
+                </div>
+            @else
+                <p class="mt-2 text-sm leading-tight text-white/70">
+                    {{ $company['name'] ?? 'Yrityksen nimi' }}
+                </p>
+            @endif
+        </div>    
 
         <!-- Päävalikko -->
         <div class="flex-1 overflow-y-auto px-3 py-6">

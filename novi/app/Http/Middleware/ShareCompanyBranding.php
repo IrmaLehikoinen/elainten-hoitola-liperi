@@ -19,7 +19,11 @@ class ShareCompanyBranding
     {
         View::share('brand', $this->brandManager->current());
 
-        View::share('company', $this->brandManager->company());
+        $activeCompany = app(\App\Services\ActiveCompanyResolver::class)->current();
+
+            View::share('company', $activeCompany
+            ? ['id' => $activeCompany->id, 'name' => $activeCompany->name, 'industry' => $activeCompany->industry]
+            : $this->brandManager->company());    
 
         return $next($request);
     }

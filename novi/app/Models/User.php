@@ -34,4 +34,27 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Company::class);
     }
+
+    /**
+     * MALLIESIMERKKI: käyttäjän lisäyritykset kotiyrityksen (company_id)
+     * lisäksi, kohdassa 1 luodun company_user-taulun kautta.
+     */
+    public function additionalCompanies()
+    {
+        return $this->belongsToMany(Company::class);
+    }
+
+    /**
+     * Kaikki yritykset joihin käyttäjällä on pääsy: kotiyritys +
+     * lisäyritykset, ilman kaksoiskappaleita. Useimmilla käyttäjillä
+     * tässä on vain yksi yritys (heidän kotiyrityksensä).
+     */
+    public function accessibleCompanies()
+    {
+        return collect([$this->company])
+            ->merge($this->additionalCompanies)
+            ->filter()
+            ->unique('id')
+            ->values();
+    }
 }

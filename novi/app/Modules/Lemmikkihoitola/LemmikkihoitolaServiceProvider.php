@@ -59,9 +59,9 @@ class LemmikkihoitolaServiceProvider extends ServiceProvider
         // näkymien (resources/views) lisäksi. Pohja ei tunne tätä polkua.
         View::addLocation(resource_path('views/modules/lemmikkihoitola'));
 
-        Config::set('navigation.items', array_merge(
+                Config::set('navigation.items', array_merge(
             Config::get('navigation.items', []),
-            [
+            array_map(fn ($item) => $item + ['industry' => 'lemmikkihoitola'], [
                 ['route' => 'dashboard', 'active_pattern' => 'dashboard', 'label' => 'Etusivu', 'icon' => 'home'],
                 ['route' => 'calendar.index', 'active_pattern' => 'calendar.*', 'label' => 'Kalenteri', 'icon' => 'calendar'],
                 ['route' => 'admin.bookings.index', 'active_pattern' => 'admin.bookings.index', 'label' => 'Varaukset', 'icon' => 'check'],
@@ -70,11 +70,11 @@ class LemmikkihoitolaServiceProvider extends ServiceProvider
                 ['route' => 'admin.invoices.index', 'active_pattern' => 'admin.invoices.*', 'label' => 'Laskutus', 'icon' => 'euro'],
                 ['route' => 'admin.reports.index', 'active_pattern' => 'admin.reports.*', 'label' => 'Raportit', 'icon' => 'chart'],
                 ['route' => 'admin.settings.index', 'active_pattern' => 'admin.settings.*', 'label' => 'Asetukset', 'icon' => 'gear'],
-            ]
+            ])
         ));
-
-        Config::set('industries.lemmikkihoitola', [
+                Config::set('industries.lemmikkihoitola', [
             'label' => 'Lemmikkihoitola',
+            'home_route' => 'dashboard',
         ]);
 
         $this->mergeConfigFrom(

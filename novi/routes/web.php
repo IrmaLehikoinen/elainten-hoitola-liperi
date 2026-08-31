@@ -22,4 +22,14 @@ Route::get('/tietosuoja', function () {
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
 
+Route::post('/vaihda-yritys/{company}', function (\App\Models\Company $company) {
+    if (! app(\App\Services\ActiveCompanyResolver::class)->switchTo($company)) {
+        abort(403);
+    }
+
+    $routeName = config("industries.{$company->industry}.home_route", 'dashboard');
+
+    return redirect()->route($routeName);
+})->middleware('auth')->name('company.switch');
+
 require __DIR__.'/auth.php';
