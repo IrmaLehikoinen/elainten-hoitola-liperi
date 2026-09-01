@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('bookings:cancel-expired')->everyFiveMinutes();
 Schedule::command('kurssit:send-reminders')->everyFifteenMinutes();
+Schedule::command('kurssit:cancel-expired')->everyFiveMinutes();

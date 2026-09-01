@@ -30,17 +30,19 @@ class KurssitServiceProvider extends ServiceProvider
 
         // Rekisteröidään komentorivikomento käsin, koska se ei asu
         // app/Console/Commands-kansiossa, jota Laravel lukee automaattisesti.
-        if ($this->app->runningInConsole()) {
+                if ($this->app->runningInConsole()) {
             $this->commands([
                 \App\Modules\Kurssit\Console\Commands\SendCourseReminders::class,
+                \App\Modules\Kurssit\Console\Commands\CancelExpiredCourseRegistrations::class,
             ]);
         }
 
         Config::set('navigation.items', array_merge(
             Config::get('navigation.items', []),
             array_map(fn ($item) => $item + ['industry' => 'kurssit'], [
-                ['route' => 'kurssit.dashboard', 'active_pattern' => 'kurssit.dashboard', 'label' => 'Etusivu', 'icon' => 'home'],
-                ['route' => 'kurssit.courses.index', 'active_pattern' => 'kurssit.courses.*', 'label' => 'Uudet kurssit', 'icon' => 'calendar'],
+                            ['route' => 'kurssit.dashboard', 'active_pattern' => 'kurssit.dashboard', 'label' => 'Etusivu', 'icon' => 'home'],
+                ['route' => 'kurssit.cards.index', 'active_pattern' => 'kurssit.cards.*|kurssit.registrations.*', 'label' => 'Kurssikortit', 'icon' => 'calendar'],
+                ['route' => 'kurssit.courses.index', 'active_pattern' => 'kurssit.courses.*', 'label' => 'Syötä uudet kurssit', 'icon' => 'calendar'],
                 ['route' => 'kurssit.reports.index', 'active_pattern' => 'kurssit.reports.*', 'label' => 'Raportti', 'icon' => 'chart'],
                 ['route' => 'kurssit.invoices.index', 'active_pattern' => 'kurssit.invoices.*', 'label' => 'Laskutus', 'icon' => 'euro'],
                 ['route' => 'kurssit.settings.index', 'active_pattern' => 'kurssit.settings.*', 'label' => 'Asetukset', 'icon' => 'gear'],

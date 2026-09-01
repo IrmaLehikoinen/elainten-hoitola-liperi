@@ -10,8 +10,9 @@
         </form>
 
         <div class="mt-6 space-y-3">
-            @forelse ($courses as $course)
-                <div class="rounded-lg border bg-white p-4 flex items-center justify-between">
+                    @forelse ($courses as $course)
+                <div onclick="window.location.href='{{ route('kurssit.cards.show', $course) }}'"
+                    class="cursor-pointer rounded-lg border bg-white p-4 flex items-center justify-between hover:border-gray-400">
                     <div>
                         <p class="font-medium">{{ $course->name }}</p>
                         <p class="text-sm text-gray-500">
@@ -23,8 +24,12 @@
                         {{ number_format($course->confirmed_count * $course->price, 2, ',', ' ') }} €
                     </p>
                 </div>
-            @empty
-                <p class="text-sm text-gray-500">Ei vielä menneitä kursseja.</p>
+                            @empty
+                @if ($search !== '')
+                    <p class="text-sm text-gray-500">Ei tuloksia haulla "{{ $search }}".</p>
+                @else
+                    <p class="text-sm text-gray-500">Hae kurssin nimellä nähdäksesi menneet kurssit.</p>
+                @endif
             @endforelse
         </div>
     </div>

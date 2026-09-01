@@ -5,6 +5,7 @@ namespace App\Modules\Kurssit\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Kurssit\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class ReportController extends Controller
 {
@@ -12,13 +13,17 @@ class ReportController extends Controller
     {
         $search = trim((string) $request->get('q'));
 
-        $courses = Course::where('starts_at', '<', now())
-            ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
-            ->orderByDesc('starts_at')
-            ->withCount(['registrations as confirmed_count' => function ($query) {
-                $query->where('status', 'confirmed');
-            }])
-            ->get();
+        $courses = new Collection();
+
+        if ($search !== '') {
+            $courses = Course::where('starts_at', '<', now())
+                ->where('name', 'like', "%{$search}%")
+                ->orderByDesc('starts_at')
+                ->withCount(['registrations as confirmed_count' => function ($query) {
+                    $query->where('status', 'confirmed');
+                }])
+                ->get();
+        }
 
         return view('kurssit::reports.index', [
             'courses' => $courses,
