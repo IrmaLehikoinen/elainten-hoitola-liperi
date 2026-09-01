@@ -3,9 +3,11 @@
 namespace App\Modules\Kurssit\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Kurssit\Mail\CourseRegistrationConfirmed;
 use App\Modules\Kurssit\Models\CourseRegistration;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
 {
@@ -29,12 +31,18 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function markPaid(CourseRegistration $registration)
+        public function markPaid(CourseRegistration $registration)
     {
+        $wasPending = $registration->status !== 'confirmed';
+
         $registration->status = 'confirmed';
         $registration->payment_method = 'manual';
         $registration->paid_at = now();
         $registration->save();
+
+        if ($wasPending && $registration->email) {
+            Mail::to($registration->email)->send(new CourseRegistrationConfirmed($registration));
+        }
 
         return back()->with('status', 'Merkitty maksetuksi paikan päällä.');
     }

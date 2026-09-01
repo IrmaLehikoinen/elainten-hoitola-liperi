@@ -9,7 +9,7 @@ class CourseRegistration extends Model
 {
     use BelongsToCompany;
 
-          protected $fillable = [
+    protected $fillable = [
         'company_id',
         'course_id',
         'name',
@@ -21,12 +21,14 @@ class CourseRegistration extends Model
         'paid_at',
         'invoice_number',
         'issued_at',
+        'reminder_sent_at',
     ];
 
     protected $casts = [
         'payment_deadline' => 'datetime',
         'paid_at' => 'datetime',
         'issued_at' => 'datetime',
+        'reminder_sent_at' => 'datetime',
     ];
 
     public function course()
@@ -55,4 +57,4 @@ class CourseRegistration extends Model
 
         return $this->issued_at?->copy()->addDays($days);
     }
-}  
+}

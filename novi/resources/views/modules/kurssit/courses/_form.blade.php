@@ -1,5 +1,6 @@
 @php
-    $rawBlocks = old('blocks', null);
+    $ignoreOld = $ignoreOld ?? false;
+    $rawBlocks = $ignoreOld ? null : old('blocks', null);
 
     if ($rawBlocks === null) {
         $rawBlocks = collect($course->content_blocks ?? [])->map(function ($block, $index) {
@@ -10,10 +11,12 @@
             return $block;
         })->values()->all();
     }
+
+    $old = fn ($key, $default = null) => $ignoreOld ? $default : old($key, $default);
 @endphp
 
 <div x-data="{
-    presentationType: '{{ old('presentation_type', $course->presentation_type ?? 'none') }}',
+    presentationType: '{{ $old('presentation_type', $course->presentation_type ?? 'none') }}',
     blocks: {{ \Illuminate\Support\Js::from($rawBlocks) }},
     uidCounter: 1,
     addBlock(type) {
@@ -36,14 +39,14 @@
 
         <div>
             <label class="block text-sm font-medium">Kurssin nimi</label>
-            <input type="text" name="name" value="{{ old('name', $course->name) }}" required class="mt-1 w-full rounded-md border-gray-300">
+            <input type="text" name="name" value="{{ $old('name', $course->name) }}" required class="mt-1 w-full rounded-md border-gray-300">
             @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
         <div>
             <label class="block text-sm font-medium">Lyhyt esittely</label>
             <textarea name="short_description" rows="3" required
-                class="mt-1 w-full rounded-md border-gray-300">{{ old('short_description', $course->short_description) }}</textarea>
+                class="mt-1 w-full rounded-md border-gray-300">{{ $old('short_description', $course->short_description) }}</textarea>
             <p class="mt-1 text-xs text-gray-500">Näkyy aina kurssilistassa ja ilmoittautumissivun yläosassa.</p>
             @error('short_description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
@@ -51,16 +54,25 @@
         <div class="grid grid-cols-3 gap-4">
             <div>
                 <label class="block text-sm font-medium">Ajankohta</label>
-                <input type="datetime-local" name="starts_at" value="{{ old('starts_at', $course->starts_at?->format('Y-m-d\TH:i')) }}" class="mt-1 w-full rounded-md border-gray-300">
+                <input type="datetime-local" id="course-starts-at" name="starts_at" value="{{ $old('starts_at', $course->starts_at?->format('Y-m-d\TH:i')) }}" class="mt-1 w-full rounded-md border-gray-300">
             </div>
             <div>
                 <label class="block text-sm font-medium">Hinta (€)</label>
-                <input type="number" step="0.01" min="0" name="price" value="{{ old('price', $course->price) }}" class="mt-1 w-full rounded-md border-gray-300">
+                <input type="number" step="0.01" min="0" name="price" value="{{ $old('price', $course->price) }}" class="mt-1 w-full rounded-md border-gray-300">
             </div>
             <div>
                 <label class="block text-sm font-medium">Paikkamäärä</label>
-                <input type="number" min="0" name="max_participants" value="{{ old('max_participants', $course->max_participants) }}" required class="mt-1 w-full rounded-md border-gray-300">
+                <input type="number" min="0" name="max_participants" value="{{ $old('max_participants', $course->max_participants) }}" required class="mt-1 w-full rounded-md border-gray-300">
                 @error('max_participants') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        <div class="rounded-md border border-gray-200 p-4">
+            <label class="block text-sm font-medium">Muistutus tälle kurssille (valinnainen)</label>
+            <p class="mt-1 text-xs text-gray-500">Näkyy etusivun Muistettavaa-listassa.</p>
+            <div class="mt-2 grid grid-cols-3 gap-4">
+                <input type="text" name="reminder_title" placeholder="Esim. Tarkista kurssitila" class="col-span-2 rounded-md border-gray-300 text-sm">
+                <input type="date" name="reminder_due_at" class="rounded-md border-gray-300 text-sm">
             </div>
         </div>
 

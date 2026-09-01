@@ -1,6 +1,8 @@
 <?php
 
+use App\Modules\Kurssit\Http\Controllers\CompanySettingsController;
 use App\Modules\Kurssit\Http\Controllers\CourseController;
+use App\Modules\Kurssit\Http\Controllers\CourseReminderController;
 use App\Modules\Kurssit\Http\Controllers\CourseRegistrationController;
 use App\Modules\Kurssit\Http\Controllers\InvoiceController;
 use App\Modules\Kurssit\Http\Controllers\ReportController;
@@ -24,7 +26,7 @@ Route::middleware('web')->group(function () {
 
     // Hallintapaneeli — vaatii kirjautumisen.
     Route::middleware(['auth', 'verified'])->group(function () {
-            Route::get('/kurssit/hallinta', [CourseController::class, 'dashboard'])->name('kurssit.dashboard');
+        Route::get('/kurssit/hallinta', [CourseController::class, 'dashboard'])->name('kurssit.dashboard');
 
         Route::get('/kurssit/hallinta/kurssit', [CourseController::class, 'index'])->name('kurssit.courses.index');
         Route::get('/kurssit/hallinta/kurssit/uusi', [CourseController::class, 'create'])->name('kurssit.courses.create');
@@ -39,6 +41,13 @@ Route::middleware('web')->group(function () {
         Route::post('/kurssit/hallinta/laskutus/{registration}/merkitse-maksetuksi', [InvoiceController::class, 'markPaid'])->name('kurssit.invoices.mark-paid');
         Route::get('/kurssit/hallinta/laskutus/{registration}/pdf', [InvoiceController::class, 'downloadPdf'])->name('kurssit.invoices.pdf');
         Route::get('/kurssit/hallinta/laskutus/{registration}/tulosta', [InvoiceController::class, 'printPdf'])->name('kurssit.invoices.print');
+
+                 Route::get('/kurssit/hallinta/asetukset', [CompanySettingsController::class, 'index'])->name('kurssit.settings.index');
+        Route::post('/kurssit/hallinta/asetukset/yritystiedot', [CompanySettingsController::class, 'updateCompanyInfo'])->name('kurssit.settings.company-info.update');
+
+        Route::post('/kurssit/hallinta/muistutukset', [CourseReminderController::class, 'store'])->name('kurssit.reminders.store');
+        Route::post('/kurssit/hallinta/muistutukset/{reminder}/vaihda', [CourseReminderController::class, 'toggle'])->name('kurssit.reminders.toggle');
+        Route::delete('/kurssit/hallinta/muistutukset/{reminder}', [CourseReminderController::class, 'destroy'])->name('kurssit.reminders.destroy');
     });
 
 });

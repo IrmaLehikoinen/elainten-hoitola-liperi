@@ -17,13 +17,27 @@ class ShareCompanyBranding
 
     public function handle(Request $request, Closure $next): Response
     {
-        View::share('brand', $this->brandManager->current());
-
         $activeCompany = app(\App\Services\ActiveCompanyResolver::class)->current();
 
-            View::share('company', $activeCompany
+        $brand = $this->brandManager->current();
+
+        if ($activeCompany) {
+            $settings = $activeCompany->settings ?? [];
+
+            $brand = array_merge($brand, array_filter([
+                'name' => $activeCompany->name,
+                'primary_color' => $activeCompany->primary_color,
+                'secondary_color' => $activeCompany->secondary_color,
+                'font_heading' => $settings['font_heading'] ?? null,
+                'font_body' => $settings['font_body'] ?? null,
+            ]));
+        }
+
+        View::share('brand', $brand);
+
+        View::share('company', $activeCompany
             ? ['id' => $activeCompany->id, 'name' => $activeCompany->name, 'industry' => $activeCompany->industry]
-            : $this->brandManager->company());    
+            : $this->brandManager->company());
 
         return $next($request);
     }

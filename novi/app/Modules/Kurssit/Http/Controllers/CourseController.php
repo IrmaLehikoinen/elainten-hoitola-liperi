@@ -4,30 +4,95 @@ namespace App\Modules\Kurssit\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Kurssit\Models\Course;
+use App\Modules\Kurssit\Models\CourseReminder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
     public function dashboard()
     {
+        $today = Carbon::today();
+
+        $calendarAnchor = request('date')
+            ? Carbon::createFromFormat('Y-m-d', request('date'))->startOfDay()
+            : $today->copy();
+        $monthStart = $calendarAnchor->copy()->startOfMonth();
+        $monthEnd = $calendarAnchor->copy()->endOfMonth();
+
+        $upcoming = Course::where(function ($query) {
+                $query->whereNull('starts_at')
+                    ->orWhere('starts_at', '>=', now());
+            })
+            ->orderBy('starts_at')
+            ->get();
+
+        $thisMonthCourses = $upcoming->filter(
+            fn ($course) => $course->starts_at && $course->starts_at->between($monthStart, $monthEnd)
+        )->values();
+
+        $otherUpcomingCourses = $upcoming->reject(
+            fn ($course) => $thisMonthCourses->contains('id', $course->id)
+        )->values();
+
+        $reminders = CourseReminder::with('course')
+            ->open()
+            ->orderBy('due_at')
+            ->get()
+            ->map(function ($reminder) {
+                return [
+                    'id' => $reminder->id,
+                    'title' => $reminder->title,
+                    'due_at' => $reminder->due_at?->format('d.m.Y'),
+                    'course_label' => $reminder->course
+                        ? $reminder->course->name.($reminder->course->starts_at ? ' · '.$reminder->course->starts_at->format('d.m.') : '')
+                        : null,
+                ];
+            });
+
         return view('kurssit::dashboard', [
-            'courses' => Course::where(function ($query) {
-                    $query->whereNull('starts_at')
-                        ->orWhere('starts_at', '>=', now());
-                })
-                ->orderBy('starts_at')
-                ->get(),
+            'thisMonthCourses' => $thisMonthCourses,
+            'otherUpcomingCourses' => $otherUpcomingCourses,
+            'course' => new Course(),
+            'calendarMonth' => $monthStart,
+            'calendarDays' => $this->buildCalendarDays($monthStart),
+            'reminders' => $reminders,
         ]);
     }
 
-        public function index()
+        private function buildCalendarDays(Carbon $monthStart)
+    {
+        $start = $monthStart->copy()->startOfMonth();
+        $end = $monthStart->copy()->endOfMonth();
+
+        // Haetaan kaikki kurssit joilla on ajankohta ja suodatetaan kuukausi
+        // PHP:ssä (ei whereDate-kyselyllä) — sama tapa jolla "Tämän kuukauden
+        // kurssit" -kortitkin jo lasketaan ylempänä, jotta molemmat näyttävät
+        // aina samat kurssit samalta kuukaudelta.
+        $courses = Course::whereNotNull('starts_at')
+            ->get()
+            ->filter(fn ($course) => $course->starts_at->between($start, $end));
+
+        $days = [];
+
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            $days[] = [
+                'date' => $date->copy(),
+                'courses' => $courses->filter(fn ($c) => $c->starts_at->isSameDay($date))->values(),
+            ];
+        }
+
+        return $days;
+    }
+
+    public function index()
     {
         return view('kurssit::courses.index', [
             'courses' => Course::orderByDesc('starts_at')->get(),
             'course' => new Course(),
         ]);
-    }  
+    }
 
     public function create()
     {
@@ -44,6 +109,8 @@ class CourseController extends Controller
         $this->handleBrochure($request, $course);
         $this->handleContentBlocks($request, $course);
         $course->save();
+
+        $this->handleReminder($request, $course);
 
         return redirect()->route('kurssit.courses.index')->with('status', 'Kurssi tallennettu.');
     }
@@ -63,6 +130,8 @@ class CourseController extends Controller
         $this->handleBrochure($request, $course);
         $this->handleContentBlocks($request, $course);
         $course->save();
+
+        $this->handleReminder($request, $course);
 
         return redirect()->route('kurssit.courses.index')->with('status', 'Kurssi päivitetty.');
     }
@@ -88,6 +157,24 @@ class CourseController extends Controller
             'price' => ['nullable', 'numeric', 'min:0'],
             'max_participants' => ['required', 'integer', 'min:0'],
             'brochure' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+        ]);
+    }
+
+    /**
+     * Jos lomakkeella kirjoitettiin muistutusteksti, luodaan siitä
+     * automaattisesti kurssiin linkitetty CourseReminder-rivi.
+     */
+    private function handleReminder(Request $request, Course $course): void
+    {
+        if (! $request->filled('reminder_title')) {
+            return;
+        }
+
+        CourseReminder::create([
+            'course_id' => $course->id,
+            'title' => $request->input('reminder_title'),
+            'due_at' => $request->input('reminder_due_at') ?: null,
+            'created_by' => $request->user()->id,
         ]);
     }
 
