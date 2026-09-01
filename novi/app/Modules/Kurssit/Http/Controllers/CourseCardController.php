@@ -71,6 +71,7 @@ class CourseCardController extends Controller
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? null,
                 'status' => 'pending',
+                'payment_choice' => 'send_link',
                 'payment_deadline' => $paymentDeadline,
             ]);
 
@@ -84,7 +85,7 @@ class CourseCardController extends Controller
 
         // Vaihtoehto 2: maksaa vasta kurssipäivänä. Ei maksulinkkiä, paikka
         // pysyy varattuna kurssin loppuun asti ja merkitään maksetuksi
-        // paikan päällä Kurssikortista tai Osallistujakortista.
+        // Kurssikortista tai Osallistujakortista.
         if ($paymentChoice === 'pay_on_day') {
             $registration = CourseRegistration::create([
                 'company_id' => $course->company_id,
@@ -93,6 +94,7 @@ class CourseCardController extends Controller
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? null,
                 'status' => 'pending',
+                'payment_choice' => 'pay_on_day',
                 'payment_deadline' => $course->starts_at
                     ? $course->starts_at->copy()->endOfDay()
                     : now()->addDays(30),

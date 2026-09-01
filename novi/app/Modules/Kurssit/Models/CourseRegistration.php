@@ -18,6 +18,7 @@ class CourseRegistration extends Model
         'status',
         'payment_deadline',
         'payment_method',
+        'payment_choice',
         'paid_at',
         'invoice_number',
         'issued_at',

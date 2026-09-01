@@ -22,11 +22,15 @@
                 </div>
                 <div class="flex justify-between border-b border-gray-100 pb-2">
                     <dt class="text-gray-500">Tila</dt>
-                    <dd class="font-medium">
+                                    <dd class="font-medium">
                         @if ($registration->status === 'confirmed')
                             <span class="text-green-700">Maksettu / vahvistettu</span>
                         @elseif ($registration->status === 'cancelled')
                             <span class="text-gray-400">Peruttu</span>
+                        @elseif ($registration->payment_choice === 'pay_on_day')
+                            <span class="text-amber-600">Odottaa maksua — maksaa kurssipäivänä</span>
+                        @elseif ($registration->payment_choice === 'send_link')
+                            <span class="text-amber-600">Odottaa maksua — maksulinkki lähetetty</span>
                         @else
                             <span class="text-amber-600">Odottaa maksua</span>
                         @endif
@@ -49,10 +53,10 @@
                         class="rounded-md border px-3 py-1.5 text-sm">Kuitti</button>
                     <button type="button" onclick="window.open('{{ route('kurssit.invoices.print', ['registration' => $registration, 'type' => 'lasku']) }}', '_blank')"
                         class="rounded-md border px-3 py-1.5 text-sm">Lasku</button>
-                @elseif ($registration->status === 'pending')
+                                    @elseif ($registration->status === 'pending')
                     <form method="POST" action="{{ route('kurssit.invoices.mark-paid', $registration) }}">
                         @csrf
-                        <button type="submit" class="rounded-md border px-3 py-1.5 text-sm">Merkitse maksetuksi paikan päällä</button>
+                        <button type="submit" class="rounded-md border px-3 py-1.5 text-sm">Merkitse maksetuksi</button>
                     </form>
                 @endif
 

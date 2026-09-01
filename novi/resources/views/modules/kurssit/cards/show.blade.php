@@ -41,17 +41,21 @@
                             {{ $registration->email }}
                             @if ($registration->phone) · {{ $registration->phone }} @endif
                             ·
-                            @if ($registration->status === 'confirmed')
+                                            @if ($registration->status === 'confirmed')
                                 <span class="text-green-700 font-medium">Maksettu / vahvistettu</span>
                             @elseif ($registration->status === 'cancelled')
                                 <span class="text-gray-400">Peruttu</span>
+                            @elseif ($registration->payment_choice === 'pay_on_day')
+                                <span class="text-amber-600 font-medium">Odottaa maksua — maksaa kurssipäivänä</span>
+                            @elseif ($registration->payment_choice === 'send_link')
+                                <span class="text-amber-600 font-medium">Odottaa maksua — maksulinkki lähetetty</span>
                             @else
                                 <span class="text-amber-600 font-medium">Odottaa maksua</span>
                             @endif
                         </p>
                     </div>
 
-                                        @if ($registration->status === 'confirmed')
+                    @if ($registration->status === 'confirmed')
                         <div class="flex items-center gap-3">
                             <button type="button" onclick="window.open('{{ route('kurssit.invoices.print', $registration) }}', '_blank')"
                                 class="text-sm text-gray-600 hover:text-gray-900">Kuitti</button>
@@ -61,9 +65,9 @@
                     @elseif ($registration->status === 'pending')
                         <form method="POST" action="{{ route('kurssit.invoices.mark-paid', $registration) }}">
                             @csrf
-                            <button type="submit" class="text-sm text-gray-600 hover:text-gray-900">Merkitse maksetuksi paikan päällä</button>
+                            <button type="submit" class="text-sm text-gray-600 hover:text-gray-900">Merkitse maksetuksi</button>
                         </form>
-                    @endif 
+                    @endif
                 </div>
             @empty
                 <p class="text-sm text-gray-500">Ei vielä ilmoittautumisia.</p>
