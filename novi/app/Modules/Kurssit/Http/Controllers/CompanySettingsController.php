@@ -24,7 +24,7 @@ class CompanySettingsController extends Controller
 
     public function updateCompanyInfo(Request $request)
     {
-        $validated = $request->validate([
+             $validated = $request->validate([
             'official_name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'business_id' => ['nullable', 'string', 'max:50'],
@@ -35,9 +35,14 @@ class CompanySettingsController extends Controller
             'primary_color' => ['nullable', 'string', 'max:20'],
             'secondary_color' => ['nullable', 'string', 'max:20'],
             'font_pair' => ['nullable', 'string', 'in:playfair_inter,montserrat_open_sans,merriweather_lato,poppins_inter'],
+            'logo' => ['nullable', 'image', 'max:2048'],
         ]);
 
         $company = app(ActiveCompanyResolver::class)->current();
+
+        if ($request->hasFile('logo')) {
+            $company->logo_path = $request->file('logo')->store('logos', 'public');
+        }   
 
         $settings = $company->settings ?? [];
         $settings['official_name'] = $validated['official_name'] ?? null;

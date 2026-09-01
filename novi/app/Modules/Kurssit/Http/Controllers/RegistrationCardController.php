@@ -18,7 +18,10 @@ class RegistrationCardController extends Controller
 
     public function cancel(CourseRegistration $registration)
     {
-        $registration->update(['status' => 'cancelled']);
+        $registration->update([
+            'status' => 'cancelled',
+            'cancellation_reason' => 'manual',
+        ]);
 
         return redirect()
             ->route('kurssit.cards.show', $registration->course_id)

@@ -7,8 +7,17 @@
             <div class="mt-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">{{ session('status') }}</div>
         @endif
 
-        <form method="POST" action="{{ route('kurssit.settings.company-info.update') }}" class="mt-6 space-y-4">
+                <form method="POST" action="{{ route('kurssit.settings.company-info.update') }}" enctype="multipart/form-data" class="mt-6 space-y-4">
             @csrf
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Logo</label>
+                @if ($company->logo_path)
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($company->logo_path) }}" class="mt-2 h-12" alt="Logo">
+                @endif
+                <input type="file" name="logo" accept="image/*" class="mt-2 block w-full text-sm">
+                <p class="mt-1 text-xs text-gray-400">Näkyy mm. lahjakorttien sähköposteissa. Jätä tyhjäksi jos et halua vaihtaa.</p>
+            </div>
 
             <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Virallinen nimi</label>

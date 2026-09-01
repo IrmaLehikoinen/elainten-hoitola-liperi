@@ -16,27 +16,71 @@ class CourseRegistration extends Model
         'email',
         'phone',
         'status',
+        'cancellation_reason',
         'payment_deadline',
         'payment_method',
         'payment_choice',
         'paid_at',
+        'refunded_at',
         'checked_in_at',
         'invoice_number',
         'issued_at',
         'reminder_sent_at',
+        'gift_card_id',
+        'gift_card_amount',
+        'gift_card_applied_at',
     ];
 
     protected $casts = [
         'payment_deadline' => 'datetime',
         'paid_at' => 'datetime',
+        'refunded_at' => 'datetime',
         'checked_in_at' => 'datetime',
         'issued_at' => 'datetime',
         'reminder_sent_at' => 'datetime',
+        'gift_card_amount' => 'decimal:2',
+        'gift_card_applied_at' => 'datetime',
     ];
 
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function giftCard()
+    {
+        return $this->belongsTo(GiftCard::class);
+    }
+
+    /**
+     * Kurssin hinta miinus käytetyn lahjakortin summa. Ei koskaan negatiivinen.
+     */
+    public function amountDue(): float
+    {
+        return max(0, (float) $this->course->price - (float) ($this->gift_card_amount ?? 0));
+    }
+
+    /**
+     * Vähentää lahjakortin saldon vasta kun maksu on lopullisesti
+     * vahvistettu — ei ilmoittautumishetkellä. Kutsutaan aina kun
+     * ilmoittautuminen merkitään maksetuksi/vahvistetuksi. Suojattu
+     * tuplavähennykseltä gift_card_applied_at-aikaleimalla.
+     */
+    public function applyGiftCardIfNeeded(): void
+    {
+        if (! $this->gift_card_id || $this->gift_card_applied_at) {
+            return;
+        }
+
+        $giftCard = $this->giftCard;
+
+        if ($giftCard) {
+            $giftCard->update([
+                'balance' => max(0, (float) $giftCard->balance - (float) $this->gift_card_amount),
+            ]);
+        }
+
+        $this->update(['gift_card_applied_at' => now()]);
     }
 
     public function referenceNumber(): string

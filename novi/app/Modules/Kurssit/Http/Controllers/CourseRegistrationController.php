@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Modules\Kurssit\Mail\CourseRegistrationConfirmed;
 use App\Modules\Kurssit\Models\Course;
 use App\Modules\Kurssit\Models\CourseRegistration;
+use App\Modules\Kurssit\Models\GiftCard;
 use App\Services\StripeCheckoutService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -17,8 +18,12 @@ class CourseRegistrationController extends Controller
     {
         $company = Company::where('industry', 'kurssit')->firstOrFail();
 
-            $courses = Course::where('company_id', $company->id)
+                $courses = Course::where('company_id', $company->id)
             ->whereNull('cancelled_at')
+            ->where(function ($query) {
+                $query->whereNull('starts_at')
+                    ->orWhere('starts_at', '>=', now());
+            })
             ->orderBy('starts_at')
             ->get();
 
@@ -40,9 +45,10 @@ class CourseRegistrationController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'gift_card_code' => ['nullable', 'string', 'max:20'],
         ]);
 
-                if ($course->isCancelled()) {
+        if ($course->isCancelled()) {
             return back()
                 ->with('registration_error', 'Tämä kurssi on peruttu.')
                 ->withInput();
@@ -60,7 +66,26 @@ class CourseRegistrationController extends Controller
                 ->withInput();
         }
 
-        $requiresPayment = (float) $course->price > 0;
+        // Lahjakortti: jos koodi annettu ja se on käyttökelpoinen, lasketaan
+        // kuinka paljon se kattaa kurssin hinnasta. Saldoa EI vielä vähennetä
+        // tässä vaiheessa — vasta kun maksu on lopullisesti vahvistettu.
+        $giftCard = null;
+        $giftCardAmount = null;
+
+        if ($request->filled('gift_card_code')) {
+            $giftCard = GiftCard::findUsable($request->input('gift_card_code'));
+
+            if (! $giftCard) {
+                return back()
+                    ->with('registration_error', 'Lahjakorttia ei löytynyt tai se ei ole enää voimassa.')
+                    ->withInput();
+            }
+
+            $giftCardAmount = min((float) $giftCard->balance, (float) $course->price);
+        }
+
+        $amountDue = max(0, (float) $course->price - (float) ($giftCardAmount ?? 0));
+        $requiresPayment = $amountDue > 0;
 
         $registration = CourseRegistration::create([
             'company_id' => $course->company_id,
@@ -70,6 +95,8 @@ class CourseRegistrationController extends Controller
             'phone' => $validated['phone'] ?? null,
             'status' => $requiresPayment ? 'pending' : 'confirmed',
             'payment_deadline' => $requiresPayment ? now()->addMinutes(30) : null,
+            'gift_card_id' => $giftCard?->id,
+            'gift_card_amount' => $giftCardAmount,
         ]);
 
         // Uudelleentarkistus juuri tallennuksen jälkeen: jos kaksi ilmoittautumista
@@ -83,15 +110,17 @@ class CourseRegistrationController extends Controller
         }
 
         if (! $requiresPayment) {
+            $registration->applyGiftCardIfNeeded();
+
             Mail::to($registration->email)->send(new CourseRegistrationConfirmed($registration));
 
             return redirect()->route('kurssit.public.success');
         }
 
-                $url = $checkout->createSessionUrl([
+        $url = $checkout->createSessionUrl([
             'email' => $registration->email,
             'name' => $registration->name,
-            'amount' => (float) $course->price,
+            'amount' => $amountDue,
             'description' => 'Kurssi-ilmoittautuminen: '.$course->name,
             'metadata' => ['course_registration_id' => $registration->id],
             'preferred_deadline' => $registration->payment_deadline,

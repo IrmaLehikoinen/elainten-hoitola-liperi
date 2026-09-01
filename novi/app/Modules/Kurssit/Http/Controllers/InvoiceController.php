@@ -21,17 +21,46 @@ class InvoiceController extends Controller
 
         $paidRegistrations = CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
             ->where('status', 'confirmed')
+            ->whereNull('refunded_at')
             ->with('course')
             ->orderByDesc('paid_at')
             ->get();
 
+        $overdueRegistrations = CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
+            ->where('status', 'cancelled')
+            ->where('cancellation_reason', 'payment_expired')
+            ->with('course')
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $refundedRegistrations = CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
+            ->whereNotNull('refunded_at')
+            ->with('course')
+            ->orderByDesc('refunded_at')
+            ->get();
+
+        $paidThisMonth = CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
+            ->where('status', 'confirmed')
+            ->whereNull('refunded_at')
+            ->whereMonth('paid_at', now()->month)
+            ->whereYear('paid_at', now()->year)
+            ->with('course')
+            ->get();
+
+        $revenueThisMonth = $paidThisMonth->sum(fn ($r) => (float) $r->course->price);
+        $revenueAllTime = $paidRegistrations->sum(fn ($r) => (float) $r->course->price);
+
         return view('kurssit::invoices.index', [
             'pendingPayment' => $pendingPayment,
             'paidRegistrations' => $paidRegistrations,
+            'overdueRegistrations' => $overdueRegistrations,
+            'refundedRegistrations' => $refundedRegistrations,
+            'revenueThisMonth' => $revenueThisMonth,
+            'revenueAllTime' => $revenueAllTime,
         ]);
     }
 
-        public function markPaid(CourseRegistration $registration)
+    public function markPaid(CourseRegistration $registration)
     {
         $wasPending = $registration->status !== 'confirmed';
 
@@ -39,12 +68,20 @@ class InvoiceController extends Controller
         $registration->payment_method = 'manual';
         $registration->paid_at = now();
         $registration->save();
+        $registration->applyGiftCardIfNeeded();
 
         if ($wasPending && $registration->email) {
             Mail::to($registration->email)->send(new CourseRegistrationConfirmed($registration));
         }
 
         return back()->with('status', 'Merkitty maksetuksi paikan päällä.');
+    }
+
+    public function markRefunded(CourseRegistration $registration)
+    {
+        $registration->update(['refunded_at' => now()]);
+
+        return back()->with('status', 'Merkitty palautetuksi.');
     }
 
     public function downloadPdf(CourseRegistration $registration, Request $request)

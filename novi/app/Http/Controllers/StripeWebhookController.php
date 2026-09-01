@@ -20,11 +20,11 @@ class StripeWebhookController extends Controller
             return response('Virheellinen allekirjoitus', 400);
         }
 
-        if ($event->type === 'checkout.session.completed') {
+                if ($event->type === 'checkout.session.completed') {
             $session = $event->data->object;
 
             event(new StripeCheckoutCompleted(
-                (array) ($session->metadata ?? [])
+                $session->metadata ? $session->metadata->toArray() : []
             ));
         }
 

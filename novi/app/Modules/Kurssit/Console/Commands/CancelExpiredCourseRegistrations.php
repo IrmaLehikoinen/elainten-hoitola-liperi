@@ -22,7 +22,10 @@ class CancelExpiredCourseRegistrations extends Command
             ->get();
 
         foreach ($expired as $registration) {
-            $registration->update(['status' => 'cancelled']);
+            $registration->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => 'payment_expired',
+            ]);
 
             if ($registration->email) {
                 Mail::to($registration->email)->send(new CourseRegistrationExpired($registration));

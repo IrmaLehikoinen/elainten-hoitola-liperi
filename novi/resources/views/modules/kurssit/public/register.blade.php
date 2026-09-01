@@ -123,6 +123,11 @@
                     <input type="tel" name="phone" value="{{ old('phone') }}" style="width:100%; padding:10px 12px; border:1px solid #D1D5DB; border-radius: var(--brand-radius, 8px); box-sizing:border-box; font-family: var(--brand-body-font);">
                 </div>
 
+                <div>
+                    <label style="display:block; font-size:14px; font-weight:500; color: var(--brand-text); margin-bottom:4px;">Lahjakortin numero (valinnainen)</label>
+                    <input type="text" name="gift_card_code" value="{{ old('gift_card_code') }}" style="width:100%; padding:10px 12px; border:1px solid #D1D5DB; border-radius: var(--brand-radius, 8px); box-sizing:border-box; font-family: var(--brand-body-font);">
+                </div>
+
                 <button type="submit" class="btn-brand"
                     style="margin-top:8px; border:none; padding:12px 20px; border-radius: var(--brand-radius, 8px); font-size:15px; font-weight:600; cursor:pointer; font-family: var(--brand-body-font);">
                     {{ $course->price > 0 ? 'Jatka maksuun' : 'Ilmoittaudu' }}

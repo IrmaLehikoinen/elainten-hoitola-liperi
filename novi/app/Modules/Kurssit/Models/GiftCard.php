@@ -9,9 +9,10 @@ class GiftCard extends Model
 {
     use BelongsToCompany;
 
-    protected $fillable = [
+        protected $fillable = [
         'company_id',
         'code',
+        'share_token',
         'source',
         'initial_amount',
         'balance',
@@ -20,20 +21,41 @@ class GiftCard extends Model
         'purchaser_email',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function ($card) {
+            if (empty($card->share_token)) {
+                $card->share_token = \Illuminate\Support\Str::random(40);
+            }
+        });
+    }
+
     protected $casts = [
         'initial_amount' => 'decimal:2',
         'balance' => 'decimal:2',
         'valid_until' => 'date',
     ];
 
+        public function registrations()
+    {
+        return $this->hasMany(CourseRegistration::class);
+    }
+
     public function isExpired(): bool
     {
         return $this->valid_until !== null && $this->valid_until->isPast();
     }
 
-    public function isUsable(): bool
+        public function isUsable(): bool
     {
         return (float) $this->balance > 0 && ! $this->isExpired();
+    }
+
+    public static function findUsable(string $code): ?self
+    {
+        $card = static::where('code', strtoupper(trim($code)))->first();
+
+        return ($card && $card->isUsable()) ? $card : null;
     }
 
     /**

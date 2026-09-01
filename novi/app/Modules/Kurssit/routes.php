@@ -6,6 +6,7 @@ use App\Modules\Kurssit\Http\Controllers\CoursePaymentController;
 use App\Modules\Kurssit\Http\Controllers\CourseController;
 use App\Modules\Kurssit\Http\Controllers\CourseReminderController;
 use App\Modules\Kurssit\Http\Controllers\GiftCardController;
+use App\Modules\Kurssit\Http\Controllers\GiftCardPurchaseController;
 use App\Modules\Kurssit\Http\Controllers\CourseRegistrationController;
 use App\Modules\Kurssit\Http\Controllers\InvoiceController;
 use App\Modules\Kurssit\Http\Controllers\RegistrationCardController;
@@ -27,7 +28,20 @@ Route::middleware('web')->group(function () {
         Route::get('/kurssit/ilmoittautuminen/peruttu', function () {
         return view('kurssit::public.cancelled');
     })->name('kurssit.public.cancelled');
-    Route::get('/kurssit/maksu/{registration}', [CoursePaymentController::class, 'checkout'])->name('kurssit.payment.checkout');
+        Route::get('/kurssit/maksu/{registration}', [CoursePaymentController::class, 'checkout'])->name('kurssit.payment.checkout');
+
+    Route::get('/kurssit/lahjakortti/osta', [GiftCardPurchaseController::class, 'show'])->name('kurssit.public.gift-card.show');
+        Route::post('/kurssit/lahjakortti/osta', [GiftCardPurchaseController::class, 'store'])
+        ->middleware('throttle:20,1')
+        ->name('kurssit.public.gift-card.store');
+    Route::get('/kurssit/lahjakortti/onnistui', function () {
+        return view('kurssit::public.gift-card-success');
+    })->name('kurssit.public.gift-card.success');
+    Route::get('/kurssit/lahjakortti/peruttu', function () {
+        return view('kurssit::public.gift-card-cancelled');
+    })->name('kurssit.public.gift-card.cancelled');
+    Route::get('/kurssit/lahjakortti/kortti/{giftCard:share_token}', [GiftCardPurchaseController::class, 'card'])->name('kurssit.public.gift-card.card');
+    Route::get('/kurssit/lahjakortti/kortti/{giftCard:share_token}/pdf', [GiftCardPurchaseController::class, 'cardPdf'])->name('kurssit.public.gift-card.card-pdf');
 
     // Hallintapaneeli — vaatii kirjautumisen.
     Route::middleware(['auth', 'verified'])->group(function () {
@@ -46,7 +60,8 @@ Route::middleware('web')->group(function () {
         Route::get('/kurssit/hallinta/raportti', [ReportController::class, 'index'])->name('kurssit.reports.index');
 
         Route::get('/kurssit/hallinta/laskutus', [InvoiceController::class, 'index'])->name('kurssit.invoices.index');
-        Route::post('/kurssit/hallinta/laskutus/{registration}/merkitse-maksetuksi', [InvoiceController::class, 'markPaid'])->name('kurssit.invoices.mark-paid');
+                Route::post('/kurssit/hallinta/laskutus/{registration}/merkitse-maksetuksi', [InvoiceController::class, 'markPaid'])->name('kurssit.invoices.mark-paid');
+        Route::post('/kurssit/hallinta/laskutus/{registration}/merkitse-palautetuksi', [InvoiceController::class, 'markRefunded'])->name('kurssit.invoices.mark-refunded');
         Route::get('/kurssit/hallinta/laskutus/{registration}/pdf', [InvoiceController::class, 'downloadPdf'])->name('kurssit.invoices.pdf');
         Route::get('/kurssit/hallinta/laskutus/{registration}/tulosta', [InvoiceController::class, 'printPdf'])->name('kurssit.invoices.print');
 
@@ -64,8 +79,9 @@ Route::middleware('web')->group(function () {
                 Route::get('/kurssit/hallinta/osallistuja/{registration}', [RegistrationCardController::class, 'show'])->name('kurssit.registrations.show');
         Route::post('/kurssit/hallinta/osallistuja/{registration}/peru', [RegistrationCardController::class, 'cancel'])->name('kurssit.registrations.cancel');
 
-        Route::get('/kurssit/hallinta/lahjakortit', [GiftCardController::class, 'index'])->name('kurssit.gift-cards.index');
+                Route::get('/kurssit/hallinta/lahjakortit', [GiftCardController::class, 'index'])->name('kurssit.gift-cards.index');
         Route::post('/kurssit/hallinta/lahjakortit', [GiftCardController::class, 'store'])->name('kurssit.gift-cards.store');
+                Route::post('/kurssit/hallinta/lahjakortit/asetukset', [GiftCardController::class, 'updateSettings'])->name('kurssit.gift-cards.update-settings');
 
         });
 

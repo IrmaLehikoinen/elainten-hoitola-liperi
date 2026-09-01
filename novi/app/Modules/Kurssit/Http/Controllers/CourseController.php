@@ -3,10 +3,12 @@
 namespace App\Modules\Kurssit\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Kurssit\Mail\CourseCancelled;
 use App\Modules\Kurssit\Models\Course;
 use App\Modules\Kurssit\Models\CourseReminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
@@ -179,16 +181,31 @@ class CourseController extends Controller
             : 'Ilmoittautuminen avattu.');
     }
 
-    public function toggleCancelled(Course $course)
+           public function toggleCancelled(Course $course)
     {
-        $course->update([
-            'cancelled_at' => $course->cancelled_at ? null : now(),
-        ]);
+        if ($course->cancelled_at) {
+            $course->update(['cancelled_at' => null]);
 
-        return back()->with('status', $course->cancelled_at
-            ? 'Kurssi merkitty peruutetuksi.'
-            : 'Peruutus poistettu.');
-    }
+            return back()->with('status', 'Peruutus poistettu.');
+        }
+
+                $course->update(['cancelled_at' => now()]);
+
+        $registrations = $course->registrations()->where('status', '!=', 'cancelled')->get();
+
+        foreach ($registrations as $registration) {
+            $registration->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => 'course_cancelled',
+            ]);
+
+            if ($registration->email) {
+                Mail::to($registration->email)->send(new CourseCancelled($registration));
+            }
+        }
+
+        return back()->with('status', 'Kurssi merkitty peruutetuksi ja osallistujille lähetetty viesti.');
+    } 
 
     private function validated(Request $request): array
     {
