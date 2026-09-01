@@ -136,7 +136,7 @@ class CourseController extends Controller
         return redirect()->route('kurssit.courses.index')->with('status', 'Kurssi päivitetty.');
     }
 
-    public function destroy(Course $course)
+        public function destroy(Course $course)
     {
         if ($course->brochure_path) {
             Storage::disk('public')->delete($course->brochure_path);
@@ -145,6 +145,49 @@ class CourseController extends Controller
         $course->delete();
 
         return redirect()->route('kurssit.courses.index')->with('status', 'Kurssi poistettu.');
+    }
+
+    /**
+     * Kopioi kurssin perustiedot uudeksi kurssiksi. Esite ja kuvalohkot
+     * jätetään tarkoituksella tyhjiksi — jos ne kopioitaisiin sellaisenaan,
+     * yhden kopion kuvan vaihtaminen poistaisi tiedoston myös toiselta
+     * kurssilta (sama tiedostopolku, ks. handleContentBlocks/handleBrochure).
+     */
+    public function duplicate(Course $course)
+    {
+        $copy = Course::create([
+            'company_id' => $course->company_id,
+            'name' => $course->name.' (kopio)',
+            'short_description' => $course->short_description,
+            'presentation_type' => 'none',
+            'price' => $course->price,
+            'max_participants' => $course->max_participants,
+        ]);
+
+        return redirect()->route('kurssit.courses.edit', $copy)
+            ->with('status', 'Kurssi kopioitu — täydennä ajankohta ja muut tiedot.');
+    }
+
+    public function toggleRegistrationClosed(Course $course)
+    {
+        $course->update([
+            'registration_closed_at' => $course->registration_closed_at ? null : now(),
+        ]);
+
+        return back()->with('status', $course->registration_closed_at
+            ? 'Ilmoittautuminen suljettu.'
+            : 'Ilmoittautuminen avattu.');
+    }
+
+    public function toggleCancelled(Course $course)
+    {
+        $course->update([
+            'cancelled_at' => $course->cancelled_at ? null : now(),
+        ]);
+
+        return back()->with('status', $course->cancelled_at
+            ? 'Kurssi merkitty peruutetuksi.'
+            : 'Peruutus poistettu.');
     }
 
     private function validated(Request $request): array

@@ -38,6 +38,9 @@ Route::middleware('web')->group(function () {
         Route::get('/kurssit/hallinta/kurssit/{course}/muokkaa', [CourseController::class, 'edit'])->name('kurssit.courses.edit');
         Route::patch('/kurssit/hallinta/kurssit/{course}', [CourseController::class, 'update'])->name('kurssit.courses.update');
         Route::delete('/kurssit/hallinta/kurssit/{course}', [CourseController::class, 'destroy'])->name('kurssit.courses.destroy');
+        Route::post('/kurssit/hallinta/kurssit/{course}/kopioi', [CourseController::class, 'duplicate'])->name('kurssit.courses.duplicate');
+        Route::post('/kurssit/hallinta/kurssit/{course}/sulje-ilmoittautuminen', [CourseController::class, 'toggleRegistrationClosed'])->name('kurssit.courses.toggle-registration');
+        Route::post('/kurssit/hallinta/kurssit/{course}/peruuta', [CourseController::class, 'toggleCancelled'])->name('kurssit.courses.toggle-cancelled');
 
         Route::get('/kurssit/hallinta/raportti', [ReportController::class, 'index'])->name('kurssit.reports.index');
 

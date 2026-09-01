@@ -85,7 +85,11 @@
         </div>
     @endif
 
-            @if ($course->isFull())
+                        @if ($course->isCancelled())
+        <p style="color:#991B1B; font-weight:600;">Tämä kurssi on peruttu.</p>
+    @elseif ($course->isRegistrationClosed())
+        <p style="color: var(--brand-accent); font-weight:600;">Ilmoittautuminen tälle kurssille on suljettu.</p>
+    @elseif ($course->isFull())
         @if ($course->isTemporarilyFull())
             <p style="color: var(--brand-accent); font-weight:600;">
                 Kurssi on juuri nyt varattu täyteen, mutta varauksia ei vielä ole viety loppuun asti. Paikkoja voi vapautua muutaman minuutin kuluessa — käy katsomassa tilanne hetken päästä uudelleen.

@@ -17,7 +17,8 @@ class CourseRegistrationController extends Controller
     {
         $company = Company::where('industry', 'kurssit')->firstOrFail();
 
-        $courses = Course::where('company_id', $company->id)
+            $courses = Course::where('company_id', $company->id)
+            ->whereNull('cancelled_at')
             ->orderBy('starts_at')
             ->get();
 
@@ -40,6 +41,18 @@ class CourseRegistrationController extends Controller
             'email' => ['required', 'email'],
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
+
+                if ($course->isCancelled()) {
+            return back()
+                ->with('registration_error', 'Tämä kurssi on peruttu.')
+                ->withInput();
+        }
+
+        if ($course->isRegistrationClosed()) {
+            return back()
+                ->with('registration_error', 'Ilmoittautuminen tälle kurssille on suljettu.')
+                ->withInput();
+        }
 
         if ($course->remainingSpots() <= 0) {
             return back()

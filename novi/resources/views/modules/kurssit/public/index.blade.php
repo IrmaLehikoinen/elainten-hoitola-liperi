@@ -58,9 +58,11 @@
                             · {{ $course->remainingSpots() }} / {{ $course->max_participants }} paikkaa vapaana
                         </p>
 
-                        <div style="margin-top:auto;">
+                                                    <div style="margin-top:auto;">
                             @if ($course->isFull())
                                 <span style="display:inline-block; padding:6px 14px; border-radius: var(--brand-radius, 6px); background: var(--brand-background); color: var(--brand-accent); font-size:13px;">Täynnä</span>
+                            @elseif ($course->isRegistrationClosed())
+                                <span style="display:inline-block; padding:6px 14px; border-radius: var(--brand-radius, 6px); background: var(--brand-background); color: var(--brand-accent); font-size:13px;">Ilmoittautuminen suljettu</span>
                             @else
                                 <button type="button" class="btn-brand" @click.stop="openCourseId = {{ $course->id }}"
                                     style="border:none; padding:9px 18px; border-radius: var(--brand-radius, 8px); font-size:13px; font-weight:600; cursor:pointer;">

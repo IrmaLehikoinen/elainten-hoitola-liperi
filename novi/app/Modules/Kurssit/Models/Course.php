@@ -20,12 +20,16 @@ class Course extends Model
         'starts_at',
         'price',
         'max_participants',
+        'registration_closed_at',
+        'cancelled_at',
     ];
 
     protected $casts = [
         'starts_at' => 'datetime',
         'price' => 'decimal:2',
         'content_blocks' => 'array',
+        'registration_closed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function registrations()
@@ -52,7 +56,7 @@ class Course extends Model
         return max(0, $this->max_participants - $activeCount);
     }
 
-        public function isFull(): bool
+    public function isFull(): bool
     {
         return $this->remainingSpots() <= 0;
     }
@@ -72,4 +76,14 @@ class Course extends Model
     {
         return $this->isFull() && $this->confirmedCount() < $this->max_participants;
     }
-}    
+
+    public function isRegistrationClosed(): bool
+    {
+        return $this->registration_closed_at !== null;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->cancelled_at !== null;
+    }
+}

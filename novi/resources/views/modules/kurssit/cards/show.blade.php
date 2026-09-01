@@ -11,8 +11,15 @@
 
         <div class="mt-4 rounded-lg border bg-white p-5">
             <div class="flex items-start justify-between">
-                <div>
-                    <h1 class="text-xl font-semibold">{{ $course->name }}</h1>
+                         <div>
+                    <h1 class="text-xl font-semibold">
+                        {{ $course->name }}
+                        @if ($course->isCancelled())
+                            <span class="ml-2 rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 align-middle">Peruttu</span>
+                        @elseif ($course->isRegistrationClosed())
+                            <span class="ml-2 rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 align-middle">Ilmoittautuminen suljettu</span>
+                        @endif
+                    </h1>
                     <p class="mt-1 text-sm text-gray-500">
                         @if ($course->starts_at)
                             {{ $course->starts_at->format('d.m.Y H:i') }} ·
@@ -24,12 +31,34 @@
                         @endif
                     </p>
                 </div>
-                                <button type="button" onclick="window.location.href='{{ route('kurssit.courses.edit', $course) }}'"
+                <button type="button" onclick="window.location.href='{{ route('kurssit.courses.edit', $course) }}'"
                     class="rounded-md border px-3 py-1.5 text-sm">Muokkaa kurssin tietoja</button>
             </div>
 
             <p class="mt-4 text-sm text-gray-700">{{ $course->short_description }}</p>
-        </div>
+
+            <div class="mt-4 flex flex-wrap gap-2 border-t pt-4">
+                <form method="POST" action="{{ route('kurssit.courses.duplicate', $course) }}">
+                    @csrf
+                    <button type="submit" class="rounded-md border px-3 py-1.5 text-sm">Kopioi kurssiksi</button>
+                </form>
+
+                <form method="POST" action="{{ route('kurssit.courses.toggle-registration', $course) }}">
+                    @csrf
+                    <button type="submit" class="rounded-md border px-3 py-1.5 text-sm">
+                        {{ $course->isRegistrationClosed() ? 'Avaa ilmoittautuminen' : 'Sulje ilmoittautuminen' }}
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ route('kurssit.courses.toggle-cancelled', $course) }}"
+                    onsubmit="return confirm('{{ $course->isCancelled() ? 'Poistetaanko peruutusmerkintä?' : 'Merkitäänkö kurssi peruutetuksi?' }}');">
+                    @csrf
+                    <button type="submit" class="rounded-md border px-3 py-1.5 text-sm text-red-600">
+                        {{ $course->isCancelled() ? 'Poista peruutus' : 'Merkitse peruutetuksi' }}
+                    </button>
+                </form>
+            </div>
+        </div>   
 
         <h2 class="mt-8 text-sm font-semibold text-gray-500 uppercase tracking-wide">Osallistujat</h2>
         <div class="mt-3 space-y-2">
