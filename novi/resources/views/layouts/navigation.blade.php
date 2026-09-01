@@ -124,6 +124,9 @@
                                                                     @case('gear')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><circle cx="12" cy="12" r="3" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.4 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.5-2.6-1.9.6a7.7 7.7 0 0 0-2.6-1.5L14.6 3h-3l-.4 2-.1-.1a7.6 7.6 0 0 0-2.6 1.5l-1.9-.6-1.5 2.6L6.6 10a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.5 2.6 1.9-.6a7.7 7.7 0 0 0 2.6 1.5l.4 2h3l.4-2a7.7 7.7 0 0 0 2.6-1.5l1.9.6 1.5-2.6-1.6-1.2Z" /></svg>
                                     @break
+                                @case('gift')
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><rect x="3.5" y="9" width="17" height="11" rx="1.5" /><path stroke-linecap="round" d="M3.5 9v11M12 9v11" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 9c-1.5-4-6-4-6-1.5S9 9 9 9M12 9c1.5-4 6-4 6-1.5S15 9 15 9" /></svg>
+                                    @break
 
                             @endswitch
                         </span>

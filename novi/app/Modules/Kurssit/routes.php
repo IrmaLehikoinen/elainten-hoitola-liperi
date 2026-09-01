@@ -5,6 +5,7 @@ use App\Modules\Kurssit\Http\Controllers\CourseCardController;
 use App\Modules\Kurssit\Http\Controllers\CoursePaymentController;
 use App\Modules\Kurssit\Http\Controllers\CourseController;
 use App\Modules\Kurssit\Http\Controllers\CourseReminderController;
+use App\Modules\Kurssit\Http\Controllers\GiftCardController;
 use App\Modules\Kurssit\Http\Controllers\CourseRegistrationController;
 use App\Modules\Kurssit\Http\Controllers\InvoiceController;
 use App\Modules\Kurssit\Http\Controllers\RegistrationCardController;
@@ -60,8 +61,11 @@ Route::middleware('web')->group(function () {
         Route::get('/kurssit/hallinta/kurssikortit/{course}', [CourseCardController::class, 'show'])->name('kurssit.cards.show');
         Route::post('/kurssit/hallinta/kurssikortit/{course}/osallistuja', [CourseCardController::class, 'storeRegistration'])->name('kurssit.cards.store-registration');
 
-        Route::get('/kurssit/hallinta/osallistuja/{registration}', [RegistrationCardController::class, 'show'])->name('kurssit.registrations.show');
+                Route::get('/kurssit/hallinta/osallistuja/{registration}', [RegistrationCardController::class, 'show'])->name('kurssit.registrations.show');
         Route::post('/kurssit/hallinta/osallistuja/{registration}/peru', [RegistrationCardController::class, 'cancel'])->name('kurssit.registrations.cancel');
+
+        Route::get('/kurssit/hallinta/lahjakortit', [GiftCardController::class, 'index'])->name('kurssit.gift-cards.index');
+        Route::post('/kurssit/hallinta/lahjakortit', [GiftCardController::class, 'store'])->name('kurssit.gift-cards.store');
 
         });
 

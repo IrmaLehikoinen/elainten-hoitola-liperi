@@ -45,6 +45,7 @@ class KurssitServiceProvider extends ServiceProvider
                 ['route' => 'kurssit.courses.index', 'active_pattern' => 'kurssit.courses.*', 'label' => 'Syötä uudet kurssit', 'icon' => 'calendar'],
                 ['route' => 'kurssit.reports.index', 'active_pattern' => 'kurssit.reports.*', 'label' => 'Raportti', 'icon' => 'chart'],
                 ['route' => 'kurssit.invoices.index', 'active_pattern' => 'kurssit.invoices.*', 'label' => 'Laskutus', 'icon' => 'euro'],
+                ['route' => 'kurssit.gift-cards.index', 'active_pattern' => 'kurssit.gift-cards.*', 'label' => 'Lahjakortit', 'icon' => 'gift'],
                 ['route' => 'kurssit.settings.index', 'active_pattern' => 'kurssit.settings.*', 'label' => 'Asetukset', 'icon' => 'gear'],
             ])
         ));
