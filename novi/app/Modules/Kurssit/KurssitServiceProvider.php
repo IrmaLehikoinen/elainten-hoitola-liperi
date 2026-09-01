@@ -32,7 +32,9 @@ class KurssitServiceProvider extends ServiceProvider
             Config::get('navigation.items', []),
             array_map(fn ($item) => $item + ['industry' => 'kurssit'], [
                 ['route' => 'kurssit.dashboard', 'active_pattern' => 'kurssit.dashboard', 'label' => 'Etusivu', 'icon' => 'home'],
-                                ['route' => 'kurssit.courses.index', 'active_pattern' => 'kurssit.courses.*', 'label' => 'Uudet kurssit', 'icon' => 'calendar'],
+                                            ['route' => 'kurssit.courses.index', 'active_pattern' => 'kurssit.courses.*', 'label' => 'Uudet kurssit', 'icon' => 'calendar'],
+                ['route' => 'kurssit.reports.index', 'active_pattern' => 'kurssit.reports.*', 'label' => 'Raportti', 'icon' => 'chart'],
+                ['route' => 'kurssit.invoices.index', 'active_pattern' => 'kurssit.invoices.*', 'label' => 'Laskutus', 'icon' => 'euro'],
             ])
         ));
 
@@ -54,12 +56,14 @@ class KurssitServiceProvider extends ServiceProvider
 
             $registration = CourseRegistration::find($registrationId);
 
-            if ($registration && $registration->status === 'pending') {
+                       if ($registration && $registration->status === 'pending') {
                 $registration->status = 'confirmed';
+                $registration->payment_method = 'stripe';
+                $registration->paid_at = now();
                 $registration->save();
 
                 Mail::to($registration->email)->send(new CourseRegistrationConfirmed($registration));
-            }
+            } 
         });
     }
 }

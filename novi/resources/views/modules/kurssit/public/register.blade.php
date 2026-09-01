@@ -19,6 +19,16 @@
         $brochureIsImage = in_array($brochureExt, ['jpg', 'jpeg', 'png']);
     @endphp
 
+    @if ($course->presentation_type === 'brochure' && $course->brochure_path)
+        @if ($brochureIsImage)
+            <img src="{{ \Illuminate\Support\Facades\Storage::url($course->brochure_path) }}"
+                style="width:100%; border-radius: var(--brand-radius, 16px); margin-bottom:24px; display:block;">
+        @else
+            <iframe src="{{ \Illuminate\Support\Facades\Storage::url($course->brochure_path) }}"
+                style="width:100%; height:80vh; border:none; border-radius: var(--brand-radius, 16px); margin-bottom:24px; display:block;"></iframe>
+        @endif
+    @endif
+
     @if ($heroBlock)
         <img src="{{ \Illuminate\Support\Facades\Storage::url($heroBlock['path']) }}"
             style="width:100%; border-radius: var(--brand-radius, 16px); margin-bottom:24px; display:block;">
@@ -40,30 +50,6 @@
             · {{ $course->remainingSpots() }} / {{ $course->max_participants }} paikkaa vapaana
         </p>
     </div>
-
-    @if ($course->presentation_type === 'brochure' && $course->brochure_path)
-        <div x-data="{ lightboxOpen: false }" style="margin-bottom:28px;">
-            <button type="button" @click="lightboxOpen = true"
-                style="background: var(--brand-background); color: var(--brand-text); border:1px solid var(--brand-secondary); padding:10px 18px; border-radius: var(--brand-radius, 8px); font-size:14px; cursor:pointer;">
-                Avaa esite
-            </button>
-
-            <div x-show="lightboxOpen" x-cloak
-                style="position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:50; display:flex; align-items:center; justify-content:center; padding:24px;"
-                @click.self="lightboxOpen = false">
-                <div style="background:white; border-radius:12px; max-width:800px; width:100%; max-height:90vh; overflow:auto; padding:16px; position:relative;">
-                    <button type="button" @click="lightboxOpen = false"
-                        style="position:absolute; top:12px; right:12px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7280;">✕</button>
-
-                    @if ($brochureIsImage)
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($course->brochure_path) }}" style="width:100%; height:auto; border-radius:8px;">
-                    @else
-                        <iframe src="{{ \Illuminate\Support\Facades\Storage::url($course->brochure_path) }}" style="width:100%; height:75vh; border:none;"></iframe>
-                    @endif
-                </div>
-            </div>
-        </div>
-    @endif
 
     @if (! empty($remainingBlocks))
         <div style="margin-bottom:32px;">
