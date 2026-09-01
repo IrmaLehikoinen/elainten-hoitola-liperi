@@ -97,9 +97,14 @@
             </button>
         </div>
 
-        <div id="new-course-form" class="hidden mt-6 rounded-lg border bg-white p-5 max-w-2xl mx-auto">
-            <h2 class="text-sm font-semibold text-gray-700">Uusi kurssi</h2>
-            @include('kurssit::courses._form', ['course' => $course, 'ignoreOld' => true])
+                <div id="new-course-form" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/40 p-6" onclick="if (event.target === this) closeNewCourseForm();">
+            <div class="mx-auto mt-10 w-full max-w-2xl rounded-lg border bg-white p-5">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-gray-700">Uusi kurssi</h2>
+                    <button type="button" onclick="closeNewCourseForm()" class="text-gray-400 hover:text-gray-700">✕</button>
+                </div>
+                @include('kurssit::courses._form', ['course' => $course, 'ignoreOld' => true])
+            </div>
         </div>
 
         <h2 class="mt-10 text-sm font-semibold text-gray-500 uppercase tracking-wide">Muut tulevat kurssit</h2>
@@ -129,13 +134,19 @@
 
     @push('scripts')
     <script>
-        function openNewCourseForm() {
-            const form = document.getElementById('new-course-form');
-            form.classList.remove('hidden');
-            form.scrollIntoView({ behavior: 'smooth' });
+            function openNewCourseForm() {
+            document.getElementById('new-course-form').classList.remove('hidden');
         }
 
-        function pickDay(dateStr) {
+        function closeNewCourseForm() {
+            document.getElementById('new-course-form').classList.add('hidden');
+        }
+
+            function pickDay(dateStr, courseId) {
+            if (courseId) {
+                window.location.href = '/kurssit/hallinta/kurssikortit/' + courseId;
+                return;
+            }
             openNewCourseForm();
             const input = document.getElementById('course-starts-at');
             if (input) { input.value = dateStr + 'T10:00'; }

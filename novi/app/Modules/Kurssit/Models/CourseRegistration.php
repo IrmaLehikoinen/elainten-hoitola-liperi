@@ -20,6 +20,7 @@ class CourseRegistration extends Model
         'payment_method',
         'payment_choice',
         'paid_at',
+        'checked_in_at',
         'invoice_number',
         'issued_at',
         'reminder_sent_at',
@@ -28,6 +29,7 @@ class CourseRegistration extends Model
     protected $casts = [
         'payment_deadline' => 'datetime',
         'paid_at' => 'datetime',
+        'checked_in_at' => 'datetime',
         'issued_at' => 'datetime',
         'reminder_sent_at' => 'datetime',
     ];

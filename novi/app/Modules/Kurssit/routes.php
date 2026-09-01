@@ -59,6 +59,7 @@ Route::middleware('web')->group(function () {
 
         Route::get('/kurssit/hallinta/osallistuja/{registration}', [RegistrationCardController::class, 'show'])->name('kurssit.registrations.show');
         Route::post('/kurssit/hallinta/osallistuja/{registration}/peru', [RegistrationCardController::class, 'cancel'])->name('kurssit.registrations.cancel');
-    });
+
+        });
 
 });

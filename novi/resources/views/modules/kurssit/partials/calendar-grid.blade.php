@@ -16,8 +16,8 @@
 
     @foreach ($days as $day)
         @php $hasCourses = $day['courses']->isNotEmpty(); @endphp
-        <div
-            onclick="pickDay('{{ $day['date']->format('Y-m-d') }}')"
+                <div
+            onclick="pickDay('{{ $day['date']->format('Y-m-d') }}', {{ $hasCourses ? $day['courses']->first()->id : 'null' }})"
             class="aspect-square overflow-hidden border-b border-r border-gray-200 p-1.5 cursor-pointer"
             style="{{ $day['date']->isToday() ? 'background-color: var(--brand-secondary);' : '' }}"
         >

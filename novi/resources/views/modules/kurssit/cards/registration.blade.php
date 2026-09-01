@@ -51,9 +51,7 @@
                                 @if ($registration->status === 'confirmed')
                     <button type="button" onclick="window.open('{{ route('kurssit.invoices.print', $registration) }}', '_blank')"
                         class="rounded-md border px-3 py-1.5 text-sm">Kuitti</button>
-                    <button type="button" onclick="window.open('{{ route('kurssit.invoices.print', ['registration' => $registration, 'type' => 'lasku']) }}', '_blank')"
-                        class="rounded-md border px-3 py-1.5 text-sm">Lasku</button>
-                                    @elseif ($registration->status === 'pending')
+                @elseif ($registration->status === 'pending')
                     <form method="POST" action="{{ route('kurssit.invoices.mark-paid', $registration) }}">
                         @csrf
                         <button type="submit" class="rounded-md border px-3 py-1.5 text-sm">Merkitse maksetuksi</button>

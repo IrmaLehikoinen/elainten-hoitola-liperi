@@ -24,7 +24,7 @@
                         @endif
                     </p>
                 </div>
-                <button type="button" onclick="window.location.href='{{ route('kurssit.courses.edit', $course) }}'"
+                                <button type="button" onclick="window.location.href='{{ route('kurssit.courses.edit', $course) }}'"
                     class="rounded-md border px-3 py-1.5 text-sm">Muokkaa kurssin tietoja</button>
             </div>
 
@@ -55,14 +55,12 @@
                         </p>
                     </div>
 
-                    @if ($registration->status === 'confirmed')
+                                        @if ($registration->status === 'confirmed')
                         <div class="flex items-center gap-3">
                             <button type="button" onclick="window.open('{{ route('kurssit.invoices.print', $registration) }}', '_blank')"
                                 class="text-sm text-gray-600 hover:text-gray-900">Kuitti</button>
-                            <button type="button" onclick="window.open('{{ route('kurssit.invoices.print', ['registration' => $registration, 'type' => 'lasku']) }}', '_blank')"
-                                class="text-sm text-gray-600 hover:text-gray-900">Lasku</button>
                         </div>
-                    @elseif ($registration->status === 'pending')
+                    @elseif ($registration->status === 'pending')    
                         <form method="POST" action="{{ route('kurssit.invoices.mark-paid', $registration) }}">
                             @csrf
                             <button type="submit" class="text-sm text-gray-600 hover:text-gray-900">Merkitse maksetuksi</button>

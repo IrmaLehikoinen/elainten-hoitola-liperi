@@ -169,9 +169,11 @@
             </div>
         </div>
 
-        <div class="flex gap-3">
+                <div class="flex gap-3">
             <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-medium">Tallenna</button>
-            @if ($course->exists)
+            @if ($ignoreOld)
+                <button type="button" onclick="closeNewCourseForm()" class="rounded-md border px-4 py-2 text-sm">Peruuta</button>
+            @elseif ($course->exists)
                 <button type="button" onclick="window.location.href='{{ route('kurssit.courses.index') }}'" class="rounded-md border px-4 py-2 text-sm">Peruuta</button>
             @endif
         </div>
