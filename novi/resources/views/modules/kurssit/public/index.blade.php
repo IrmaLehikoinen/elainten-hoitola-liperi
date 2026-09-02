@@ -75,12 +75,14 @@
             @endforeach
         </div>
 
-                <div style="text-align:center; margin-top:32px;">
-            <button type="button" onclick="window.location.href='{{ route('kurssit.public.gift-card.show') }}'"
-                style="background:white; border:1px solid var(--brand-secondary); color: var(--brand-text); padding:12px 24px; border-radius: var(--brand-radius, 8px); font-size:14px; font-weight:600; cursor:pointer;">
-                Osta lahjakortti
-            </button>
-        </div>
+                   @if ($onlineGiftCardsEnabled)
+            <div style="text-align:center; margin-top:32px;">
+                <button type="button" onclick="window.location.href='{{ route('kurssit.public.gift-card.show') }}'"
+                    style="background:white; border:1px solid var(--brand-secondary); color: var(--brand-text); padding:12px 24px; border-radius: var(--brand-radius, 8px); font-size:14px; font-weight:600; cursor:pointer;">
+                    Osta lahjakortti
+                </button>
+            </div>
+        @endif 
 
         <div x-show="openCourseId !== null" x-cloak
             style="position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:50; display:flex; align-items:center; justify-content:center; padding:16px;"

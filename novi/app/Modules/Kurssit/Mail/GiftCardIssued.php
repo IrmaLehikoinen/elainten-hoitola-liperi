@@ -16,7 +16,7 @@ class GiftCardIssued extends Mailable
     public function __construct(
         public GiftCard $giftCard,
         public ?string $recipientName,
-        public ?string $message,
+        public ?string $giftMessage,
         public ?string $purchaserName,
     ) {
     }

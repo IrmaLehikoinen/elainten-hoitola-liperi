@@ -1,6 +1,6 @@
 @include('partials.emails.header')
 
-<h1 style="font-size: 20px;">Muistutus huomisesta Sydänpolku-ryhmästä</h1>
+<h1 style="font-size: 20px;">Muistutus huomisesta {{ $registration->course->company->name }}-ryhmästä</h1>
 
 <p>Hei {{ $registration->name }},</p>
 

@@ -14,9 +14,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/tietosuoja', function () {
+Route::get('/tietosuoja/{company?}', function (?\App\Models\Company $company) {
     return view('legal.tietosuoja', [
-        'companyRecord' => \App\Models\Company::first(),
+        'companyRecord' => $company ?? \App\Models\Company::first(),
     ]);
 })->name('legal.privacy');
 

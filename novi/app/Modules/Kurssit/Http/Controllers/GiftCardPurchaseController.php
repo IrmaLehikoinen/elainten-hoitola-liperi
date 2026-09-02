@@ -28,28 +28,30 @@ class GiftCardPurchaseController extends Controller
     }
     public function show()
     {
-        $company = Company::where('industry', 'kurssit')->firstOrFail();
+            $company = Company::where('industry', 'kurssit')->sole();
 
-        return view('kurssit::public.gift-card', [
+                return view('kurssit::public.gift-card', [
             'onlineEnabled' => $company->settings['gift_cards_online_enabled'] ?? true,
+            'company' => $company,
         ]);
     }
 
     public function store(Request $request, StripeCheckoutService $checkout)
     {
-        $company = Company::where('industry', 'kurssit')->firstOrFail();
+        $company = Company::where('industry', 'kurssit')->sole();
 
         if (! ($company->settings['gift_cards_online_enabled'] ?? true)) {
             return back()->with('purchase_error', 'Lahjakortin ostaminen verkossa ei ole tällä hetkellä käytössä.');
         }
 
-        $validated = $request->validate([
+                $validated = $request->validate([
             'amount' => ['required', 'in:20,50'],
             'purchaser_name' => ['required', 'string', 'max:255'],
             'purchaser_email' => ['required', 'email'],
             'recipient_name' => ['nullable', 'string', 'max:255'],
             'recipient_email' => ['nullable', 'email'],
             'message' => ['nullable', 'string', 'max:500'],
+            'privacy_consent' => ['required', 'accepted'],
         ]);
 
         $url = $checkout->createSessionUrl([

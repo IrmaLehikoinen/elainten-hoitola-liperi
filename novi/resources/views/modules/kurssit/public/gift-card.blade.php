@@ -5,20 +5,19 @@
         </div>
     @endif
 
-    <div style="background:white; border-radius: var(--brand-radius, 16px); padding:24px 28px; box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 12px 32px -20px rgba(0,0,0,0.10); border:1px solid rgba(42,52,40,0.08); margin-bottom:24px;">
-        <h1 style="font-family: var(--brand-heading-font); font-size: 24px; font-weight:700; color: var(--brand-text); margin:0 0 10px;">
-            Osta lahjakortti
-        </h1>
-        <p style="font-family: var(--brand-body-font); font-size:15px; color: var(--brand-accent); opacity:0.75; margin:0;">
-            Anna lahjaksi kurssi. Kortin voi käyttää maksuvälineenä ilmoittautuessa.
-        </p>
-    </div>
-
-    @if (! $onlineEnabled)
+        @if (! $onlineEnabled)
         <div style="background:white; border-radius: var(--brand-radius, 16px); padding:28px;">
             <p style="color: var(--brand-text);">Lahjakortin ostaminen verkossa ei ole tällä hetkellä käytössä.</p>
         </div>
     @else
+        <div style="background:white; border-radius: var(--brand-radius, 16px); padding:24px 28px; box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 12px 32px -20px rgba(0,0,0,0.10); border:1px solid rgba(42,52,40,0.08); margin-bottom:24px;">
+            <h1 style="font-family: var(--brand-heading-font); font-size: 24px; font-weight:700; color: var(--brand-text); margin:0 0 10px;">
+                Osta lahjakortti
+            </h1>
+            <p style="font-family: var(--brand-body-font); font-size:15px; color: var(--brand-accent); opacity:0.75; margin:0;">
+                Anna lahjaksi kurssi. Kortin voi käyttää maksuvälineenä ilmoittautuessa.
+            </p>
+        </div>
         <div style="background:white; border-radius: var(--brand-radius, 16px); padding:28px;">
             <form method="POST" action="{{ route('kurssit.public.gift-card.store') }}" style="display:flex; flex-direction:column; gap:14px; max-width:420px; margin:0 auto;">
                 @csrf
@@ -62,6 +61,12 @@
                     <label style="display:block; font-size:14px; font-weight:500; color: var(--brand-text); margin-bottom:4px;">Viesti (valinnainen)</label>
                     <textarea name="message" rows="3" style="width:100%; padding:10px 12px; border:1px solid #D1D5DB; border-radius: var(--brand-radius, 8px); box-sizing:border-box; font-family: var(--brand-body-font);">{{ old('message') }}</textarea>
                 </div>
+
+                                <label style="display:flex; align-items:flex-start; gap:8px; font-size:13px; color: var(--brand-text); margin-top:4px;">
+                    <input type="checkbox" name="privacy_consent" value="1" required style="margin-top:3px;">
+                    <span>Hyväksyn <a href="{{ route('legal.privacy', $company) }}" target="_blank" style="color: var(--brand-primary); text-decoration:underline;">tietosuojaselosteen</a> ja annan luvan tietojeni käsittelyyn lahjakortin toimittamiseksi.</span>
+                </label>
+                @error('privacy_consent') <p style="color:#991B1B; font-size:13px; margin-top:-8px;">{{ $message }}</p> @enderror
 
                 <button type="submit" class="btn-brand"
                     style="margin-top:8px; border:none; padding:12px 20px; border-radius: var(--brand-radius, 8px); font-size:15px; font-weight:600; cursor:pointer; font-family: var(--brand-body-font);">

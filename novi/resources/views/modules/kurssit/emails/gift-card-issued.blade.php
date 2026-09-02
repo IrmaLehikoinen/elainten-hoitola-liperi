@@ -33,15 +33,15 @@
             @else
                 Sait lahjakortin {{ $company->name }}lta.
             @endif
-            @if ($message)
+                        @if ($giftMessage)
                 Hän lähetti sinulle tämän tervehdyksen:
             @endif
         </p>
 
-        @if ($message)
+        @if ($giftMessage)
             <div style="background:{{ $secondary }}; border-radius:12px; padding:20px 24px; margin:0 0 32px;">
                 <p style="font-family: '{{ $headingFont }}', Georgia, serif; font-style:italic; font-size:16px; color:#2A3428; margin:0;">
-                    "{{ $message }}"
+                    "{{ $giftMessage }}"
                 </p>
             </div>
         @endif

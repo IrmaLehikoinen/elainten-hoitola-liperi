@@ -22,7 +22,7 @@
             <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Virallinen nimi</label>
                 <input type="text" name="official_name" value="{{ $company->settings['official_name'] ?? '' }}"
-                    placeholder="Esim. Sydänpolku Oy" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                     placeholder="Esim. Yritys Oy" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">   
             </div>
 
             <div>

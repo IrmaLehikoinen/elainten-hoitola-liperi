@@ -34,10 +34,11 @@ class KurssitServiceProvider extends ServiceProvider
         // Rekisteröidään komentorivikomento käsin, koska se ei asu
         // app/Console/Commands-kansiossa, jota Laravel lukee automaattisesti.
         if ($this->app->runningInConsole()) {
-            $this->commands([
+                    $this->commands([
                 \App\Modules\Kurssit\Console\Commands\SendCourseReminders::class,
                 \App\Modules\Kurssit\Console\Commands\CancelExpiredCourseRegistrations::class,
-            ]);
+                \App\Modules\Kurssit\Console\Commands\AnonymizeOldCourseData::class,
+            ]);   
         }
 
         Config::set('navigation.items', array_merge(
@@ -49,7 +50,8 @@ class KurssitServiceProvider extends ServiceProvider
                 ['route' => 'kurssit.reports.index', 'active_pattern' => 'kurssit.reports.*', 'label' => 'Raportti', 'icon' => 'chart'],
                 ['route' => 'kurssit.invoices.index', 'active_pattern' => 'kurssit.invoices.*', 'label' => 'Laskutus', 'icon' => 'euro'],
                 ['route' => 'kurssit.gift-cards.index', 'active_pattern' => 'kurssit.gift-cards.*', 'label' => 'Lahjakortit', 'icon' => 'gift'],
-                ['route' => 'kurssit.settings.index', 'active_pattern' => 'kurssit.settings.*', 'label' => 'Asetukset', 'icon' => 'gear'],
+                    ['route' => 'kurssit.settings.index', 'active_pattern' => 'kurssit.settings.*', 'label' => 'Asetukset', 'icon' => 'gear'],
+                    ['route' => 'kurssit.customer-data.index', 'active_pattern' => 'kurssit.customer-data.*', 'label' => 'Asiakastiedot', 'icon' => 'shield'],
             ])
         ));
 
@@ -98,7 +100,7 @@ class KurssitServiceProvider extends ServiceProvider
                 return;
             }
 
-            $validityMonths = $company->settings['gift_cards_validity_months'] ?? 12;
+                        $validityMonths = (int) ($company->settings['gift_cards_validity_months'] ?? 12);
             $amount = (float) ($event->metadata['amount'] ?? 0);
 
             $giftCard = GiftCard::create([

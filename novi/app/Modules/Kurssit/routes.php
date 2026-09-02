@@ -4,6 +4,7 @@ use App\Modules\Kurssit\Http\Controllers\CompanySettingsController;
 use App\Modules\Kurssit\Http\Controllers\CourseCardController;
 use App\Modules\Kurssit\Http\Controllers\CoursePaymentController;
 use App\Modules\Kurssit\Http\Controllers\CourseController;
+use App\Modules\Kurssit\Http\Controllers\CustomerDataController;
 use App\Modules\Kurssit\Http\Controllers\CourseReminderController;
 use App\Modules\Kurssit\Http\Controllers\GiftCardController;
 use App\Modules\Kurssit\Http\Controllers\GiftCardPurchaseController;
@@ -28,7 +29,7 @@ Route::middleware('web')->group(function () {
         Route::get('/kurssit/ilmoittautuminen/peruttu', function () {
         return view('kurssit::public.cancelled');
     })->name('kurssit.public.cancelled');
-        Route::get('/kurssit/maksu/{registration}', [CoursePaymentController::class, 'checkout'])->name('kurssit.payment.checkout');
+                Route::get('/kurssit/maksu/{registration:payment_token}', [CoursePaymentController::class, 'checkout'])->name('kurssit.payment.checkout');
 
     Route::get('/kurssit/lahjakortti/osta', [GiftCardPurchaseController::class, 'show'])->name('kurssit.public.gift-card.show');
         Route::post('/kurssit/lahjakortti/osta', [GiftCardPurchaseController::class, 'store'])
@@ -82,6 +83,7 @@ Route::middleware('web')->group(function () {
                 Route::get('/kurssit/hallinta/lahjakortit', [GiftCardController::class, 'index'])->name('kurssit.gift-cards.index');
         Route::post('/kurssit/hallinta/lahjakortit', [GiftCardController::class, 'store'])->name('kurssit.gift-cards.store');
                 Route::post('/kurssit/hallinta/lahjakortit/asetukset', [GiftCardController::class, 'updateSettings'])->name('kurssit.gift-cards.update-settings');
+                        Route::get('/kurssit/hallinta/asiakastiedot', [CustomerDataController::class, 'index'])->name('kurssit.customer-data.index');
 
         });
 

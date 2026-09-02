@@ -9,6 +9,15 @@ class CourseRegistration extends Model
 {
     use BelongsToCompany;
 
+    protected static function booted(): void
+    {
+        static::creating(function ($registration) {
+            if (empty($registration->payment_token)) {
+                $registration->payment_token = \Illuminate\Support\Str::random(40);
+            }
+        });
+    }
+
     protected $fillable = [
         'company_id',
         'course_id',

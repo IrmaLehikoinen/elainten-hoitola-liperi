@@ -65,7 +65,7 @@ class GiftCardController extends Controller
         $settings = $company->settings ?? [];
         $settings['gift_cards_online_enabled'] = $request->boolean('online_enabled');
         $settings['gift_cards_in_person_enabled'] = $request->boolean('in_person_enabled');
-        $settings['gift_cards_validity_months'] = $validated['validity_months'];
+                $settings['gift_cards_validity_months'] = (int) $validated['validity_months'];
 
         $company->settings = $settings;
         $company->save();

@@ -16,7 +16,7 @@ class CourseRegistrationController extends Controller
 {
     public function index()
     {
-        $company = Company::where('industry', 'kurssit')->firstOrFail();
+$company = Company::where('industry', 'kurssit')->sole();     
 
                 $courses = Course::where('company_id', $company->id)
             ->whereNull('cancelled_at')
@@ -27,8 +27,9 @@ class CourseRegistrationController extends Controller
             ->orderBy('starts_at')
             ->get();
 
-        return view('kurssit::public.index', [
+                return view('kurssit::public.index', [
             'courses' => $courses,
+            'onlineGiftCardsEnabled' => $company->settings['gift_cards_online_enabled'] ?? true,
         ]);
     }
 
@@ -41,11 +42,12 @@ class CourseRegistrationController extends Controller
 
     public function store(Request $request, Course $course, StripeCheckoutService $checkout)
     {
-        $validated = $request->validate([
+                $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email'],
             'phone' => ['nullable', 'string', 'max:50'],
             'gift_card_code' => ['nullable', 'string', 'max:20'],
+            'privacy_consent' => ['required', 'accepted'],
         ]);
 
         if ($course->isCancelled()) {

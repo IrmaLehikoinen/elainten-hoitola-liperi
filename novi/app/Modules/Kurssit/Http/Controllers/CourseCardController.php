@@ -99,7 +99,7 @@ class CourseCardController extends Controller
             ]);
 
             if ($registration->email) {
-                $paymentUrl = route('kurssit.payment.checkout', $registration);
+                                $paymentUrl = route('kurssit.payment.checkout', $registration->payment_token);
                 Mail::to($registration->email)->send(new CoursePaymentRequired($registration, $paymentUrl));
             }
 

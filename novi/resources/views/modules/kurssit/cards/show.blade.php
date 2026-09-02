@@ -101,11 +101,18 @@
             @endforelse
         </div>
 
-        <div class="mt-6 rounded-lg border bg-white p-5">
+                <div class="mt-6 rounded-lg border bg-white p-5">
             <h2 class="text-sm font-semibold text-gray-700">Lisää osallistuja käsin</h2>
             <p class="mt-1 text-xs text-gray-500">Käytä tätä kun asiakas ilmoittautuu puhelimessa tai paikan päällä.</p>
 
-            <form method="POST" action="{{ route('kurssit.cards.store-registration', $course) }}" class="mt-3 space-y-3">
+            @if ($course->isFull())
+                <div class="mt-3 rounded-md bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+                    Kurssi on jo täynnä ({{ $course->max_participants }} / {{ $course->max_participants }} paikkaa). Voit silti lisätä osallistujan tarvittaessa, mutta paikkoja ei enää virallisesti ole.
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('kurssit.cards.store-registration', $course) }}" class="mt-3 space-y-3"
+                @if ($course->isFull()) onsubmit="return confirm('Kurssi on täynnä. Lisätäänkö osallistuja silti?');" @endif>
                 @csrf
                 <div class="grid grid-cols-2 gap-3">
                     <div>
