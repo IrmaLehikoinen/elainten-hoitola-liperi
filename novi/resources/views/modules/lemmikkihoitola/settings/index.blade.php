@@ -429,8 +429,16 @@
                     <span style="color: var(--brand-text);">{{ config('industries.' . $company->industry . '.label', $company->industry) }}</span>
                 </p>
 
-                <form method="POST" action="{{ route('admin.settings.company-info.update') }}" class="mt-4 space-y-4 max-w-md">
+                    <form method="POST" action="{{ route('admin.settings.company-info.update') }}" class="mt-4 space-y-4 max-w-md" enctype="multipart/form-data">
                     @csrf
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Logo</label>
+                        @if ($company->logo_path)
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($company->logo_path) }}" class="mt-1 mb-2 h-12 w-auto object-contain">
+                        @endif
+                        <input type="file" name="logo" accept="image/*" class="mt-1 w-full text-sm">
+                    </div>
 
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Virallinen nimi</label>

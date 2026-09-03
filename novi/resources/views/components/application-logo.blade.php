@@ -1,6 +1,6 @@
 @if(!empty($brand['logo']))
-    <img
-        src="{{ asset('logos/' . $brand['logo']) }}"
+        <img
+        src="{{ \Illuminate\Support\Facades\Storage::url($brand['logo']) }}"
         alt="{{ $company['name'] ?? 'Logo' }}"
         {{ $attributes->merge(['class' => 'h-12 w-auto object-contain']) }}
     >

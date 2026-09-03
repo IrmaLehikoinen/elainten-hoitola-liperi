@@ -4,7 +4,9 @@ namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Lemmikkihoitola\Models\Pet;
+use App\Services\ActiveCompanyResolver;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PetController extends Controller
 {
@@ -12,10 +14,12 @@ class PetController extends Controller
      * Uuden eläimen pikaluonti varausvelhon vaiheesta 5, kun
      * asiakkaalla ei vielä ole sopivaa eläinkorttia.
      */
-        public function store(Request $request)
+    public function store(Request $request)
     {
+        $activeCompanyId = app(ActiveCompanyResolver::class)->current()?->id;
+
         $validated = $request->validate([
-            'customer_id' => ['required', 'exists:customers,id'],
+            'customer_id' => ['required', Rule::exists('customers', 'id')->where('company_id', $activeCompanyId)],
             'name' => ['nullable', 'string', 'max:255'],
             'species' => ['required', 'string', 'max:255'],
             'breed' => ['nullable', 'string', 'max:255'],
@@ -42,6 +46,8 @@ class PetController extends Controller
 
     public function show(Pet $pet)
     {
+        $this->authorizePetAccess($pet);
+
         $pet->load([
             'customer',
             'bookingParticipants.booking',
@@ -62,6 +68,8 @@ class PetController extends Controller
      */
     public function update(Request $request, Pet $pet)
     {
+        $this->authorizePetAccess($pet);
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'species' => ['required', 'string', 'max:255'],
@@ -83,12 +91,12 @@ class PetController extends Controller
 
         $pet->update($validated);
 
-      return redirect()
+        return redirect()
             ->route('admin.pets.show', [
                 'pet' => $pet->id,
                 'fromBooking' => $request->boolean('from_booking') ? 1 : null,
             ])
-            ->with('status','Lemmikkikortti tallennettu.');
+            ->with('status', 'Lemmikkikortti tallennettu.');
     }
 
     /**
@@ -96,6 +104,8 @@ class PetController extends Controller
      */
     public function destroy(Pet $pet)
     {
+        $this->authorizePetAccess($pet);
+
         $customer = $pet->customer;
 
         $pet->delete();
@@ -103,5 +113,19 @@ class PetController extends Controller
         return redirect()
             ->route('admin.customers.show', $customer)
             ->with('status', 'Lemmikkikortti poistettu.');
+    }
+
+    /**
+     * Estää käyttäjää käsittelemästä toisen yrityksen lemmikkikorttia
+     * pelkän ID:n arvaamalla (IDOR-suojaus, ks. UUSI_ASIAKAS_OHJE.md).
+     */
+    private function authorizePetAccess(Pet $pet): void
+    {
+        $activeCompanyId = app(ActiveCompanyResolver::class)->current()?->id;
+
+        abort_unless(
+            optional($pet->customer)->company_id === $activeCompanyId,
+            404
+        );
     }
 }

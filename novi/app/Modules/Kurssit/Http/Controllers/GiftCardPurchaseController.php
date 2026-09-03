@@ -28,7 +28,7 @@ class GiftCardPurchaseController extends Controller
     }
     public function show()
     {
-            $company = Company::where('industry', 'kurssit')->sole();
+                 $company = Company::where('industry', 'kurssit')->firstOrFail();   
 
                 return view('kurssit::public.gift-card', [
             'onlineEnabled' => $company->settings['gift_cards_online_enabled'] ?? true,
@@ -38,7 +38,7 @@ class GiftCardPurchaseController extends Controller
 
     public function store(Request $request, StripeCheckoutService $checkout)
     {
-        $company = Company::where('industry', 'kurssit')->sole();
+        $company = Company::where('industry', 'kurssit')->firstOrFail();
 
         if (! ($company->settings['gift_cards_online_enabled'] ?? true)) {
             return back()->with('purchase_error', 'Lahjakortin ostaminen verkossa ei ole tällä hetkellä käytössä.');

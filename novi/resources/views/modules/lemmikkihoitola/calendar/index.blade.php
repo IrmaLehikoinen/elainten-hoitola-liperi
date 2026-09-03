@@ -63,7 +63,7 @@
 
                     <div class="flex items-center gap-3">
                         <div
-                            onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => $prevAnchor->format('Y-m-d')]) }}'"
+                         onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => $prevAnchor->format('Y-m-d')]) }}#booking-calendar-root'"   
                             class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border"
                             style="border-color: var(--brand-secondary); color: var(--brand-text);"
                         >
@@ -83,7 +83,7 @@
                         </h2>
 
                         <div
-                            onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => $nextAnchor->format('Y-m-d')]) }}'"
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => $nextAnchor->format('Y-m-d')]) }}#booking-calendar-root'"
                             class="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border"
                             style="border-color: var(--brand-secondary); color: var(--brand-text);"
                         >
@@ -93,7 +93,7 @@
                         </div>
 
                                             <div
-                            onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => today()->format('Y-m-d')]) }}'"
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => $calendarView, 'date' => today()->format('Y-m-d')]) }}#booking-calendar-root'"
                             class="ml-1 cursor-pointer rounded-md px-2 py-1 text-xs font-medium"
                             style="border: 1px solid var(--brand-secondary); color: var(--brand-text);"
                         >
@@ -103,7 +103,7 @@
                         @if ($newBookingsCount > 0)
                             <span
                                 @if ($firstNewBookingDate)
-                                    onclick="window.location.href='{{ route('calendar.index', ['view' => 'month', 'date' => $firstNewBookingDate]) }}'"
+                                 onclick="window.location.href='{{ route('calendar.index', ['view' => 'month', 'date' => $firstNewBookingDate]) }}#booking-calendar-root'"   
                                 @endif
                                 class="ml-1 inline-block rounded-full px-3 py-1 text-xs font-semibold text-white"
                                 style="background-color: #D98C7A; {{ $firstNewBookingDate ? 'cursor:pointer;' : '' }}"
@@ -115,7 +115,7 @@
 
                     <div class="flex items-center gap-2">
                         <div
-                            onclick="window.location.href='{{ route('calendar.index', ['view' => 'month', 'date' => $anchorDate->format('Y-m-d')]) }}'"
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => 'month', 'date' => $anchorDate->format('Y-m-d')]) }}#booking-calendar-root'"
                             class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium"
                             style="
                                 {{ $calendarView === 'month' ? 'background-color: var(--brand-secondary);' : 'border: 1px solid var(--brand-secondary);' }}
@@ -126,7 +126,7 @@
                         </div>
 
                         <div
-                            onclick="window.location.href='{{ route('calendar.index', ['view' => 'week', 'date' => $anchorDate->format('Y-m-d')]) }}'"
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => 'week', 'date' => $anchorDate->format('Y-m-d')]) }}#booking-calendar-root'"
                             class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium"
                             style="
                                 {{ $calendarView === 'week' ? 'background-color: var(--brand-secondary);' : 'border: 1px solid var(--brand-secondary);' }}
@@ -137,7 +137,7 @@
                         </div>
 
                         <div
-                            onclick="window.location.href='{{ route('calendar.index', ['view' => 'day', 'date' => $anchorDate->format('Y-m-d')]) }}'"
+                            onclick="window.location.href='{{ route('calendar.index', ['view' => 'day', 'date' => $anchorDate->format('Y-m-d')]) }}#booking-calendar-root'"
                             class="cursor-pointer rounded-md px-3 py-2 text-sm font-medium"
                             style="
                                 {{ $calendarView === 'day' ? 'background-color: var(--brand-secondary);' : 'border: 1px solid var(--brand-secondary);' }}

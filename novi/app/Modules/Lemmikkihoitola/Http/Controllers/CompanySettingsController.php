@@ -70,7 +70,7 @@ class CompanySettingsController extends Controller
         return $this->backToTab($request)->with('status', 'Perushinta päivitetty.');
     }
 
-    public function updateCompanyInfo(Request $request)
+         public function updateCompanyInfo(Request $request)
     {
         $validated = $request->validate([
             'official_name' => ['nullable', 'string', 'max:255'],
@@ -82,6 +82,7 @@ class CompanySettingsController extends Controller
             'vat_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
             'primary_color' => ['nullable', 'string', 'max:20'],
             'secondary_color' => ['nullable', 'string', 'max:20'],
+            'logo' => ['nullable', 'image', 'max:2048'],
         ]);
 
         $company = $request->user()->company;
@@ -96,10 +97,15 @@ class CompanySettingsController extends Controller
         $company->phone = $validated['phone'] ?? null;
         $company->primary_color = $validated['primary_color'] ?? $company->primary_color;
         $company->secondary_color = $validated['secondary_color'] ?? $company->secondary_color;
+
+        if ($request->hasFile('logo')) {
+            $company->logo_path = $request->file('logo')->store('logos', 'public');
+        }
+
         $company->save();
 
         return $this->backToTab($request)->with('status', 'Yritystiedot päivitetty.');
-    }
+    }  
 
     public function storeResource(Request $request)
     {

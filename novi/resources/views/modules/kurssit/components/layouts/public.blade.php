@@ -32,7 +32,29 @@
 </head>
 <body class="kurssit-public">
          <div style="max-width: 960px; margin: 0 auto; padding: 48px 24px;">   
-        {{ $slot }}
+                {{ $slot }}
+
+                <p style="margin-top: 48px; text-align: center; font-size: 12px; font-weight: 600; opacity: 0.6;">
+            Powered by Novi
+        </p>
+        <p style="margin-top: 2px; text-align: center; font-size: 10px; font-weight: 300; opacity: 0.4;">
+            ajanvaraus &amp; asiakashallinta
+        </p>
     </div>
+    <script>
+        (function () {
+            function sendHeight() {
+                var height = document.documentElement.scrollHeight;
+                window.parent.postMessage({ noviIframeHeight: height }, '*');
+            }
+            window.addEventListener('load', sendHeight);
+            window.addEventListener('resize', sendHeight);
+            if (window.ResizeObserver) {
+                new ResizeObserver(sendHeight).observe(document.body);
+            } else {
+                setInterval(sendHeight, 500);
+            }
+        })();
+    </script>
 </body>
 </html>

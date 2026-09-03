@@ -276,7 +276,9 @@ class AdminBookingController extends Controller
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
         ]);
 
-        $booking = $participant->booking;
+                $booking = $participant->booking;
+
+        abort_unless($booking && $booking->company_id === app(\App\Services\ActiveCompanyResolver::class)->current()?->id, 404);
 
         if (!$booking || $booking->status === 'cancelled') {
             return back()->with('error', 'Peruutetun varauksen hoitojaksoa ei voi muuttaa.');

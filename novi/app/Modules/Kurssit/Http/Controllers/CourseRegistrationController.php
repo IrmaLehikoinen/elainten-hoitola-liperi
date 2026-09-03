@@ -16,7 +16,7 @@ class CourseRegistrationController extends Controller
 {
     public function index()
     {
-$company = Company::where('industry', 'kurssit')->sole();     
+$company = Company::where('industry', 'kurssit')->firstOrFail();    
 
                 $courses = Course::where('company_id', $company->id)
             ->whereNull('cancelled_at')

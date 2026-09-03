@@ -49,42 +49,38 @@
         class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col text-white transition-transform duration-200 sm:translate-x-0"
         style="background-color: var(--brand-primary);"
     >
-        <!-- Novi ja asiakkaan yrityksen nimi -->
+        <!-- Yrityksen nimi (Novi näkyy vain pienenä alareunassa) -->
         <div class="min-h-24 border-b border-white/15 px-6 py-5">
             <div onclick="window.location.href='{{ route('dashboard') }}'" class="inline-flex cursor-pointer items-center gap-2">
-                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-lg">🐾</span>
-                <span class="text-lg font-semibold" style="font-family: var(--brand-heading-font);">Novi</span>
+                             @if (!empty($brand['logo']))
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($brand['logo']) }}" class="h-9 w-9 rounded-full object-cover bg-white/15" alt="{{ $company['name'] ?? 'Logo' }}">
+                @else
+                    <span class="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-lg">🐾</span>
+                @endif
+                <span class="text-xl font-semibold" style="font-family: var(--brand-heading-font);">{{ $company['name'] ?? 'Yrityksen nimi' }}</span>   
             </div>
 
-                    @php
+            @php
                 $accessibleCompanies = Auth::check() ? Auth::user()->accessibleCompanies() : collect();
                 $activeCompanyId = $company['id'] ?? null;
             @endphp
 
             @if ($accessibleCompanies->count() > 1)
-                <p class="mt-2 text-base font-semibold leading-tight text-white">
-                    {{ $company['name'] ?? 'Yrityksen nimi' }}
-                </p>
-
-                <div class="mt-1 space-y-0.5">
+                <div class="mt-2 space-y-0.5">
                     @foreach ($accessibleCompanies->where('id', '!=', $activeCompanyId) as $otherCompany)
                         <form method="POST" action="{{ route('company.switch', $otherCompany) }}">
                             @csrf
-                            <button
+                                                     <button
                                 type="submit"
-                                class="text-xs text-white/60 underline decoration-white/30 underline-offset-2 transition hover:text-white"
+                                class="text-sm font-medium text-white/85 underline decoration-white/40 underline-offset-2 transition hover:text-white"
                             >
                                 Vaihda: {{ $otherCompany->name }}
-                            </button>
+                            </button>   
                         </form>
                     @endforeach
                 </div>
-            @else
-                <p class="mt-2 text-sm leading-tight text-white/70">
-                    {{ $company['name'] ?? 'Yrityksen nimi' }}
-                </p>
             @endif
-        </div>    
+        </div>
 
         <!-- Päävalikko -->
         <div class="flex-1 overflow-y-auto px-3 py-6">
@@ -168,9 +164,16 @@
                     type="submit"
                     class="w-full rounded-md border border-white/20 px-3 py-2 text-left text-sm font-medium text-white/90 transition hover:bg-white/10"
                 >
-                    Kirjaudu ulos
+                                    Kirjaudu ulos
                 </button>
             </form>
+
+                                  <p class="mt-8 px-2 text-xs font-semibold text-white/60">
+                Powered by Novi
+            </p>  
+            <p class="px-2 text-[10px] font-light text-white/40">
+                ajanvaraus &amp; asiakashallinta
+            </p>
         </div>
-    </aside>
+    </aside>    
 </nav>

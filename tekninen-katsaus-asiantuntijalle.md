@@ -160,4 +160,27 @@ Kooste tietoturvamekanismeista, joita katselmuksessa kannattaa tarkistaa nimenom
 
 Suosittelen katselmuksen aloitusjärjestykseksi: (1) `LemmikkihoitolaServiceProvider.php` kokonaiskuvan saamiseksi pohja/moduuli-rajapinnasta, (2) `BelongsToCompany.php` monivuokralaisuuden ymmärtämiseksi, (3) `PublicBookingController.php` + `AvailabilityService.php` koko julkisen polun ja kaksoisvarauksen eston läpikäymiseksi, (4) `StripeWebhookController.php` + `StripeCheckoutCompleted`-event maksuvirran läpikäymiseksi, (5) `CustomerController.php`:n tietosuojametodit.
 
+---
+
+## 11. Liiketoimintamalli: kaksi rinnakkaista yritystä + moduulin jälleenmyynti (lisätty 3.9.2026)
+
+Tämä kohta on kirjattu muistiin, koska sama asia on jouduttu selittämään useaan kertaan — tämä on oleellinen ja pysyvä fakta koko arkkitehtuurin ymmärtämiseksi.
+
+**Irman oma tuotantoasennus on yksi Laravel-asennus, jossa on kaksi yritystä (`companies`-taulun rivit) samalle omistajalle:**
+- **Testihoitola** — `industry = 'lemmikkihoitola'`, käyttää Lemmikkihoitola-moduulia.
+- **Sydänpolku** — `industry = 'kurssit'`, käyttää Kurssit-moduulia. Testihoitolan sivustolle tulee Sydänpolulle oma esittelysivu, johon Kurssit-moduulin julkinen varaus-/ilmoittautumisjärjestelmä liitetään. Molemmat toimivat siis **samalla sivustolla, samalla omistajalla, samassa asennuksessa, samaan aikaan**.
+
+**Samaan aikaan Kurssit-moduulin (kuten Lemmikkihoitola-moduulinkin) pitää pysyä geneerisenä, itsenäisenä toimialamoduulina** (ks. kohta 3), jonka Irma voi myydä ja viedä täysin erilliseen asennukseen (oma tietokanta, oma koodikopio) millä tahansa muulle yrittäjälle — ei vain Sydänpolun kaltaiselle kurssitoiminnalle.
+
+**Käytännön seuraus koodille:** koska Irman omassa asennuksessa on kaksi yritystä *eri toimialoilla* (yksi `lemmikkihoitola`, yksi `kurssit`) mutta ei koskaan kahta yritystä *samalla* toimialalla samassa asennuksessa, julkisten (ei-kirjautuneiden) sivujen yritys voidaan turvallisesti ratkaista `Company::where('industry', '<moduulin oma industry-arvo>')->firstOrFail()` -kyselyllä per moduuli. Tämä ei vielä tue useampaa saman toimialan yritystä samassa asennuksessa (esim. kaksi eri kurssiyritystä samalla sivustolla) — sitä ei tarvita nykymallissa, koska jokainen uusi asiakas saa oman erillisen asennuksen, mutta jos tämä joskus muuttuu, tarvitaan slug/toimipiste-pohjainen reititys julkisille sivuille (ks. `companies.slug`-sarake, joka on jo olemassa mutta ei vielä käytössä reitityksessä).
+
+**Upotus muille sivustoille (WordPress / tavallinen PHP) — päivitetty 3.9.2026, tarkistettu tarkemmin:** kohdassa 2 kuvattu iframe-upotusmalli koskee myös Kurssit-moduulia, ei vain Lemmikkihoitolaa. Kurssit-moduulin julkiset sivut käyttävät omaa kevyttä pohjaa `resources/views/modules/kurssit/components/layouts/public.blade.php`, joka on jo täysin itsenäinen, oma `<html>`-sivu ilman hallintapaneelin headeria/footeria/navigaatiota, ja jonka tyylit on nimiavaruutettu `.kurssit-public`-luokalla (vastaava periaate kuin Lemmikkihoitolan `.novi-booking-widget`). Mitään CSP/X-Frame-Options-estoa ei ole (tarkistettu), joten upotus toimii jo suoraan: `<iframe src="https://<asennuksen-osoite>/kurssit"></iframe>` (kurssilista + ilmoittautuminen) tai `.../kurssit/lahjakortti/osta` (lahjakortin ostosivu). Sama tunnettu rajoitus kuin Lemmikkihoitolassa: iframe vaatii kiinteän tai käsin säädetyn korkeuden, koska automaattista korkeuden-sovitusskriptiä (postMessage-pohjainen resize) ei ole vielä toteutettu kummassakaan moduulissa — tämä on ainoa varsinainen avoin parannuskohta upotuksessa, ei este.
+
+**Muita 3.9.2026 koodikatselmuksessa löydettyjä avoimia kohtia, jotka on syytä korjata ennen kuin Kurssit-moduulia aletaan myydä muille asiakkaille:**
+- `GiftCardPurchaseController.php` ja `CourseRegistrationController.php` käyttävät yhä `Company::where('industry','kurssit')->sole()` — kaatuu heti jos samassa asennuksessa on kaksi `kurssit`-yritystä. Korjataan `firstOrFail()`-muotoon.
+- `PublicBookingController.php` (Lemmikkihoitola) käyttää `Company::first()` kolmessa kohdassa ilman `industry`-suodatinta — antaa väärän yrityksen jos asennuksessa on useampi yritys eri toimialoilla (kuten Irman omassa asennuksessa nyt).
+- `.env.example` ei sisällä `STRIPE_KEY`/`STRIPE_SECRET`/`STRIPE_WEBHOOK_SECRET`-rivejä, vaikka `config/services.php` lukee niitä — uuden asennuksen tekijä ei tiedä lisätä näitä ilman erillistä ohjetta.
+- Ei ole seedaria/artisan-komentoa joka loisi uuden `Company`-rivin + ensimmäisen pääkäyttäjän yhdellä komennolla — uuden asiakasasennuksen käyttöönotto vaatii käsin tehtyjä tinker-komentoja.
+- `config/versions.php` sanoo `pohja => 1.0.0`, mutta git-tageissa on jo `pohja-1.0.1` — versionumero ja tagi ovat ristiriidassa, jompikumpi pitää korjata.
+
 Kysymyksiin vastaan mielelläni — Irma Lehikoinen, irma.lehikoi@gmail.com.

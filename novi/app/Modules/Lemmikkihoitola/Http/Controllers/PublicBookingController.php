@@ -18,7 +18,7 @@ class PublicBookingController extends Controller
 
     private function enabledBookingFields(): array
     {
-        $company = \App\Models\Company::first();
+            $company = \App\Models\Company::where('industry', 'lemmikkihoitola')->firstOrFail();
         $settings = $company->settings ?? [];
 
         return $settings['public_booking_fields'] ?? array_keys(config('public_booking_fields'));
@@ -88,7 +88,7 @@ class PublicBookingController extends Controller
         $grouped = collect($animals)->groupBy(fn ($a) => mb_strtolower(trim($a['species'])));
         $holdIds = [];
 
-                    $companyId = \App\Models\Company::first()->id;
+                    $companyId = \App\Models\Company::where('industry', 'lemmikkihoitola')->firstOrFail()->id;    
 
                 foreach ($grouped as $species => $group) {
                 $hold = \App\Models\BookingHold::create([
@@ -206,7 +206,7 @@ class PublicBookingController extends Controller
         ]);
 
         $email = session('public_booking.email');
-        $company = \App\Models\Company::first();
+                $company = \App\Models\Company::where('industry', 'lemmikkihoitola')->firstOrFail();
 
         $customerId = session('public_booking.customer_id');
         if ($customerId) {

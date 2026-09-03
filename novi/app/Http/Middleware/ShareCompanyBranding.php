@@ -24,13 +24,14 @@ class ShareCompanyBranding
         if ($activeCompany) {
             $settings = $activeCompany->settings ?? [];
 
-            $brand = array_merge($brand, array_filter([
+                     $brand = array_merge($brand, array_filter([
                 'name' => $activeCompany->name,
                 'primary_color' => $activeCompany->primary_color,
                 'secondary_color' => $activeCompany->secondary_color,
                 'font_heading' => $settings['font_heading'] ?? null,
                 'font_body' => $settings['font_body'] ?? null,
-            ]));
+                'logo' => $activeCompany->logo_path,
+            ]));   
         }
 
         View::share('brand', $brand);
