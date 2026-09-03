@@ -28,7 +28,7 @@
         class="fixed inset-0 z-40 bg-black/40 sm:hidden"
     ></div>
 
-            @php
+    @php
         // Valikkokohteet tulevat asennetuilta moduuleilta (ks. config/navigation.php),
         // pohja ei enää tiedä niistä mitään suoraan. Näytetään vain
         // aktiivisen yrityksen oman toimialan kohteet.
@@ -41,7 +41,7 @@
                 return $item;
             })
             ->all();
-    @endphp    
+    @endphp
 
     <!-- Vasen sivuvalikko -->
     <aside
@@ -52,12 +52,12 @@
         <!-- Yrityksen nimi (Novi näkyy vain pienenä alareunassa) -->
         <div class="min-h-24 border-b border-white/15 px-6 py-5">
             <div onclick="window.location.href='{{ route('dashboard') }}'" class="inline-flex cursor-pointer items-center gap-2">
-                             @if (!empty($brand['logo']))
+                @if (!empty($brand['logo']))
                     <img src="{{ \Illuminate\Support\Facades\Storage::url($brand['logo']) }}" class="h-9 w-9 rounded-full object-cover bg-white/15" alt="{{ $company['name'] ?? 'Logo' }}">
                 @else
                     <span class="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-lg">🐾</span>
                 @endif
-                <span class="text-xl font-semibold" style="font-family: var(--brand-heading-font);">{{ $company['name'] ?? 'Yrityksen nimi' }}</span>   
+                <span class="text-xl font-semibold" style="font-family: var(--brand-heading-font);">{{ $company['name'] ?? 'Yrityksen nimi' }}</span>
             </div>
 
             @php
@@ -70,12 +70,12 @@
                     @foreach ($accessibleCompanies->where('id', '!=', $activeCompanyId) as $otherCompany)
                         <form method="POST" action="{{ route('company.switch', $otherCompany) }}">
                             @csrf
-                                                     <button
+                            <button
                                 type="submit"
                                 class="text-sm font-medium text-white/85 underline decoration-white/40 underline-offset-2 transition hover:text-white"
                             >
                                 Vaihda: {{ $otherCompany->name }}
-                            </button>   
+                            </button>
                         </form>
                     @endforeach
                 </div>
@@ -114,10 +114,10 @@
                                 @case('euro')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6a6.5 6.5 0 1 0 0 12M6.5 10h7M6.5 14h6" /></svg>
                                     @break
-                                                                    @case('chart')
+                                @case('chart')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19.5h16M8 19V10M13 19V5M18 19v-7" /></svg>
                                     @break
-                                                                    @case('gear')
+                                @case('gear')
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><circle cx="12" cy="12" r="3" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.4 13.5a7.6 7.6 0 0 0 0-3l1.6-1.2-1.5-2.6-1.9.6a7.7 7.7 0 0 0-2.6-1.5L14.6 3h-3l-.4 2-.1-.1a7.6 7.6 0 0 0-2.6 1.5l-1.9-.6-1.5 2.6L6.6 10a7.6 7.6 0 0 0 0 3l-1.6 1.2 1.5 2.6 1.9-.6a7.7 7.7 0 0 0 2.6 1.5l.4 2h3l.4-2a7.7 7.7 0 0 0 2.6-1.5l1.9.6 1.5-2.6-1.6-1.2Z" /></svg>
                                     @break
                                 @case('gift')
@@ -131,26 +131,35 @@
                 @endforeach
             </div>
 
-                 </div>   
+        </div>
 
         <!-- Käyttäjä ja uloskirjautuminen -->
         <div class="border-t border-white/15 p-4">
             <div class="mb-3 flex items-center gap-2 px-2">
-             <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20">
-                    <svg viewBox="-2.25 0.5 21.47 21.47" fill="white" class="h-6 w-6">
-                        <g transform="translate(-5,2) rotate(-10) scale(0.62)">
-                            <circle cx="7.5" cy="9" r="2.1"/>
-                            <circle cx="12" cy="6.8" r="2.1"/>
-                            <circle cx="16.5" cy="9" r="2.1"/>
-                            <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
-                        </g>
-                        <g transform="translate(10,4) rotate(28) scale(0.62)">
-                            <circle cx="7.5" cy="9" r="2.1"/>
-                            <circle cx="12" cy="6.8" r="2.1"/>
-                            <circle cx="16.5" cy="9" r="2.1"/>
-                            <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
-                        </g>
-                    </svg>
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20">
+                                                  @if ($activeIndustry === 'kurssit')
+                        <svg viewBox="-1 -1 32 50" fill="none" stroke="white" stroke-width="1.1" class="h-5 w-5">
+                            <path stroke-linecap="round" d="M15 48V34" />
+                            <path stroke-linejoin="round" d="M15 34C10 34 0 29 0 20C8 20 15 27 15 34Z" />
+                            <path stroke-linejoin="round" d="M15 34C20 34 30 29 30 20C22 20 15 27 15 34Z" />
+                            <path stroke-linejoin="round" d="M15 28C8 23 5 11 15 0C25 11 22 23 15 28Z" />
+                        </svg>
+                    @else          
+                        <svg viewBox="-2.25 0.5 21.47 21.47" fill="white" class="h-6 w-6">
+                            <g transform="translate(-5,2) rotate(-10) scale(0.62)">
+                                <circle cx="7.5" cy="9" r="2.1"/>
+                                <circle cx="12" cy="6.8" r="2.1"/>
+                                <circle cx="16.5" cy="9" r="2.1"/>
+                                <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                            </g>
+                            <g transform="translate(10,4) rotate(28) scale(0.62)">
+                                <circle cx="7.5" cy="9" r="2.1"/>
+                                <circle cx="12" cy="6.8" r="2.1"/>
+                                <circle cx="16.5" cy="9" r="2.1"/>
+                                <ellipse cx="12" cy="15.5" rx="5.5" ry="4.5"/>
+                            </g>
+                        </svg>
+                    @endif
                 </span>
                 <div class="min-w-0">
                     <p class="truncate text-sm font-semibold">{{ Auth::user()->name }}</p>
@@ -164,16 +173,16 @@
                     type="submit"
                     class="w-full rounded-md border border-white/20 px-3 py-2 text-left text-sm font-medium text-white/90 transition hover:bg-white/10"
                 >
-                                    Kirjaudu ulos
+                    Kirjaudu ulos
                 </button>
             </form>
 
-                                  <p class="mt-8 px-2 text-xs font-semibold text-white/60">
+            <p class="mt-8 px-2 text-xs font-semibold text-white/60">
                 Powered by Novi
-            </p>  
+            </p>
             <p class="px-2 text-[10px] font-light text-white/40">
                 ajanvaraus &amp; asiakashallinta
             </p>
         </div>
-    </aside>    
+    </aside>
 </nav>

@@ -2,7 +2,18 @@
     <div class="p-6">
         <h1 class="text-xl font-semibold">Etusivu</h1>
 
-        <h2 class="mt-8 text-sm font-semibold text-gray-500 uppercase tracking-wide">
+        <h2 class="mt-8 flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            <span
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                style="background-color: var(--brand-primary);"
+            >
+                <svg viewBox="-1 -1 32 50" fill="none" stroke="white" stroke-width="1.1" class="h-5 w-5">
+                    <path stroke-linecap="round" d="M15 48V34" />
+                    <path stroke-linejoin="round" d="M15 34C10 34 0 29 0 20C8 20 15 27 15 34Z" />
+                    <path stroke-linejoin="round" d="M15 34C20 34 30 29 30 20C22 20 15 27 15 34Z" />
+                    <path stroke-linejoin="round" d="M15 28C8 23 5 11 15 0C25 11 22 23 15 28Z" />
+                </svg>
+            </span>
             {{ ucfirst($calendarMonth->translatedFormat('F')) }} — tulevat kurssit
         </h2>
 
@@ -28,28 +39,51 @@
 
         <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-4">
             <section class="rounded-xl border bg-white p-5 md:col-span-3">
-                <div class="flex items-center gap-3">
-                    <button type="button" onclick="window.location.href='{{ route('kurssit.dashboard', ['date' => $calendarMonth->copy()->subMonth()->format('Y-m-d')]) }}'"
-                        class="flex h-8 w-8 items-center justify-center rounded-md border text-gray-600">←</button>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="window.location.href='{{ route('kurssit.dashboard', ['date' => $calendarMonth->copy()->subMonth()->format('Y-m-d')]) }}'"
+                            class="flex h-8 w-8 items-center justify-center rounded-md border text-gray-600">←</button>
 
-                    <h2 class="text-base font-semibold">{{ ucfirst($calendarMonth->translatedFormat('F Y')) }}</h2>
+                        <h2 class="text-base font-semibold">{{ ucfirst($calendarMonth->translatedFormat('F Y')) }}</h2>
 
-                    <button type="button" onclick="window.location.href='{{ route('kurssit.dashboard', ['date' => $calendarMonth->copy()->addMonth()->format('Y-m-d')]) }}'"
-                        class="flex h-8 w-8 items-center justify-center rounded-md border text-gray-600">→</button>
+                        <button type="button" onclick="window.location.href='{{ route('kurssit.dashboard', ['date' => $calendarMonth->copy()->addMonth()->format('Y-m-d')]) }}'"
+                            class="flex h-8 w-8 items-center justify-center rounded-md border text-gray-600">→</button>
 
-                    @if (!$calendarMonth->isSameMonth(today()))
-                        <button type="button" onclick="window.location.href='{{ route('kurssit.dashboard') }}'"
-                            class="rounded-md border px-2 py-1 text-xs">Tänään</button>
-                    @endif
+                        @if (!$calendarMonth->isSameMonth(today()))
+                            <button type="button" onclick="window.location.href='{{ route('kurssit.dashboard') }}'"
+                                class="rounded-md border px-2 py-1 text-xs">Tänään</button>
+                        @endif
+                    </div>
+
+                    <span
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                        style="background-color: var(--brand-secondary);"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="1.8" class="h-4 w-4">
+                            <rect x="3.5" y="5" width="17" height="16" rx="2" />
+                            <path stroke-linecap="round" d="M3.5 9.5h17M8 3v4M16 3v4" />
+                        </svg>
+                    </span>
                 </div>
 
-                                <div class="mt-4">
+                <div class="mt-4">
                     @include('kurssit::partials.calendar-grid', ['days' => $calendarDays, 'periodStart' => $calendarMonth])
                 </div>
             </section>
 
             <section class="rounded-xl border bg-white p-5">
-                <h2 class="text-base font-semibold">Muistettavaa</h2>
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base font-semibold">Muistettavaa</h2>
+
+                    <span
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                        style="background-color: var(--brand-secondary);"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand-primary)" stroke-width="1.8" class="h-4 w-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1.2M18.5 9.5c0-3.6-2.9-5.5-6.5-5.5s-6.5 1.9-6.5 5.5c0 5-2 6.5-2 6.5h17s-2-1.5-2-6.5ZM9.5 19a2.5 2.5 0 0 0 5 0" />
+                        </svg>
+                    </span>
+                </div>
 
                 <div class="mt-3 space-y-2">
                     @forelse ($reminders as $reminder)
@@ -97,7 +131,7 @@
             </button>
         </div>
 
-                <div id="new-course-form" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/40 p-6" onclick="if (event.target === this) closeNewCourseForm();">
+        <div id="new-course-form" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/40 p-6" onclick="if (event.target === this) closeNewCourseForm();">
             <div class="mx-auto mt-10 w-full max-w-2xl rounded-lg border bg-white p-5">
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-semibold text-gray-700">Uusi kurssi</h2>
@@ -107,7 +141,20 @@
             </div>
         </div>
 
-        <h2 class="mt-10 text-sm font-semibold text-gray-500 uppercase tracking-wide">Muut tulevat kurssit</h2>
+        <h2 class="mt-10 flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            <span
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                style="background-color: var(--brand-primary);"
+            >
+                <svg viewBox="-1 -1 32 50" fill="none" stroke="white" stroke-width="1.1" class="h-5 w-5">
+                    <path stroke-linecap="round" d="M15 48V34" />
+                    <path stroke-linejoin="round" d="M15 34C10 34 0 29 0 20C8 20 15 27 15 34Z" />
+                    <path stroke-linejoin="round" d="M15 34C20 34 30 29 30 20C22 20 15 27 15 34Z" />
+                    <path stroke-linejoin="round" d="M15 28C8 23 5 11 15 0C25 11 22 23 15 28Z" />
+                </svg>
+            </span>
+            Muut tulevat kurssit
+        </h2>
         <div class="mt-3 space-y-3">
             @forelse ($otherUpcomingCourses as $course)
                 <div class="rounded-lg border bg-white p-4 flex items-center justify-between">

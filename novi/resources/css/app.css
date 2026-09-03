@@ -44,6 +44,48 @@ input:-webkit-autofill:focus {
     -webkit-text-fill-color: #111827 !important;
 }
 
+input[type="checkbox"],
+input[type="radio"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.1em;
+    height: 1.1em;
+    border: 1.5px solid var(--brand-primary);
+    background-color: white;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    margin: 0;
+    vertical-align: middle;
+}
+
+input[type="checkbox"] {
+    border-radius: 3px;
+}
+
+input[type="checkbox"]:checked {
+    background-color: var(--brand-primary);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2'><path d='M3 8.5l3 3L13 5'/></svg>");
+    background-size: 75% 75%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+input[type="radio"] {
+    border-radius: 50%;
+}
+
+input[type="radio"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: calc(1.1em - 7px);
+    height: calc(1.1em - 7px);
+    border-radius: 50%;
+    background-color: var(--brand-primary);
+}
+
 [x-cloak] {
     display: none !important;
 }
