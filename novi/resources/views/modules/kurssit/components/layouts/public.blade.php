@@ -16,7 +16,9 @@
         .kurssit-public {
             --brand-primary: {{ $brand['primary_color'] ?? '#3F4F3A' }};
             --brand-secondary: {{ $brand['secondary_color'] ?? '#D8C6BD' }};
-            --brand-accent: {{ $brand['accent_color'] ?? '#2A3428' }};
+            --brand-accent-soft: {{ $brand['accent_soft_color'] ?? '#D8C6BD' }};
+            --brand-warm: {{ $brand['warm_color'] ?? '#D8C6BD' }};
+            --brand-warm-light: {{ $brand['warm_light_color'] ?? '#D8C6BD' }};
             --brand-background: {{ $brand['background_color'] ?? '#F8F6F2' }};
             --brand-text: {{ $brand['text_color'] ?? '#2A3428' }};
             --brand-heading-font: '{{ $brand['font_heading'] ?? 'Playfair Display' }}', serif;
@@ -33,13 +35,6 @@
 <body class="kurssit-public">
          <div style="max-width: 960px; margin: 0 auto; padding: 48px 24px;">   
                 {{ $slot }}
-
-                <p style="margin-top: 48px; text-align: center; font-size: 12px; font-weight: 600; opacity: 0.6;">
-            Powered by Novi
-        </p>
-        <p style="margin-top: 2px; text-align: center; font-size: 10px; font-weight: 300; opacity: 0.4;">
-            ajanvaraus &amp; asiakashallinta
-        </p>
     </div>
     <script>
         (function () {

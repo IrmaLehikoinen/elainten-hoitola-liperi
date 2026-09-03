@@ -1,0 +1,39 @@
+<svg width="1400" height="480" viewBox="0 0 1400 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="wc1" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.010 0.018" numOctaves="4" seed="11" result="n1"/>
+      <feDisplacementMap in="SourceGraphic" in2="n1" scale="70" xChannelSelector="R" yChannelSelector="G" result="d1"/>
+      <feGaussianBlur in="d1" stdDeviation="16"/>
+    </filter>
+    <filter id="wc2" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.016 0.03" numOctaves="3" seed="4" result="n2"/>
+      <feDisplacementMap in="SourceGraphic" in2="n2" scale="40" xChannelSelector="R" yChannelSelector="G" result="d2"/>
+      <feGaussianBlur in="d2" stdDeviation="10"/>
+    </filter>
+    <filter id="wc3" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02 0.04" numOctaves="3" seed="21" result="n3"/>
+      <feDisplacementMap in="SourceGraphic" in2="n3" scale="26" xChannelSelector="R" yChannelSelector="G" result="d3"/>
+      <feGaussianBlur in="d3" stdDeviation="4"/>
+    </filter>
+    <radialGradient id="halo" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#D8C48C" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#E4D9B8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#A98A4E" stop-opacity="0.46"/>
+      <stop offset="60%" stop-color="#C2AF6F" stop-opacity="0.26"/>
+      <stop offset="100%" stop-color="#D8C48C" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="fleck" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8F7539" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#8F7539" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <ellipse cx="700" cy="260" rx="640" ry="150" fill="url(#halo)" filter="url(#wc2)"/>
+  <ellipse cx="700" cy="230" rx="520" ry="120" fill="url(#core)" filter="url(#wc1)"/>
+
+  <ellipse cx="380" cy="200" rx="90" ry="40" fill="url(#fleck)" filter="url(#wc3)"/>
+  <ellipse cx="980" cy="270" rx="110" ry="46" fill="url(#fleck)" filter="url(#wc3)"/>
+  <ellipse cx="700" cy="180" rx="70" ry="30" fill="url(#fleck)" filter="url(#wc3)"/>
+</svg>

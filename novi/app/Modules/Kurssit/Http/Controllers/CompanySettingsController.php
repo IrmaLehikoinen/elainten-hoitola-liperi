@@ -34,6 +34,10 @@ class CompanySettingsController extends Controller
             'vat_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
             'primary_color' => ['nullable', 'string', 'max:20'],
             'secondary_color' => ['nullable', 'string', 'max:20'],
+            'accent_color' => ['nullable', 'string', 'max:20'],
+            'accent_soft_color' => ['nullable', 'string', 'max:20'],
+            'warm_color' => ['nullable', 'string', 'max:20'],
+            'warm_light_color' => ['nullable', 'string', 'max:20'],
             'font_pair' => ['nullable', 'string', 'in:playfair_inter,montserrat_open_sans,merriweather_lato,poppins_inter'],
             'logo' => ['nullable', 'image', 'max:2048'],
         ]);
@@ -50,7 +54,10 @@ class CompanySettingsController extends Controller
         $settings['address'] = $validated['address'] ?? null;
         $settings['iban'] = $validated['iban'] ?? null;
         $settings['payment_term_days'] = $validated['payment_term_days'];
-        $settings['vat_percentage'] = $validated['vat_percentage'];
+        $settings['accent_color'] = $validated['accent_color'] ?? null;
+        $settings['accent_soft_color'] = $validated['accent_soft_color'] ?? null;
+        $settings['warm_color'] = $validated['warm_color'] ?? null;
+        $settings['warm_light_color'] = $validated['warm_light_color'] ?? null;
 
         if (! empty($validated['font_pair'])) {
             $chosen = $this->fontOptions()[$validated['font_pair']];

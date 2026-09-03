@@ -12,12 +12,14 @@ use App\Modules\Kurssit\Http\Controllers\CourseRegistrationController;
 use App\Modules\Kurssit\Http\Controllers\InvoiceController;
 use App\Modules\Kurssit\Http\Controllers\RegistrationCardController;
 use App\Modules\Kurssit\Http\Controllers\ReportController;
+use App\Modules\Kurssit\Http\Controllers\SydanpolkuController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('web')->group(function () {
 
     // Julkiset reitit — ei kirjautumista, kuka tahansa voi katsoa
     // kursseja ja ilmoittautua.
+    Route::get('/sydanpolku', [SydanpolkuController::class, 'index'])->name('sydanpolku.index');
     Route::get('/kurssit', [CourseRegistrationController::class, 'index'])->name('kurssit.public.index');
     Route::get('/kurssit/{course}/ilmoittaudu', [CourseRegistrationController::class, 'show'])->name('kurssit.public.register');
     Route::post('/kurssit/{course}/ilmoittaudu', [CourseRegistrationController::class, 'store'])

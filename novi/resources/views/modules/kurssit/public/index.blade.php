@@ -13,6 +13,8 @@
         }
     </style>
 
+    @include('kurssit::partials.nav')
+
     <div x-data="{ openCourseId: null }">
         <h1 style="font-family: var(--brand-heading-font); font-size: 26px; color: var(--brand-text); margin-bottom: 24px;">
             Kurssit
@@ -22,7 +24,7 @@
             <p style="color: var(--brand-text); opacity:0.7;">Ei tällä hetkellä avoimia kursseja.</p>
         @endif
 
-                     <div class="kurssit-grid">   
+                     <div class="kurssit-grid">
             @foreach ($courses as $course)
                 @php
                     $thumb = null;
@@ -82,7 +84,9 @@
                     Osta lahjakortti
                 </button>
             </div>
-        @endif 
+        @endif
+
+        @include('kurssit::partials.powered-by-novi')
 
         <div x-show="openCourseId !== null" x-cloak
             style="position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:50; display:flex; align-items:center; justify-content:center; padding:16px;"

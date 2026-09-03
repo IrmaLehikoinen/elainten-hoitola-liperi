@@ -1,4 +1,6 @@
 <x-kurssit::layouts.public :title="$course->name">
+    @include('kurssit::partials.nav')
+
     @if (session('registration_error'))
         <div style="background:#FEF2F2; border:1px solid #FCA5A5; color:#991B1B; padding:12px 16px; border-radius:8px; font-size:14px; margin-bottom:20px;">
             {{ session('registration_error') }}
@@ -103,7 +105,7 @@
                 Ilmoittaudu
             </h2>
 
-                         <form method="POST" action="{{ route('kurssit.public.store', $course) }}" style="display:flex; flex-direction:column; gap:14px; max-width:400px; margin:0 auto;">   
+                         <form method="POST" action="{{ route('kurssit.public.store', $course) }}" style="display:flex; flex-direction:column; gap:14px; max-width:400px; margin:0 auto;">
                 @csrf
 
                 <div>
@@ -141,4 +143,6 @@
             </form>
         </div>
     @endif
+
+    @include('kurssit::partials.powered-by-novi')
 </x-kurssit::layouts.public>

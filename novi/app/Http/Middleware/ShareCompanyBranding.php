@@ -29,7 +29,10 @@ class ShareCompanyBranding
                 'primary_color' => $activeCompany->primary_color,
                 'secondary_color' => $activeCompany->secondary_color,
                 'font_heading' => $settings['font_heading'] ?? null,
-                'font_body' => $settings['font_body'] ?? null,
+                'accent_color' => $settings['accent_color'] ?? null,
+                'accent_soft_color' => $settings['accent_soft_color'] ?? null,
+                'warm_color' => $settings['warm_color'] ?? null,
+                'warm_light_color' => $settings['warm_light_color'] ?? null,
                 'logo' => $activeCompany->logo_path,
             ]));   
         }

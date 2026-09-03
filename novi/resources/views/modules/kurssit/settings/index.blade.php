@@ -85,7 +85,56 @@
                     </div>
                 </div>
             </div>
-            <p class="text-xs text-gray-400">Näitä värejä käytetään kuiteissa, laskuissa ja julkisella kurssisivulla.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Korostusväri</label>
+                    <div class="mt-1 flex items-center gap-2">
+                        <input type="color" id="accent_color_picker" value="{{ $company->settings['accent_color'] ?? '#80107A' }}"
+                            class="h-10 w-16 rounded-md border-gray-300 shadow-sm"
+                            oninput="document.getElementById('accent_color_text').value = this.value">
+                        <input type="text" name="accent_color" id="accent_color_text" value="{{ $company->settings['accent_color'] ?? '#80107A' }}"
+                            placeholder="#80107A" class="w-28 rounded-md border-gray-300 shadow-sm text-sm"
+                            oninput="if (/^#([0-9A-Fa-f]{6})$/.test(this.value)) { document.getElementById('accent_color_picker').value = this.value; }">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Korostusväri (vaalea)</label>
+                    <div class="mt-1 flex items-center gap-2">
+                        <input type="color" id="accent_soft_color_picker" value="{{ $company->settings['accent_soft_color'] ?? '#C4DD5E' }}"
+                            class="h-10 w-16 rounded-md border-gray-300 shadow-sm"
+                            oninput="document.getElementById('accent_soft_color_text').value = this.value">
+                        <input type="text" name="accent_soft_color" id="accent_soft_color_text" value="{{ $company->settings['accent_soft_color'] ?? '#C4DD5E' }}"
+                            placeholder="#C4DD5E" class="w-28 rounded-md border-gray-300 shadow-sm text-sm"
+                            oninput="if (/^#([0-9A-Fa-f]{6})$/.test(this.value)) { document.getElementById('accent_soft_color_picker').value = this.value; }">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Lämmin väri</label>
+                    <div class="mt-1 flex items-center gap-2">
+                        <input type="color" id="warm_color_picker" value="{{ $company->settings['warm_color'] ?? '#B49170' }}"
+                            class="h-10 w-16 rounded-md border-gray-300 shadow-sm"
+                            oninput="document.getElementById('warm_color_text').value = this.value">
+                        <input type="text" name="warm_color" id="warm_color_text" value="{{ $company->settings['warm_color'] ?? '#B49170' }}"
+                            placeholder="#B49170" class="w-28 rounded-md border-gray-300 shadow-sm text-sm"
+                            oninput="if (/^#([0-9A-Fa-f]{6})$/.test(this.value)) { document.getElementById('warm_color_picker').value = this.value; }">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Lämmin väri (vaalea)</label>
+                    <div class="mt-1 flex items-center gap-2">
+                        <input type="color" id="warm_light_color_picker" value="{{ $company->settings['warm_light_color'] ?? '#C2AF6F' }}"
+                            class="h-10 w-16 rounded-md border-gray-300 shadow-sm"
+                            oninput="document.getElementById('warm_light_color_text').value = this.value">
+                        <input type="text" name="warm_light_color" id="warm_light_color_text" value="{{ $company->settings['warm_light_color'] ?? '#C2AF6F' }}"
+                            placeholder="#C2AF6F" class="w-28 rounded-md border-gray-300 shadow-sm text-sm"
+                            oninput="if (/^#([0-9A-Fa-f]{6})$/.test(this.value)) { document.getElementById('warm_light_color_picker').value = this.value; }">
+                    </div>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400">Nämä neljä väriä näkyvät julkisen sivun korostuksissa (mm. sydämet, otsikot). Oletusarvot ovat Sydänpolun värit — vaihda nämä kun teet sivun toiselle asiakkaalle.</p>
 
             <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Fontti</label>
