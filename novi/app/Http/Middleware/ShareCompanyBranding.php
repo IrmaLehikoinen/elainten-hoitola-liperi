@@ -39,8 +39,8 @@ class ShareCompanyBranding
 
         View::share('brand', $brand);
 
-        View::share('company', $activeCompany
-            ? ['id' => $activeCompany->id, 'name' => $activeCompany->name, 'industry' => $activeCompany->industry]
+                View::share('company', $activeCompany
+            ? ['id' => $activeCompany->id, 'name' => $activeCompany->name, 'industry' => $activeCompany->industry, 'active_modules' => $activeCompany->active_modules ?? ($activeCompany->industry ? [$activeCompany->industry] : [])]
             : $this->brandManager->company());
 
         return $next($request);

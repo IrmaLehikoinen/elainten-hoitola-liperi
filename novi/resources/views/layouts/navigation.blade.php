@@ -32,10 +32,11 @@
         // Valikkokohteet tulevat asennetuilta moduuleilta (ks. config/navigation.php),
         // pohja ei enää tiedä niistä mitään suoraan. Näytetään vain
         // aktiivisen yrityksen oman toimialan kohteet.
-        $activeIndustry = $company['industry'] ?? null;
+                $activeIndustry = $company['industry'] ?? null;
+        $activeModules = $company['active_modules'] ?? ($activeIndustry ? [$activeIndustry] : []);
 
         $navItems = collect(config('navigation.items', []))
-            ->filter(fn ($item) => ($item['industry'] ?? null) === $activeIndustry)
+            ->filter(fn ($item) => in_array($item['industry'] ?? null, $activeModules, true))
             ->map(function ($item) {
                 $item['active'] = request()->routeIs($item['active_pattern'] ?? $item['route']);
                 return $item;
