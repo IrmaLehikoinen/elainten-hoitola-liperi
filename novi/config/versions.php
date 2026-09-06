@@ -8,4 +8,5 @@ return [
     'pohja' => '1.0.2',
     'lemmikkihoitola_moduuli' => '1.0.1',
     'kurssit_moduuli' => '1.0.1',
+    'ajanvaraus_moduuli' => '1.0.0',
 ];
