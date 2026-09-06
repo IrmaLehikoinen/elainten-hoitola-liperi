@@ -2,9 +2,15 @@
     <div class="p-6">
         <h1 class="text-xl font-semibold">Kurssit</h1>
 
-        @if (session('status'))
+                @if (session('status'))
             <div class="mt-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
                 {{ session('status') }}
+            </div>
+        @endif
+
+        @if (session('schedule_warning'))
+            <div class="mt-4 rounded-md bg-orange-50 border border-orange-200 px-4 py-3 text-sm text-orange-800">
+                {{ session('schedule_warning') }}
             </div>
         @endif
 

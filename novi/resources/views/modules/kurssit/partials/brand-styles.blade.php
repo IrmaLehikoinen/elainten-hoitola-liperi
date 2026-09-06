@@ -1,7 +1,6 @@
 <style>
     /* ===== Sydänpolku-brändin yhteiset tyylit — käytössä kaikilla julkisilla sivuilla ===== */
     .sp-page {
-        --brand-primary: #7CAB33;
         --sp-rose: var(--brand-accent, #80107A);
         --sp-rose-soft: var(--brand-accent-soft, #C4DD5E);
         --sp-gold: var(--brand-warm, #B49170);

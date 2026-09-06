@@ -19,6 +19,7 @@ class TreatmentAppointment extends Model
         'starts_at',
         'ends_at',
         'status',
+        'warning_sent_at',
         'price',
         'payment_method',
         'payment_choice',
@@ -33,6 +34,7 @@ class TreatmentAppointment extends Model
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+        'warning_sent_at' => 'datetime',
         'paid_at' => 'datetime',
         'payment_deadline' => 'datetime',
         'cancelled_at' => 'datetime',

@@ -36,7 +36,8 @@
         $activeModules = $company['active_modules'] ?? ($activeIndustry ? [$activeIndustry] : []);
 
         $navItems = collect(config('navigation.items', []))
-            ->filter(fn ($item) => in_array($item['industry'] ?? null, $activeModules, true))
+                     ->filter(fn ($item) => in_array($item['industry'] ?? null, $activeModules, true))
+            ->sortBy(fn ($item) => $item['order'] ?? 999)
             ->map(function ($item) {
                 $item['active'] = request()->routeIs($item['active_pattern'] ?? $item['route']);
                 return $item;

@@ -51,10 +51,15 @@
             @error('short_description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
-        <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div>
-                <label class="block text-sm font-medium">Ajankohta</label>
+                <label class="block text-sm font-medium">Alkaa</label>
                 <input type="datetime-local" id="course-starts-at" name="starts_at" value="{{ $old('starts_at', $course->starts_at?->format('Y-m-d\TH:i')) }}" class="mt-1 w-full rounded-md border-gray-300">
+            </div>
+            <div>
+                <label class="block text-sm font-medium">Päättyy</label>
+                <input type="datetime-local" name="ends_at" value="{{ $old('ends_at', $course->ends_at?->format('Y-m-d\TH:i')) }}" class="mt-1 w-full rounded-md border-gray-300">
+                @error('ends_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
             <div>
                 <label class="block text-sm font-medium">Hinta (€)</label>

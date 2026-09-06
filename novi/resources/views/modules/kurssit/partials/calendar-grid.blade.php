@@ -23,10 +23,16 @@
         >
             <span class="text-xs font-medium text-gray-700">{{ $day['date']->day }}</span>
 
-            @foreach ($day['courses'] as $course)
+                        @foreach ($day['courses'] as $course)
                 <div class="mt-1 rounded px-1 py-0.5 text-[9px] sm:text-[10px] leading-tight font-medium text-center"
                     style="background-color: var(--brand-primary); color: #FFFFFF;">
                     {{ $course->name }}
+                </div>
+            @endforeach
+            @foreach ($day['external'] ?? [] as $entry)
+                <div class="mt-1 rounded px-1 py-0.5 text-[9px] sm:text-[10px] leading-tight font-medium text-center break-words"
+                    style="background-color: {{ $entry['color'] }}; color: #FFFFFF;">
+                    {{ $entry['title'] }}
                 </div>
             @endforeach
         </div>

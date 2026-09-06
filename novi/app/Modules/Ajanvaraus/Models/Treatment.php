@@ -10,16 +10,20 @@ class Treatment extends Model
 {
     use BelongsToCompany;
 
-    protected $fillable = [
+         protected $fillable = [
         'company_id',
         'name',
         'short_description',
+        'internal_note',
+        'treatment_category_id',
         'duration_minutes',
         'capacity',
+        'min_participants',
+        'warning_days_before',
         'price',
         'color',
         'is_active',
-    ];
+    ];   
 
     protected $casts = [
         'is_active' => 'boolean',
@@ -36,8 +40,13 @@ class Treatment extends Model
         return $this->hasMany(TreatmentSpecialOpening::class);
     }
 
-    public function appointments(): HasMany
+        public function appointments(): HasMany
     {
         return $this->hasMany(TreatmentAppointment::class);
+    }
+
+    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(TreatmentCategory::class, 'treatment_category_id');
     }
 }

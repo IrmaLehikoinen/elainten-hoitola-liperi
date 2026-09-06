@@ -2,10 +2,13 @@
 
 namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
+use App\Events\CompanyDateClosed;
+use App\Events\CompanyDateReopened;
 use App\Http\Controllers\Controller;
 use App\Models\DateCapacityOverride;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Event;
 
 class CalendarCapacityController extends Controller
 {
@@ -23,8 +26,8 @@ class CalendarCapacityController extends Controller
         $end = isset($validated['end_date']) ? Carbon::parse($validated['end_date']) : $start->copy();
         $species = !empty($validated['species']) ? mb_strtolower(trim($validated['species'])) : null;
 
-                for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-            DateCapacityOverride::updateOrCreate(
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            $override = DateCapacityOverride::updateOrCreate(
                 [
                     'date' => $date->toDateString(),
                     'resource_type' => $species,
@@ -34,6 +37,13 @@ class CalendarCapacityController extends Controller
                     'note' => $validated['note'] ?? null,
                 ]
             );
+
+            // Koko päivän sulku (ei tiettyä eläinlajia, kapasiteetti 0) —
+            // ilmoitetaan muille moduuleille, jotta esim. Ajanvaraus voi
+            // sulkea saman päivän omasta kalenteristaan.
+            if ($species === null && (int) $validated['capacity'] === 0) {
+                Event::dispatch(new CompanyDateClosed($override->company_id, $date->copy(), $validated['note'] ?? null));
+            }
         }
 
         return back()->with('status', 'Kapasiteettimuutos tallennettu.');
@@ -41,7 +51,15 @@ class CalendarCapacityController extends Controller
 
     public function destroy(DateCapacityOverride $override)
     {
+        $wasWholeDayClosure = $override->resource_type === null && (int) $override->capacity === 0;
+        $companyId = $override->company_id;
+        $date = $override->date->copy();
+
         $override->delete();
+
+        if ($wasWholeDayClosure) {
+            Event::dispatch(new CompanyDateReopened($companyId, $date));
+        }
 
         return back()->with('status', 'Kapasiteettimuutos poistettu.');
     }

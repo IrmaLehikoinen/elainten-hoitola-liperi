@@ -18,6 +18,7 @@ class Course extends Model
         'brochure_path',
         'content_blocks',
         'starts_at',
+        'ends_at',
         'price',
         'max_participants',
         'registration_closed_at',
@@ -26,6 +27,7 @@ class Course extends Model
 
     protected $casts = [
         'starts_at' => 'datetime',
+        'ends_at' => 'datetime',
         'price' => 'decimal:2',
         'content_blocks' => 'array',
         'registration_closed_at' => 'datetime',

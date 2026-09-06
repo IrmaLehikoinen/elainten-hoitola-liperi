@@ -67,7 +67,7 @@
                 </div>
 
                 <div class="mt-4">
-                    @include('kurssit::partials.calendar-grid', ['days' => $calendarDays, 'periodStart' => $calendarMonth])
+                 @include('partials.month-calendar', ['days' => $calendarDays, 'dayRoute' => 'ajanvaraus.calendar.day'])  
                 </div>
             </section>
 

@@ -3,11 +3,14 @@
 namespace App\Modules\Kurssit\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Events\CheckRecurringConflict;
+use App\Events\CollectExternalCalendarEntries;
 use App\Modules\Kurssit\Mail\CourseCancelled;
 use App\Modules\Kurssit\Models\Course;
 use App\Modules\Kurssit\Models\CourseReminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -63,25 +66,32 @@ class CourseController extends Controller
         ]);
     }
 
-        private function buildCalendarDays(Carbon $monthStart)
+       private function buildCalendarDays(Carbon $monthStart)
     {
         $start = $monthStart->copy()->startOfMonth();
         $end = $monthStart->copy()->endOfMonth();
 
-        // Haetaan kaikki kurssit joilla on ajankohta ja suodatetaan kuukausi
-        // PHP:ssä (ei whereDate-kyselyllä) — sama tapa jolla "Tämän kuukauden
-        // kurssit" -kortitkin jo lasketaan ylempänä, jotta molemmat näyttävät
-        // aina samat kurssit samalta kuukaudelta.
         $courses = Course::whereNotNull('starts_at')
             ->get()
             ->filter(fn ($course) => $course->starts_at->between($start, $end));
 
+        $event = new CollectExternalCalendarEntries($start, $end->copy()->endOfDay(), 'kurssit');
+        Event::dispatch($event);
+
         $days = [];
 
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            $dayCourses = $courses->filter(fn ($c) => $c->starts_at->isSameDay($date))->values()->map(fn ($course) => [
+                'title' => $course->name,
+                'color' => $course->color ?? app(\App\Core\Branding\BrandManager::class)->get('primary_color'),
+                'filled' => true,
+            ]);
+
+            $external = collect($event->entries)->filter(fn ($e) => $e['date'] === $date->format('Y-m-d'))->values();
+
             $days[] = [
                 'date' => $date->copy(),
-                'courses' => $courses->filter(fn ($c) => $c->starts_at->isSameDay($date))->values(),
+                'entries' => $dayCourses->concat($external),
             ];
         }
 
@@ -114,7 +124,14 @@ class CourseController extends Controller
 
         $this->handleReminder($request, $course);
 
-        return redirect()->route('kurssit.courses.index')->with('status', 'Kurssi tallennettu.');
+        $redirect = redirect()->route('kurssit.courses.index')->with('status', 'Kurssi tallennettu.');
+        $warning = $this->checkScheduleConflict($course);
+
+        if ($warning) {
+            $redirect->with('schedule_warning', $warning);
+        }
+
+        return $redirect;
     }
 
     public function edit(Course $course)
@@ -135,7 +152,14 @@ class CourseController extends Controller
 
         $this->handleReminder($request, $course);
 
-        return redirect()->route('kurssit.courses.index')->with('status', 'Kurssi päivitetty.');
+        $redirect = redirect()->route('kurssit.courses.index')->with('status', 'Kurssi päivitetty.');
+        $warning = $this->checkScheduleConflict($course);
+
+        if ($warning) {
+            $redirect->with('schedule_warning', $warning);
+        }
+
+        return $redirect;
     }
 
         public function destroy(Course $course)
@@ -207,17 +231,40 @@ class CourseController extends Controller
         return back()->with('status', 'Kurssi merkitty peruutetuksi ja osallistujille lähetetty viesti.');
     } 
 
-    private function validated(Request $request): array
+        private function validated(Request $request): array
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'short_description' => ['required', 'string', 'max:500'],
             'presentation_type' => ['required', 'in:none,brochure,blocks'],
             'starts_at' => ['nullable', 'date'],
+            'ends_at' => ['nullable', 'date', 'after:starts_at'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'max_participants' => ['required', 'integer', 'min:0'],
-            'brochure' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+             'brochure' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ]);
+    }
+
+    /**
+     * Kysyy Ajanvaraus-moduulilta (jos sillä yrityksellä on se käytössä)
+     * osuuko tämä kurssin ajankohta jonkin viikoittain toistuvan hoidon
+     * (esim. "joka sunnuntai" jooga) päälle. Ei estä tallennusta, vain
+     * varoittaa — yrittäjä päättää itse miten toimii.
+     */
+    private function checkScheduleConflict(Course $course): ?string
+    {
+        if (! $course->starts_at || ! $course->ends_at) {
+            return null;
+        }
+
+        $event = new CheckRecurringConflict($course->company_id, $course->starts_at->copy(), $course->ends_at->copy());
+        Event::dispatch($event);
+
+        if (empty($event->conflicts)) {
+            return null;
+        }
+
+        return 'Huomio: samaan aikaan on jo varattavissa: '.implode(', ', $event->conflicts).'. Tarkista ettei mene päällekkäin.';
     }
 
     /**

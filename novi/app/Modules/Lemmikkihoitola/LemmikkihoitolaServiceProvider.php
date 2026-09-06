@@ -2,10 +2,12 @@
 
 namespace App\Modules\Lemmikkihoitola;
 
+use App\Events\SchedulingConflictDetected;
 use App\Events\StripeCheckoutCompleted;
 use App\Modules\Lemmikkihoitola\Mail\BookingConfirmed;
 use App\Modules\Lemmikkihoitola\Models\Booking;
 use App\Modules\Lemmikkihoitola\Models\BookingParticipant;
+use App\Modules\Lemmikkihoitola\Models\Reminder;
 use App\Services\AvailabilityService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
@@ -103,12 +105,25 @@ class LemmikkihoitolaServiceProvider extends ServiceProvider
 
             $booking = Booking::find($bookingId);
 
-            if ($booking && $booking->status === 'pending') {
+                        if ($booking && $booking->status === 'pending') {
                 $booking->deposit_paid_at = now();
                 $booking->status = 'confirmed';
                 $booking->save();
                 Mail::to($booking->customer->email)->send(new BookingConfirmed($booking));
             }
+        });
+
+        // Toinen moduuli (esim. Ajanvaraus) ilmoitti ristiriidasta suljetun
+        // päivän ja olemassa olevan varauksen välillä — tehdään siitä
+        // tavallinen muistutus etusivulle, näkyy heti seuraavalla käynnillä.
+        Event::listen(SchedulingConflictDetected::class, function (SchedulingConflictDetected $event) {
+            Reminder::create([
+                'company_id' => $event->companyId,
+                'type' => 'ajanvaraus_konflikti',
+                'title' => $event->title,
+                'description' => $event->description,
+                'due_at' => now(),
+            ]);
         });
     }
 }
