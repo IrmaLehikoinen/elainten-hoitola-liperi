@@ -22,9 +22,12 @@ use App\Modules\Lemmikkihoitola\Http\Controllers\PublicBookingController;
 use App\Modules\Lemmikkihoitola\Http\Controllers\ReminderController;
 use App\Modules\Lemmikkihoitola\Http\Controllers\ReportController;
 use App\Modules\Lemmikkihoitola\Http\Controllers\ServiceSelectionController;
+use App\Modules\Lemmikkihoitola\Http\Controllers\MissukkaController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('web')->group(function () {
+
+    Route::get('/missukka', [MissukkaController::class, 'index'])->name('missukka.index');
 
     Route::prefix('varaa')->name('public.booking.')->middleware('throttle:60,1')->group(function () {
         Route::get('/', [PublicBookingController::class, 'start'])->name('start');
