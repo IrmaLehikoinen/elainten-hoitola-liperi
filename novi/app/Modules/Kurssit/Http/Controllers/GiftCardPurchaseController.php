@@ -11,15 +11,19 @@ use Illuminate\Http\Request;
 
 class GiftCardPurchaseController extends Controller
 {
-    public function card(GiftCard $giftCard)
+        public function card(int $giftCard)
     {
+        $giftCard = GiftCard::withoutGlobalScope('company')->findOrFail($giftCard);
+
         return view('kurssit::public.gift-card-card', [
             'giftCard' => $giftCard,
         ]);
     }
 
-    public function cardPdf(GiftCard $giftCard)
+        public function cardPdf(int $giftCard)
     {
+        $giftCard = GiftCard::withoutGlobalScope('company')->findOrFail($giftCard);
+
         $pdf = Pdf::loadView('kurssit::gift-cards.pdf', [
             'giftCard' => $giftCard,
         ])->setPaper('a5');

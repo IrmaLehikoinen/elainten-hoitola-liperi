@@ -16,6 +16,7 @@ class Treatment extends Model
         'short_description',
         'internal_note',
         'treatment_category_id',
+        'order',
         'duration_minutes',
         'capacity',
         'min_participants',

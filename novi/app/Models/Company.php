@@ -8,7 +8,8 @@ class Company extends Model
 {
     protected $fillable = ['name', 'industry', 'email', 'phone', 'settings', 'slug', 'primary_color', 'secondary_color', 'font_family', 'logo_path', 'active_modules'];
 
-    protected $casts = [
+       protected $casts = [
             'active_modules' => 'array',
+            'settings' => 'array',
     ];
 }

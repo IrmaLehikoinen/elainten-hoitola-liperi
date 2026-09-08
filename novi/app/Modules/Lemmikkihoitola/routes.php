@@ -171,15 +171,9 @@ Route::middleware('web')->group(function () {
         ->middleware(['auth', 'verified'])
         ->name('invoices.print');
 
-    Route::get('/maksu/onnistui', function (\Illuminate\Http\Request $request) {
-        $booking = \App\Modules\Lemmikkihoitola\Models\Booking::find($request->query('booking'));
+        Route::get('/maksu/onnistui', [PublicBookingController::class, 'paymentSuccess']);
 
-        return view('public.booking.success', ['booking' => $booking]);
-    });
-
-    Route::get('/maksu/peruttu', function () {
-        return view('public.booking.cancelled');
-    });
+    Route::get('/maksu/peruttu', [PublicBookingController::class, 'paymentCancelled']);
 
     Route::get('/calendar', [CalendarController::class, 'index'])
         ->middleware(['auth', 'verified'])

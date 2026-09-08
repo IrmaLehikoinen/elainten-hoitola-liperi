@@ -12,7 +12,7 @@ class TreatmentController extends Controller
     public function index()
     {
         return view('ajanvaraus::treatments.index', [
-            'treatments' => Treatment::orderBy('name')->get(),
+                        'treatments' => Treatment::orderBy('order')->orderBy('name')->get(),
             'categories' => TreatmentCategory::orderBy('order')->orderBy('name')->get(),
         ]);
     }
@@ -29,8 +29,9 @@ class TreatmentController extends Controller
     {
         $validated = $this->validated($request);
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['price'] = $validated['price'] ?? 0;
 
-        $treatment = Treatment::create($validated);
+        $treatment = Treatment::create($validated);   
 
         return redirect()->route('ajanvaraus.treatments.edit', $treatment)->with('status', 'Hoito tallennettu.');
     }
@@ -45,19 +46,31 @@ class TreatmentController extends Controller
 
     public function update(Request $request, Treatment $treatment)
     {
-        $validated = $this->validated($request);
+            $validated = $this->validated($request);
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['price'] = $validated['price'] ?? 0;
 
-        $treatment->update($validated);
+        $treatment->update($validated);   
 
         return redirect()->route('ajanvaraus.treatments.edit', $treatment)->with('status', 'Hoito päivitetty.');
     }
 
-    public function destroy(Treatment $treatment)
+        public function destroy(Treatment $treatment)
     {
         $treatment->delete();
 
         return redirect()->route('ajanvaraus.treatments.index')->with('status', 'Hoito poistettu.');
+    }
+
+    public function updateOrganizing(Request $request, Treatment $treatment)
+    {
+            $validated = $request->validate([
+            'order' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $treatment->update($validated);
+
+        return back()->with('status', 'Hoito päivitetty.');
     }
 
     private function validated(Request $request): array

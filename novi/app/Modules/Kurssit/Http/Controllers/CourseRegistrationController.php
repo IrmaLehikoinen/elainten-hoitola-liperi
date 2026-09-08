@@ -33,15 +33,19 @@ $company = Company::where('industry', 'kurssit')->firstOrFail();
         ]);
     }
 
-    public function show(Course $course)
+        public function show(int $course)
     {
+        $course = Course::withoutGlobalScope('company')->findOrFail($course);
+
         return view('kurssit::public.register', [
             'course' => $course,
         ]);
     }
 
-    public function store(Request $request, Course $course, StripeCheckoutService $checkout)
+            public function store(Request $request, int $course, StripeCheckoutService $checkout)
     {
+        $course = Course::withoutGlobalScope('company')->findOrFail($course);
+
                 $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email'],
@@ -75,7 +79,11 @@ $company = Company::where('industry', 'kurssit')->firstOrFail();
         $giftCardAmount = null;
 
         if ($request->filled('gift_card_code')) {
-            $giftCard = GiftCard::findUsable($request->input('gift_card_code'));
+                     $giftCard = GiftCard::withoutGlobalScope('company')
+                ->where('company_id', $course->company_id)
+                ->where('code', strtoupper(trim($request->input('gift_card_code'))))
+                ->first();
+            $giftCard = ($giftCard && $giftCard->isUsable()) ? $giftCard : null;   
 
             if (! $giftCard) {
                 return back()

@@ -23,7 +23,8 @@ Route::middleware(['web', 'auth', 'verified'])->group(function () {
     Route::post('/ajanvaraus/hallinta/hoidot', [TreatmentController::class, 'store'])->name('ajanvaraus.treatments.store');
     Route::get('/ajanvaraus/hallinta/hoidot/{treatment}/muokkaa', [TreatmentController::class, 'edit'])->name('ajanvaraus.treatments.edit');
     Route::patch('/ajanvaraus/hallinta/hoidot/{treatment}', [TreatmentController::class, 'update'])->name('ajanvaraus.treatments.update');
-    Route::delete('/ajanvaraus/hallinta/hoidot/{treatment}', [TreatmentController::class, 'destroy'])->name('ajanvaraus.treatments.destroy');
+        Route::delete('/ajanvaraus/hallinta/hoidot/{treatment}', [TreatmentController::class, 'destroy'])->name('ajanvaraus.treatments.destroy');
+    Route::patch('/ajanvaraus/hallinta/hoidot/{treatment}/jarjestely', [TreatmentController::class, 'updateOrganizing'])->name('ajanvaraus.treatments.update-organizing');
 
     Route::post('/ajanvaraus/hallinta/hoidot/{treatment}/aikataulu', [TreatmentAvailabilityRuleController::class, 'store'])->name('ajanvaraus.rules.store');
     Route::delete('/ajanvaraus/hallinta/aikataulu/{rule}', [TreatmentAvailabilityRuleController::class, 'destroy'])->name('ajanvaraus.rules.destroy');

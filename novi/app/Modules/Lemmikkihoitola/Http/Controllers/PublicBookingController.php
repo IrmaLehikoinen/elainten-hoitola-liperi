@@ -3,22 +3,52 @@
 namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Modules\Lemmikkihoitola\Models\CareType;
 use App\Services\AvailabilityService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
 class PublicBookingController extends Controller
 {
-        public function start()
+    /**
+     * Pakottaa julkisen sivun brändin aina Lemmikkihoitolan omaksi, riippumatta
+     * siitä mikä yritys sattuu olemaan "aktiivinen" jonkun admin-session
+     * ActiveCompanyResolverissa. View::share ylikirjoittaa ShareCompanyBranding-
+     * middlewaren asettaman arvon, ja koska komponentit (esim. x-booking-widget)
+     * lukevat vain jaettua ($__env->shared) dataa eivätkä view()-datana annettua,
+     * tämä on ainoa paikka josta brändi oikeasti kulkeutuu niihin asti.
+     */
+    private function shareLemmikkihoitolaBrand(Company $company): void
     {
-             return view('public.booking.step1', [
-            'careTypes' => CareType::orderBy('sort_order')->get(),
-        ]);   
+        $settings = $company->settings ?? [];
+
+        View::share('brand', array_filter([
+            'name' => $company->name,
+            'primary_color' => $company->primary_color,
+            'secondary_color' => $company->secondary_color,
+            'font_heading' => $settings['font_heading'] ?? null,
+            'accent_color' => $settings['accent_color'] ?? null,
+            'accent_soft_color' => $settings['accent_soft_color'] ?? null,
+            'warm_color' => $settings['warm_color'] ?? null,
+            'warm_light_color' => $settings['warm_light_color'] ?? null,
+            'logo' => $company->logo_path,
+        ]));
+    }
+
+    public function start()
+    {
+        $company = Company::where('industry', 'lemmikkihoitola')->firstOrFail();
+        $this->shareLemmikkihoitolaBrand($company);
+
+        return view('public.booking.step1', [
+            'careTypes' => CareType::withoutGlobalScope('company')->where('company_id', $company->id)->orderBy('sort_order')->get(),
+        ]);
     }
 
     private function enabledBookingFields(): array
     {
-            $company = \App\Models\Company::where('industry', 'lemmikkihoitola')->firstOrFail();
+        $company = Company::where('industry', 'lemmikkihoitola')->firstOrFail();
         $settings = $company->settings ?? [];
 
         return $settings['public_booking_fields'] ?? array_keys(config('public_booking_fields'));
@@ -44,7 +74,7 @@ class PublicBookingController extends Controller
             'public_booking.duration_days' => $durationDays,
         ]);
 
-            $requirements = collect($validated['animals'])
+        $requirements = collect($validated['animals'])
             ->groupBy(fn ($a) => mb_strtolower(trim($a['species'])))
             ->map(fn ($group, $species) => ['resource_type' => $species, 'count' => $group->count()])
             ->values()
@@ -52,12 +82,14 @@ class PublicBookingController extends Controller
 
         $dates = $availability->findStartDates($requirements, $durationDays);
 
-                return view('public.booking.step2', [
+        $this->shareLemmikkihoitolaBrand(Company::where('industry', 'lemmikkihoitola')->firstOrFail());
+
+        return view('public.booking.step2', [
             'dates' => $dates,
         ]);
     }
 
-            public function hold(Request $request, \App\Services\AvailabilityService $availability)
+    public function hold(Request $request, AvailabilityService $availability)
     {
         $validated = $request->validate([
             'start_date' => ['required', 'date'],
@@ -70,13 +102,13 @@ class PublicBookingController extends Controller
             return redirect()->route('public.booking.start');
         }
 
-            $requirements = collect($animals)
+        $requirements = collect($animals)
             ->groupBy(fn ($a) => mb_strtolower(trim($a['species'])))
             ->map(fn ($group, $species) => ['resource_type' => $species, 'count' => $group->count()])
             ->values()
             ->all();
 
-            if (!$availability->isAvailable($requirements, $validated['start_date'], $durationDays)) {
+        if (!$availability->isAvailable($requirements, $validated['start_date'], $durationDays)) {
             return redirect()->route('public.booking.start')
                 ->with('booking_error', 'Valitettavasti tälle päivälle ei ole enää vapaita aikoja. Valitse kalenterista toinen vapaa ajankohta.');
         }
@@ -88,11 +120,11 @@ class PublicBookingController extends Controller
         $grouped = collect($animals)->groupBy(fn ($a) => mb_strtolower(trim($a['species'])));
         $holdIds = [];
 
-                    $companyId = \App\Models\Company::where('industry', 'lemmikkihoitola')->firstOrFail()->id;    
+        $company = Company::where('industry', 'lemmikkihoitola')->firstOrFail();
 
-                foreach ($grouped as $species => $group) {
-                $hold = \App\Models\BookingHold::create([
-                'company_id' => $companyId,
+        foreach ($grouped as $species => $group) {
+            $hold = \App\Models\BookingHold::create([
+                'company_id' => $company->id,
                 'resource_type' => $species,
                 'quantity' => $group->count(),
                 'start_date' => $startDate,
@@ -110,7 +142,9 @@ class PublicBookingController extends Controller
             'public_booking.hold_expires_at' => $expiresAt->toIso8601String(),
         ]);
 
-                return view('public.booking.step3', [
+        $this->shareLemmikkihoitolaBrand($company);
+
+        return view('public.booking.step3', [
             'startDate' => $startDate,
             'endDate' => $endDate,
             'expiresAt' => $expiresAt,
@@ -129,9 +163,15 @@ class PublicBookingController extends Controller
 
         session(['public_booking.email' => $validated['email']]);
 
-        $customer = \App\Modules\Lemmikkihoitola\Models\Customer::where('email', $validated['email'])->first();
+        $company = Company::where('industry', 'lemmikkihoitola')->firstOrFail();
+        $this->shareLemmikkihoitolaBrand($company);
 
-                $enabledFields = $this->enabledBookingFields();
+        $customer = \App\Modules\Lemmikkihoitola\Models\Customer::withoutGlobalScope('company')
+            ->where('email', $validated['email'])
+            ->where('company_id', $company->id)
+            ->first();
+
+        $enabledFields = $this->enabledBookingFields();
 
         if (!$customer) {
             return view('public.booking.step4', [
@@ -149,7 +189,7 @@ class PublicBookingController extends Controller
         );
 
         \Illuminate\Support\Facades\Mail::to($customer->email)->send(
-                    new \App\Modules\Lemmikkihoitola\Mail\BookingMagicLink($customer, $signedUrl)
+            new \App\Modules\Lemmikkihoitola\Mail\BookingMagicLink($customer, $signedUrl)
         );
 
         return view('public.booking.step3', [
@@ -166,14 +206,33 @@ class PublicBookingController extends Controller
             return redirect()->route('public.booking.start');
         }
 
-            session(['public_booking.customer_id' => $customer->id]);
+        session(['public_booking.customer_id' => $customer->id]);
 
-            return view('public.booking.step4', [
+        $this->shareLemmikkihoitolaBrand(Company::where('industry', 'lemmikkihoitola')->firstOrFail());
+
+                return view('public.booking.step4', [
             'customer' => $customer->load('pets'),
             'animals' => session('public_booking.animals'),
             'email' => $customer->email,
             'enabledFields' => $this->enabledBookingFields(),
         ]);
+    }
+
+    public function paymentSuccess(Request $request)
+    {
+        $this->shareLemmikkihoitolaBrand(Company::where('industry', 'lemmikkihoitola')->firstOrFail());
+
+        $booking = \App\Modules\Lemmikkihoitola\Models\Booking::withoutGlobalScope('company')
+            ->find($request->query('booking'));
+
+        return view('public.booking.success', ['booking' => $booking]);
+    }
+
+    public function paymentCancelled()
+    {
+        $this->shareLemmikkihoitolaBrand(Company::where('industry', 'lemmikkihoitola')->firstOrFail());
+
+        return view('public.booking.cancelled');
     }
 
     public function store(Request $request)
@@ -206,42 +265,43 @@ class PublicBookingController extends Controller
         ]);
 
         $email = session('public_booking.email');
-                $company = \App\Models\Company::where('industry', 'lemmikkihoitola')->firstOrFail();
+        $company = Company::where('industry', 'lemmikkihoitola')->firstOrFail();
 
-        $customerId = session('public_booking.customer_id');
+            $customerId = session('public_booking.customer_id');
         if ($customerId) {
-            $customer = \App\Modules\Lemmikkihoitola\Models\Customer::findOrFail($customerId);
+            $customer = \App\Modules\Lemmikkihoitola\Models\Customer::withoutGlobalScope('company')->findOrFail($customerId);
             $customer->update([
                 'name' => $validated['customer_name'],
                 'phone' => $validated['customer_phone'],
             ]);
         } else {
-            $customer = \App\Modules\Lemmikkihoitola\Models\Customer::create([
-                'company_id' => $company->id,
-                'name' => $validated['customer_name'],
-                'phone' => $validated['customer_phone'],
-                'email' => $email,
-            ]);
-        }
+            $customer = \App\Modules\Lemmikkihoitola\Models\Customer::withoutGlobalScope('company')->updateOrCreate(
+                ['company_id' => $company->id, 'email' => $email],
+                [
+                    'name' => $validated['customer_name'],
+                    'phone' => $validated['customer_phone'],
+                ]
+            );
+        }  
 
         $startDate = session('public_booking.start_date');
         $endDate = session('public_booking.end_date');
         $careType = session('public_booking.care_type');
         $durationDays = session('public_booking.duration_days');
 
-                // Vapautetaan oma hold ennen uudelleentarkistusta, jotta se ei laske
+        // Vapautetaan oma hold ennen uudelleentarkistusta, jotta se ei laske
         // itseään kahteen kertaan kapasiteetissa.
         \App\Models\BookingHold::whereIn('id', session('public_booking.hold_ids', []))->delete();
 
-            $requirements = collect(session('public_booking.animals'))
+        $requirements = collect(session('public_booking.animals'))
             ->groupBy(fn ($a) => mb_strtolower(trim($a['species'])))
             ->map(fn ($group, $species) => ['resource_type' => $species, 'count' => $group->count()])
             ->values()
             ->all();
 
-        $availability = app(\App\Services\AvailabilityService::class);
+        $availability = app(AvailabilityService::class);
 
-            if (!$availability->isAvailable($requirements, $startDate, $durationDays)) {
+        if (!$availability->isAvailable($requirements, $startDate, $durationDays)) {
             return redirect()->route('public.booking.start')
                 ->with('booking_error', 'Valitettavasti tälle päivälle ei ole enää vapaita aikoja. Valitse kalenterista toinen vapaa ajankohta.');
         }
@@ -272,7 +332,7 @@ class PublicBookingController extends Controller
             'confirmation_channel' => 'online',
             'total_price' => $totalPrice,
             'deposit_amount' => $depositAmount,
-                     'payment_deadline' => $requiresPayment ? now()->addMinutes(30) : null,   
+            'payment_deadline' => $requiresPayment ? now()->addMinutes(30) : null,
         ]);
 
         foreach ($validated['pets'] as $petData) {
@@ -294,7 +354,7 @@ class PublicBookingController extends Controller
                 'general_notes' => $petData['general_notes'] ?? null,
             ];
 
-                $pet = !empty($petData['pet_id'])
+            $pet = !empty($petData['pet_id'])
                 ? \App\Modules\Lemmikkihoitola\Models\Pet::where('customer_id', $customer->id)->find($petData['pet_id'])
                 : null;
 
@@ -303,7 +363,8 @@ class PublicBookingController extends Controller
             } else {
                 $pet = $customer->pets()->create($petFields);
             }
-                        $booking->participants()->create([
+
+            $booking->participants()->create([
                 'pet_id' => $pet->id,
                 'name' => $pet->name,
                 'resource_type' => $pet->species,
@@ -314,7 +375,7 @@ class PublicBookingController extends Controller
             ]);
         }
 
-                session()->forget('public_booking');
+        session()->forget('public_booking');
 
         if ($requiresPayment) {
             return redirect()->route('payment.checkout', $booking);

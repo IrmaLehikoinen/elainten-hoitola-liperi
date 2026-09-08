@@ -34,6 +34,8 @@ class CompanySettingsController extends Controller
             'vat_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
             'primary_color' => ['nullable', 'string', 'max:20'],
             'secondary_color' => ['nullable', 'string', 'max:20'],
+            'facebook_url' => ['nullable', 'url', 'max:255'],
+            'instagram_url' => ['nullable', 'url', 'max:255'],
             'accent_color' => ['nullable', 'string', 'max:20'],
             'accent_soft_color' => ['nullable', 'string', 'max:20'],
             'warm_color' => ['nullable', 'string', 'max:20'],
@@ -54,6 +56,8 @@ class CompanySettingsController extends Controller
         $settings['address'] = $validated['address'] ?? null;
         $settings['iban'] = $validated['iban'] ?? null;
         $settings['payment_term_days'] = $validated['payment_term_days'];
+        $settings['facebook_url'] = $validated['facebook_url'] ?? null;
+        $settings['instagram_url'] = $validated['instagram_url'] ?? null;
         $settings['accent_color'] = $validated['accent_color'] ?? null;
         $settings['accent_soft_color'] = $validated['accent_soft_color'] ?? null;
         $settings['warm_color'] = $validated['warm_color'] ?? null;

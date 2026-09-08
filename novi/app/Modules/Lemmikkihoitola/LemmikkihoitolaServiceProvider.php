@@ -32,9 +32,11 @@ class LemmikkihoitolaServiceProvider extends ServiceProvider
      * -kyselyyn. Pohja ei tiedä mitään Bookingista tai BookingParticipantista
      * — se saa vain tämän yhden funktion, joka palauttaa luvun.
      */
-    public function register(): void
+        public function register(): void
     {
         $this->app->bind(AvailabilityService::class, function () {
+            $companyId = \App\Models\Company::where('industry', 'lemmikkihoitola')->value('id');
+
             return new AvailabilityService(function (string $resourceType, Carbon $date): int {
                 return BookingParticipant::query()
                     ->whereRaw('LOWER(resource_type) = ?', [$resourceType])
@@ -44,7 +46,7 @@ class LemmikkihoitolaServiceProvider extends ServiceProvider
                     ->whereDate('start_date', '<=', $date)
                     ->whereDate('end_date', '>=', $date)
                     ->count();
-            });
+            }, $companyId);
         });
     }
 

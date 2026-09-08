@@ -16,6 +16,7 @@
         .ajanvaraus-public {
             --brand-primary: {{ $brand['primary_color'] ?? '#3F4F3A' }};
             --brand-secondary: {{ $brand['secondary_color'] ?? '#D8C6BD' }};
+            --brand-accent: {{ $brand['accent_color'] ?? '#80107A' }};
             --brand-accent-soft: {{ $brand['accent_soft_color'] ?? '#D8C6BD' }};
             --brand-warm: {{ $brand['warm_color'] ?? '#D8C6BD' }};
             --brand-warm-light: {{ $brand['warm_light_color'] ?? '#D8C6BD' }};

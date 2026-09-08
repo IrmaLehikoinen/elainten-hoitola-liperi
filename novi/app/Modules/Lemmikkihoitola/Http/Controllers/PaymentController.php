@@ -15,8 +15,12 @@ use App\Services\StripeCheckoutService;
  */
 class PaymentController extends Controller
 {
-    public function checkout(Booking $booking, StripeCheckoutService $checkout)
+        public function checkout(int $booking, StripeCheckoutService $checkout)
     {
+        $booking = Booking::withoutGlobalScope('company')
+            ->with(['customer' => fn ($query) => $query->withoutGlobalScope('company')])
+            ->findOrFail($booking);
+
         if ($booking->status !== 'pending' || $booking->deposit_paid_at) {
             abort(404);
         }

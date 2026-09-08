@@ -19,29 +19,194 @@
             font-family: var(--brand-body-font);
         }
         .slot-btn:hover { border-color: var(--brand-primary); }
-        .day-nav { display: flex; justify-content: space-between; align-items: center; margin: 16px 0; font-size: 14px; }
-        .day-nav a { text-decoration: none; color: var(--brand-primary); font-weight: 600; }
         .error { color: #b3261e; font-size: 13px; }
         .hint { font-size: 13px; color: #b3261e; }
+        .cal-nav-btn { border: 1px solid var(--brand-secondary); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; background: #fff; color: var(--brand-text); }
+        .cal-day-label { font-size: 11px; font-weight: 600; opacity: 0.5; text-align: center; color: var(--brand-text); }
+        .upcoming-item {
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+            padding: 12px 14px; border: 1px solid var(--brand-secondary); border-radius: var(--brand-radius);
+            background: #fff; cursor: pointer; font-family: var(--brand-body-font); font-size: 14px; color: var(--brand-text);
+            margin-bottom: 8px;
+        }
+                .upcoming-item:hover { border-color: var(--brand-primary); }
+        .upcoming-item strong { font-weight: 700; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px; background: none; border: none; padding: 0;
+            cursor: pointer; font-family: var(--brand-body-font); font-size: 14px; color: var(--brand-primary);
+            font-weight: 600; margin-bottom: 8px;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        /* ===== HOIDON VALINTA (custom listbox) ===== */
+        .th-select-wrap { position: relative; margin-top: 4px; }
+        .th-select-trigger {
+            width: 100%; max-width: 760px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            min-height: 56px; padding: 14px 18px; background: #FCFBF8; border: 1px solid var(--brand-secondary);
+            border-radius: 15px; font-family: var(--brand-body-font); font-size: 16px; color: var(--brand-text);
+            cursor: pointer; text-align: left; box-sizing: border-box;
+        }
+        .th-select-trigger:focus-visible, .th-select-trigger.is-open {
+            outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 2px rgba(124,171,51,0.18);
+        }
+        .th-select-trigger-name { display: block; font-weight: 600; line-height: 1.35; }
+        .th-select-trigger-meta { display: block; font-size: 13px; opacity: 0.65; margin-top: 2px; }
+        .th-select-trigger-placeholder { opacity: 0.55; }
+        .th-select-chevron { flex-shrink: 0; transition: transform .15s ease; opacity: 0.6; }
+        .th-select-trigger.is-open .th-select-chevron { transform: rotate(180deg); }
+        .th-select-panel {
+            position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; right: 0; max-width: 760px;
+            background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(42,52,40,0.14);
+            max-height: 460px; overflow-y: auto; padding: 10px; box-sizing: border-box;
+        }
+        .th-select-group { padding: 6px 6px 12px; }
+        .th-select-group + .th-select-group { border-top: 1px solid var(--brand-secondary); margin-top: 6px; padding-top: 10px; }
+                .th-select-group-label { 
+            font-family: var(--brand-heading-font); font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+                        text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1.5px;
+        }
+        .th-select-group:first-child .th-select-group-label { padding-top: 6px; }
+        .th-select-option {
+            padding: 12px 8px; border-radius: 11px; cursor: pointer; min-height: 50px;
+            box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 2px;
+        }
+        .th-select-option.is-active { background: #E2EAD2; }
+        .th-select-option.is-selected { background: #DCEAC4; border: 1px solid var(--brand-primary); }
+        .th-select-option-name { font-size: 15px; font-weight: 600; color: var(--brand-text); line-height: 1.35; }
+        .th-select-option-meta { font-size: 13.5px; color: var(--brand-text); opacity: 0.65; }
+        @media (max-width: 640px) {
+            .th-select-panel { max-height: 60vh; }
+        }
     </style>
 
+        <button type="button" class="back-link" onclick="history.back()">← Takaisin palveluihin</button>
     <h1>Varaa aika</h1>
 
-    <form method="GET" action="{{ route('ajanvaraus.public.book') }}">
+    <form method="GET" action="{{ route('ajanvaraus.public.book') }}" id="treatmentPickerForm">
                 <label>Valitse hoito</label>
-        <select name="treatment_id" onchange="this.form.submit()">
-            <option value="">— valitse —</option>
-            @php $grouped = $treatments->groupBy(fn ($t) => $t->category->name ?? 'Muut'); @endphp
-            @foreach ($grouped as $categoryName => $group)
-                <optgroup label="{{ $categoryName }}">
-                    @foreach ($group as $t)
-                        <option value="{{ $t->id }}" @selected($treatment && $treatment->id === $t->id)>
-                            {{ $t->name }} · {{ $t->duration_minutes }} min · {{ $t->price > 0 ? number_format($t->price, 2, ',', ' ').' €' : 'maksuton' }}
-                        </option>
-                    @endforeach
-                </optgroup>
-            @endforeach
-        </select>
+        @php
+            $grouped = $treatments->groupBy(fn ($t) => $t->category->name ?? 'Muut');
+            $treatmentGroups = $grouped->map(fn ($group, $categoryName) => [
+                'name' => $categoryName,
+                'items' => $group->map(fn ($t) => [
+                    'id' => $t->id,
+                    'name' => $t->name,
+                    'meta' => $t->duration_minutes.' min · '.($t->price > 0 ? number_format($t->price, 2, ',', ' ').' €' : 'maksuton'),
+                ])->values(),
+            ])->values();
+        @endphp
+        <div
+            class="th-select-wrap"
+            x-data="{
+                open: false,
+                groups: {{ \Illuminate\Support\Js::from($treatmentGroups) }},
+                flat: [],
+                activeId: null,
+                selectedId: {{ $treatment ? $treatment->id : 'null' }},
+                init() {
+                    this.flat = this.groups.flatMap(g => g.items);
+                    this.activeId = this.selectedId ?? (this.flat[0] ? this.flat[0].id : null);
+                },
+                get selected() { return this.flat.find(t => t.id === this.selectedId) || null; },
+                openPanel() {
+                    this.open = true;
+                    this.activeId = this.selectedId ?? (this.flat[0] ? this.flat[0].id : null);
+                    this.$nextTick(() => this.$refs.panel && this.$refs.panel.focus());
+                },
+                closePanel(focusTrigger = true) {
+                    this.open = false;
+                    if (focusTrigger) this.$nextTick(() => this.$refs.trigger && this.$refs.trigger.focus());
+                },
+                toggle() { this.open ? this.closePanel() : this.openPanel(); },
+                moveActive(delta) {
+                    const idx = this.flat.findIndex(t => t.id === this.activeId);
+                    const next = Math.min(Math.max(idx + delta, 0), this.flat.length - 1);
+                    if (this.flat[next]) {
+                        this.activeId = this.flat[next].id;
+                        this.$nextTick(() => {
+                            var el = document.getElementById('th-opt-' + this.activeId);
+                            if (el) el.scrollIntoView({ block: 'nearest' });
+                        });
+                    }
+                },
+                selectActive() { if (this.activeId != null) this.selectId(this.activeId); },
+                selectId(id) {
+                    this.selectedId = id;
+                    document.getElementById('treatmentIdInput').value = id;
+                    this.closePanel(false);
+                    document.getElementById('treatmentPickerForm').submit();
+                }
+            }"
+            @click.outside="closePanel(false)"
+        >
+            <button
+                type="button"
+                class="th-select-trigger"
+                :class="{ 'is-open': open }"
+                x-ref="trigger"
+                role="combobox"
+                aria-haspopup="listbox"
+                :aria-expanded="open ? 'true' : 'false'"
+                aria-controls="treatmentListbox"
+                @click="toggle()"
+                @keydown.down.prevent="openPanel()"
+                @keydown.up.prevent="openPanel()"
+                @keydown.escape="closePanel(false)"
+            >
+                <span>
+                    <template x-if="selected">
+                        <span>
+                            <span class="th-select-trigger-name" x-text="selected.name"></span>
+                            <span class="th-select-trigger-meta" x-text="selected.meta"></span>
+                        </span>
+                    </template>
+                    <template x-if="!selected">
+                        <span class="th-select-trigger-placeholder">Valitse palvelu</span>
+                    </template>
+                </span>
+                <svg class="th-select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+
+            <div
+                x-show="open"
+                x-cloak
+                x-ref="panel"
+                id="treatmentListbox"
+                class="th-select-panel"
+                role="listbox"
+                tabindex="-1"
+                :aria-activedescendant="activeId ? ('th-opt-' + activeId) : null"
+                @keydown.down.prevent="moveActive(1)"
+                @keydown.up.prevent="moveActive(-1)"
+                @keydown.home.prevent="moveActive(-9999)"
+                @keydown.end.prevent="moveActive(9999)"
+                @keydown.enter.prevent="selectActive()"
+                @keydown.space.prevent="selectActive()"
+                @keydown.escape.prevent="closePanel()"
+                @keydown.tab="closePanel(false)"
+            >
+                    <template x-for="group in groups" :key="group.name">    
+                    <div class="th-select-group" :class="{ 'th-group-alt': gi % 2 === 1 }">
+                        <div class="th-select-group-label" x-text="group.name"></div>    
+                        <template x-for="t in group.items" :key="t.id">
+                            <div
+                                :id="'th-opt-' + t.id"
+                                class="th-select-option"
+                                :class="{ 'is-active': activeId === t.id, 'is-selected': selectedId === t.id }"
+                                role="option"
+                                :aria-selected="selectedId === t.id ? 'true' : 'false'"
+                                @click="selectId(t.id)"
+                                @mouseenter="activeId = t.id"
+                            >
+                                <span class="th-select-option-name" x-text="t.name"></span>
+                                <span class="th-select-option-meta" x-text="t.meta"></span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+        <input type="hidden" name="treatment_id" id="treatmentIdInput" value="{{ $treatment->id ?? '' }}">
 
         <label>Nimi</label>
         <input type="text" name="name" id="pickerName" value="{{ $name }}">
@@ -63,38 +228,136 @@
         <h2>{{ $treatment->name }}</h2>
         <p>{{ $treatment->short_description }}</p>
 
-        @php
-            $baseQuery = ['treatment_id' => $treatment->id, 'name' => $name, 'email' => $email, 'phone' => $phone];
-        @endphp
+        @if (! $name || ! $email)
+            <p class="hint">Täytä ensin nimi ja sähköposti yllä, jotta voit varata ajan.</p>
+        @endif
 
-        <div class="day-nav">
-            <a href="{{ route('ajanvaraus.public.book', $baseQuery + ['date' => $date->copy()->subDay()->format('Y-m-d')]) }}">← Edellinen päivä</a>
-            <strong>{{ $date->translatedFormat('l j.n.Y') }}</strong>
-            <a href="{{ route('ajanvaraus.public.book', $baseQuery + ['date' => $date->copy()->addDay()->format('Y-m-d')]) }}">Seuraava →</a>
-        </div>
+        <form method="POST" action="{{ route('ajanvaraus.public.store') }}" id="bookForm">
+            @csrf
+            <input type="hidden" name="treatment_id" value="{{ $treatment->id }}">
+            <input type="hidden" name="name" value="{{ $name }}">
+            <input type="hidden" name="email" value="{{ $email }}">
+            <input type="hidden" name="phone" value="{{ $phone }}">
+            <input type="hidden" name="starts_at" id="startsAtInput" value="">
+        </form>
 
-        @if (empty($slots))
-            <p>Ei vapaita aikoja tälle päivälle. Kokeile toista päivää.</p>
+        @if (empty($dateSlots))
+            <p>Ei vapaita aikoja lähiaikoina. Ota yhteyttä suoraan hoitolaan.</p>
         @else
-            @if (! $name || ! $email)
-                <p class="hint">Täytä ensin nimi ja sähköposti yllä, jotta voit varata ajan.</p>
-            @endif
+            <div
+                x-data="{
+                    dateSlots: {{ \Illuminate\Support\Js::from($dateSlots) }},
+                    current: (() => {
+                        const keys = Object.keys({{ \Illuminate\Support\Js::from($dateSlots) }});
+                        const first = keys[0];
+                        const d = first ? new Date(first + 'T00:00:00') : new Date();
+                        return new Date(d.getFullYear(), d.getMonth(), 1);
+                    })(),
+                    openDate: null,
+                    get available() { return Object.keys(this.dateSlots); },
+                    get monthLabel() {
+                        return this.current.toLocaleDateString('fi-FI', { month: 'long', year: 'numeric' });
+                    },
+                    get weeks() {
+                        const year = this.current.getFullYear();
+                        const month = this.current.getMonth();
+                        const firstDay = new Date(year, month, 1);
+                        const startOffset = (firstDay.getDay() + 6) % 7;
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const cells = [];
+                        for (let i = 0; i < startOffset; i++) cells.push(null);
+                        for (let d = 1; d <= daysInMonth; d++) {
+                            const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                            cells.push({ day: d, iso, isAvailable: this.available.includes(iso) });
+                        }
+                        while (cells.length % 7 !== 0) cells.push(null);
+                        const weeks = [];
+                        for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+                        return weeks;
+                    },
+                    prevMonth() { this.current = new Date(this.current.getFullYear(), this.current.getMonth() - 1, 1); },
+                    nextMonth() { this.current = new Date(this.current.getFullYear(), this.current.getMonth() + 1, 1); },
+                    openDay(iso) {
+                        if (!this.available.includes(iso)) return;
+                        this.openDate = iso;
+                    },
+                    closeCard() { this.openDate = null; },
+                    dateLabel(iso) {
+                        return new Date(iso + 'T00:00:00').toLocaleDateString('fi-FI', { weekday: 'long', day: 'numeric', month: 'numeric' });
+                    },
+                    pick(iso) {
+                        document.getElementById('startsAtInput').value = iso;
+                        document.getElementById('bookForm').requestSubmit();
+                    }
+                }"
+                style="position: relative; margin-top: 20px;"
+            >
+                <div style="padding: 20px; border: 1.5px solid var(--brand-secondary); border-radius: var(--brand-radius);">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                        <button type="button" @click="prevMonth" class="cal-nav-btn">‹</button>
+                        <span style="font-family: var(--brand-heading-font); font-weight:700; font-size:15px; color: var(--brand-text); text-transform:capitalize;" x-text="monthLabel"></span>
+                        <button type="button" @click="nextMonth" class="cal-nav-btn">›</button>
+                    </div>
 
-            <form method="POST" action="{{ route('ajanvaraus.public.store') }}" id="bookForm">
-                @csrf
-                <input type="hidden" name="treatment_id" value="{{ $treatment->id }}">
-                <input type="hidden" name="name" value="{{ $name }}">
-                <input type="hidden" name="email" value="{{ $email }}">
-                <input type="hidden" name="phone" value="{{ $phone }}">
+                    <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:8px;">
+                        <span class="cal-day-label">Ma</span><span class="cal-day-label">Ti</span><span class="cal-day-label">Ke</span>
+                        <span class="cal-day-label">To</span><span class="cal-day-label">Pe</span><span class="cal-day-label">La</span><span class="cal-day-label">Su</span>
+                    </div>
 
-                <div class="slot-grid">
-                    @foreach ($slots as $slot)
-                        <button type="submit" name="starts_at" value="{{ $slot['start']->toDateTimeString() }}" class="slot-btn">
-                            {{ $slot['start']->format('H:i') }}
+                    <template x-for="(week, wi) in weeks" :key="wi">
+                        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px;">
+                            <template x-for="(cell, ci) in week" :key="ci">
+                                <div>
+                                    <template x-if="cell">
+                                        <button
+                                            type="button"
+                                            @click="openDay(cell.iso)"
+                                            :disabled="!cell.isAvailable"
+                                            :style="cell.iso === openDate
+                                                ? 'width:100%; aspect-ratio:1; border-radius:8px; border:1.5px solid var(--brand-primary); background:var(--brand-primary); color:#fff; font-weight:700; font-size:13px; cursor:pointer;'
+                                                : (cell.isAvailable
+                                                    ? 'width:100%; aspect-ratio:1; border-radius:8px; border:1.5px solid var(--brand-primary); background:#fff; color:var(--brand-text); font-weight:600; font-size:13px; cursor:pointer;'
+                                                    : 'width:100%; aspect-ratio:1; border-radius:8px; border:1px solid var(--brand-secondary); background:#FAF8F5; color:#C7C0B8; font-size:13px; cursor:not-allowed;')"
+                                            x-text="cell.day"
+                                        ></button>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                                <div
+                    x-show="openDate"
+                    @click.self="closeCard()"
+                    style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.35); z-index:50;"
+                    x-cloak
+                >
+                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border-radius: var(--brand-radius); padding:28px; max-width:360px; width:calc(100% - 40px); max-height:80vh; overflow-y:auto;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                            <strong x-text="openDate ? dateLabel(openDate) : ''" style="font-family: var(--brand-heading-font); color: var(--brand-text); text-transform:capitalize;"></strong>
+                            <button type="button" @click="closeCard()" style="border:none;background:none;font-size:22px;cursor:pointer;color:var(--brand-text); line-height:1;">×</button>
+                        </div>
+                        <div class="slot-grid">
+                            <template x-for="slot in (dateSlots[openDate] || [])" :key="slot.iso">
+                                <button type="button" class="slot-btn" @click="pick(slot.iso)" x-text="slot.label"></button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (! empty($upcomingSlots))
+                <h2>Seuraavat vapaat ajat</h2>
+                <div>
+                    @foreach ($upcomingSlots as $slot)
+                        <button type="button" class="upcoming-item" onclick="document.getElementById('startsAtInput').value='{{ $slot['iso'] }}'; document.getElementById('bookForm').requestSubmit();">
+                            <span>{{ $slot['dateLabel'] }}</span>
+                            <strong>{{ $slot['label'] }}</strong>
                         </button>
                     @endforeach
                 </div>
-            </form>
+            @endif
         @endif
     @endif
 

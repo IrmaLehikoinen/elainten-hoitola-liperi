@@ -29,8 +29,10 @@ class AvailabilityService
      *        Palauttaa vahvistettujen (ei peruttujen) varausten määrän
      *        annetulle resurssityypille annettuna päivänä.
      */
-    public function __construct(protected \Closure $confirmedUsageCounter)
-    {
+        public function __construct(
+        protected \Closure $confirmedUsageCounter,
+        protected ?int $companyId = null,
+    ) {
     }
 
     /**
@@ -84,9 +86,15 @@ class AvailabilityService
      * Kokonaiskapasiteetti resurssityypeittäin, avaimet pienillä kirjaimilla.
      * Tämä on se yksi paikka (resources-taulu) mistä kapasiteetti luetaan.
      */
-    protected function resourceTypeCapacities(): array
+        protected function resourceTypeCapacities(): array
     {
-        return Resource::query()
+        $query = Resource::query()->withoutGlobalScope('company');
+
+        if ($this->companyId) {
+            $query->where('company_id', $this->companyId);
+        }
+
+        return $query
             ->get(['type', 'capacity'])
             ->groupBy(fn ($resource) => mb_strtolower(trim($resource->type)))
             ->map(fn ($group) => (int) $group->sum('capacity'))
@@ -139,7 +147,13 @@ class AvailabilityService
 
                 $booked = ($this->confirmedUsageCounter)($resourceType, $date);
 
-                $held = (int) BookingHold::query()
+                $heldQuery = BookingHold::query()->withoutGlobalScope('company');
+
+                if ($this->companyId) {
+                    $heldQuery->where('company_id', $this->companyId);
+                }
+
+                $held = (int) $heldQuery
                     ->whereRaw('LOWER(resource_type) = ?', [$resourceType])
                     ->where('expires_at', '>', now())
                     ->whereDate('start_date', '<=', $date)

@@ -472,13 +472,35 @@
                         >
                     </div>
 
-                    <div>
+                                            <div>
                         <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Osoite</label>
                         <input
                             type="text"
                             name="address"
                             value="{{ $company->settings['address'] ?? '' }}"
                             placeholder="Esim. Kelotie 5, 83100 Liperi"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Facebook-osoite</label>
+                        <input
+                            type="url"
+                            name="facebook_url"
+                            value="{{ $company->settings['facebook_url'] ?? '' }}"
+                            placeholder="https://facebook.com/yrityksesi"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Instagram-osoite</label>
+                        <input
+                            type="url"
+                            name="instagram_url"
+                            value="{{ $company->settings['instagram_url'] ?? '' }}"
+                            placeholder="https://instagram.com/yrityksesi"
                             class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
                         >
                     </div>
@@ -506,7 +528,7 @@
                         >
                     </div>
 
-             <div>
+                                 <div>
                         <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">ALV-prosentti</label>
                         <input
                             type="number"
@@ -517,6 +539,17 @@
                             value="{{ $company->settings['vat_percentage'] ?? 25.5 }}"
                             class="mt-1 w-32 rounded-md border-gray-300 shadow-sm"
                         >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Hoitosopimus (teksti)</label>
+                        <textarea
+                            name="care_contract_text"
+                            rows="8"
+                            placeholder="Liitä tähän hoitosopimuksen teksti. Näytetään asiakkaalle varauksen yhteydessä."
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
+                        >{{ $company->settings['care_contract_text'] ?? '' }}</textarea>
+                        <p class="mt-1 text-xs text-gray-400">Tätä tekstiä käytetään jatkossa varaussivun hoitosopimuksessa.</p>
                     </div>
 
                     <div class="flex gap-6">

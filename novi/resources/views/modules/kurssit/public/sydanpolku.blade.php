@@ -174,6 +174,14 @@
             gap: 12px;
         }
         .sp-section-heading h2 .sp-inline-icon { opacity: 0.5; }
+                .sp-section-pretitle {
+            font-family: var(--brand-heading-font);
+            font-weight: 600;
+            font-size: clamp(18px, 1.6vw, 20px);
+            color: var(--sp-rose);
+            letter-spacing: 0.03em;
+            margin: 0 0 16px;
+        }
         .sp-section-heading.sp-center {
             margin-left: auto;
             margin-right: auto;
@@ -291,13 +299,57 @@
             color: var(--brand-text);
             margin: 0 0 8px;
         }
-        .sp-service-item p {
+                .sp-service-item p {
             font-family: var(--brand-body-font);
             font-size: 14.5px;
             line-height: 1.65;
             color: var(--brand-text);
             opacity: 0.78;
             margin: 0 0 14px;
+        }
+
+        /* ===== VARAA AIKA -NOSTO ===== */
+        .sp-booking-cta {
+            max-width: 1150px;
+            margin: 56px auto 0;
+            background: #F1F0E4;
+            border-radius: 20px;
+            padding: 44px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+        }
+        .sp-booking-cta-text h3 {
+            font-family: var(--brand-heading-font);
+            font-weight: 600;
+            font-size: clamp(28px, 3vw, 34px);
+            color: var(--brand-text);
+            margin: 0 0 10px;
+        }
+        .sp-booking-cta-text p {
+            font-family: var(--brand-body-font);
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--brand-text);
+            opacity: 0.75;
+            max-width: 46ch;
+            margin: 0;
+        }
+        .sp-booking-cta-action {
+            flex-shrink: 0;
+        }
+        @media (max-width: 699px) {
+            .sp-booking-cta {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                padding: 32px 24px;
+            }
+            .sp-booking-cta-action .sp-btn-cta {
+                width: 100%;
+                justify-content: center;
+            }
         }
 
         /* ===== MODAALI ===== */
@@ -338,13 +390,52 @@
             color: var(--brand-text);
             margin: 0 0 14px;
         }
-        .sp-modal-box p {
+                .sp-modal-box p {
             font-family: var(--brand-body-font);
             font-size: 15px;
             line-height: 1.75;
             color: var(--brand-text);
             opacity: 0.85;
             margin: 0;
+        }
+        .sp-modal-box-wide {
+            max-width: 560px;
+        }
+        .sp-treatment-list {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .sp-treatment-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+        .sp-treatment-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .sp-treatment-row strong {
+            font-family: var(--brand-heading-font);
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--brand-text);
+        }
+        .sp-treatment-row p {
+            font-family: var(--brand-body-font);
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--brand-text);
+            opacity: 0.75;
+            margin: 4px 0 0;
+        }
+        .sp-treatment-row .sp-btn-text {
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         /* ===== SYDÄNPOLKU ESITTELY (kuva ja teksti lähellä toisiaan) ===== */
@@ -542,44 +633,13 @@
         $spIconPaw = '<svg viewBox="0 0 24 22" fill="none" stroke="var(--sp-rose)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;opacity:1;"><ellipse cx="12" cy="15.5" rx="5.2" ry="4.2" /><circle cx="5.5" cy="8.5" r="2" /><circle cx="10.3" cy="5.3" r="2" /><circle cx="14.7" cy="5.3" r="2" /><circle cx="19" cy="8.7" r="2" /></svg>';
         $spIconBook = '<svg viewBox="0 0 24 22" fill="none" stroke="var(--sp-rose)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;opacity:1;"><path d="M12 5c-2-1.4-5-1.8-8-1v13c3-.8 6-.4 8 1c2-1.4 5-1.8 8-1V4c-3-.8-6-.4-8 1Z" /><path d="M12 5v13" /></svg>';
 
-        $spServices = [
-            [
-                'icon' => $spIconChat,
-                'name' => 'Lyhytterapia',
-                'desc' => 'Tukea silloin, kun jokin asia painaa mieltä ja kaipaat keskusteluapua.',
-                'detail' => 'Lyhytterapia sopii tilanteisiin, joissa mieltä painaa jokin asia eikä pitkää terapiasuhdetta tarvita — muutaman tapaamisen aikana voidaan yhdessä käsitellä mielessä pyörivää huolta, elämänmuutosta tai kuormitusta ja löytää siihen helpotusta.',
-            ],
-            [
-                'icon' => $spIconTeam,
-                'name' => 'Työhyvinvointipalvelut',
-                'desc' => 'Rauhoittumista, yhdessäoloa ja palautumista työyhteisöille.',
-                'detail' => 'Työyhteisöille on tarjolla työhyvinvointipalveluita (tyhy), jotka räätälöidään ryhmän tarpeiden mukaan — rentoutumista, yhdessäoloa ja palautumista tukevia hetkiä, jotka jäävät mieleen ja tukevat jaksamista pitkään arjen keskellä.',
-            ],
-            [
-                'icon' => $spIconLotusSmall,
-                'name' => 'Yinjooga',
-                'desc' => 'Lempeää ja rauhallista joogaa, jossa keholle annetaan aikaa pysähtyä.',
-                'detail' => 'Yinjooga on hidasta ja rauhallista joogaa, jossa asennoissa viivytään pidempään ja annetaan kehon rentoutua syvemmälle — sopii kaikille kehon kunnosta riippumatta.',
-            ],
-            [
-                'icon' => $spIconBowl,
-                'name' => 'Äänimaljarentoutus',
-                'desc' => 'Syvärentouttava hetki äänimaljojen äärellä.',
-                'detail' => 'Sointukylvyt tuovat äänimaljojen syvät, soivat värähtelyt kehon ja mielen rentoutumisen tueksi; monet kokevat sointukylvyn jälkeen olonsa kevyemmäksi ja rauhallisemmaksi vielä pitkään hoidon jälkeenkin. Äänimaljahoito keholla tuo värähtelyt suoraan kehon pinnalle — syvästi rentouttava kokemus, joka rauhoittaa hermostoa.',
-            ],
-            [
-                'icon' => $spIconPaw,
-                'name' => 'Eläinavusteinen toiminta',
-                'desc' => 'Hyvinvointia ja kohtaamisia eläinten läsnäolon tukemana.',
-                'detail' => 'Eläinavusteinen toiminta tuo hyvinvointia ja lämpimiä kohtaamisia eläinten läsnäolon tukemana — rauhoittava tapa pysähtyä ja olla läsnä hetkessä.',
-            ],
-            [
-                'icon' => $spIconBook,
-                'name' => 'Kurssit ja ryhmät',
-                'desc' => 'Hyvinvointiin, luontoon ja palautumiseen liittyviä kursseja ja pienryhmiä.',
-                'detail' => 'Hyvinvointiin, luontoon ja palautumiseen liittyviä kursseja ja pienryhmiä järjestetään säännöllisesti — katso ajankohtaiset kurssit ja ilmoittaudu mukaan.',
-            ],
-        ];
+                $spIconTouch = '<svg viewBox="0 0 24 22" fill="none" stroke="var(--sp-rose)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;opacity:1;"><path d="M8 11V4.5a1.5 1.5 0 0 1 3 0V10" /><path d="M11 10V3.5a1.5 1.5 0 0 1 3 0V10" /><path d="M14 10V5a1.5 1.5 0 0 1 3 0v7" /><path d="M17 12v-2a1.5 1.5 0 0 1 3 0v5c0 3-2 6-6 6h-2c-3 0-4.5-1.5-6-4l-2-3.5c-.6-1 0-2 1-2.2 1-.2 1.7.3 2.2 1.1L8 15" /></svg>';
+        $spIconCupping = '<svg viewBox="0 0 24 22" fill="none" stroke="var(--sp-rose)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;opacity:1;"><path d="M7 3h10l-1 8a4 4 0 0 1-8 0L7 3Z" /><path d="M9 3V1.5M15 3V1.5" /><path d="M6 19h12" /></svg>';
+        $spIconSpark = '<svg viewBox="0 0 24 22" fill="none" stroke="var(--sp-rose)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;opacity:1;"><path d="M12 2v4M12 16v4M4 11h4M16 11h4M6.5 5.5l2.8 2.8M14.7 8.3l2.8-2.8M6.5 16.5l2.8-2.8M14.7 13.7l2.8 2.8" /></svg>';
+
+                $categoryIconList = [$spIconChat, $spIconBowl, $spIconTouch, $spIconCupping, $spIconSpark, $spIconLotusSmall];
+
+            
     @endphp
 
     <div class="sp-page">
@@ -728,40 +788,89 @@
         </div>
     </div>
 
-    {{-- PALVELUT --}}
-    <div class="sp-band sp-bg-cream sp-reveal" x-data="{ openService: null }">
+        {{-- PALVELUT --}}
+    <div id="palvelut" class="sp-band sp-bg-cream sp-reveal" x-data="{ openCategory: null }">
         <div class="sp-container">
-        <div class="sp-section-heading sp-center">
+                <div class="sp-section-heading sp-center">
+                        <p class="sp-section-pretitle">Palvelut ja ajanvaraus</p>
             <h2>Hyvinvointia keholle, mielelle ja arkeen <span class="sp-inline-icon">{!! $spHeartSimple !!}</span></h2>
         </div>
 
-        <div class="sp-services-grid">
-            @foreach ($spServices as $i => $service)
+                <div class="sp-services-grid">
+                        @foreach ($treatmentCategories as $i => $category)
                 <div class="sp-service-item">
-                    <span class="sp-service-icon">{!! $service['icon'] !!}</span>
-                    <h3>{{ $service['name'] }}</h3>
-                    <p>{{ $service['desc'] }}</p>
-                    <button type="button" class="sp-btn-text" @click="openService = {{ $i }}">
-                        Lue lisää aiheesta →
-                    </button>
+                    <span class="sp-service-icon">{!! $categoryIconList[$i % count($categoryIconList)] !!}</span>
+                    <h3>{{ $category->name }}</h3>
+                    @if ($category->description)
+                        <p>{{ $category->description }}</p>
+                    @endif
+                    @if ($category->link_url)
+                        <button type="button" class="sp-btn-text" onclick="window.location.href='{{ $category->link_url }}'">
+                            Lue lisää →
+                        </button>
+                                        @else
+                        <button type="button" class="sp-btn-text" @click="openCategory = {{ $i }}">
+                            Varaa aika →
+                        </button>
+                    @endif
                 </div>
-            @endforeach
+                        @endforeach
+        </div>
+
+        <div class="sp-booking-cta">
+            <div class="sp-booking-cta-text">
+                <h3>Varaa aika</h3>
+                <p>Valitse sinulle sopiva hoito ja varaa vapaa aika suoraan kalenterista.</p>
+            </div>
+            <div class="sp-booking-cta-action">
+                <button type="button" class="sp-btn-cta" onclick="window.location.href='{{ route('ajanvaraus.public.book') }}'">
+                    Varaa aika →
+                </button>
+            </div>
         </div>
         </div>
 
-        @foreach ($spServices as $i => $service)
-            <div x-show="openService === {{ $i }}" x-cloak @click.self="openService = null" class="sp-modal-overlay">
-                <div class="sp-modal-box">
-                    <button type="button" class="sp-modal-close" @click="openService = null">✕</button>
-                    <h3>{{ $service['name'] }}</h3>
-                    <p>{{ $service['detail'] }}</p>
+        @foreach ($treatmentCategories as $i => $category)
+            <div x-show="openCategory === {{ $i }}" x-cloak @click.self="openCategory = null" class="sp-modal-overlay">
+                <div class="sp-modal-box sp-modal-box-wide">
+                    <button type="button" class="sp-modal-close" @click="openCategory = null">✕</button>
+                    <h3>{{ $category->name }}</h3>
+                    @if ($category->description)
+                        <p>{{ $category->description }}</p>
+                    @endif
+                    <div class="sp-treatment-list">
+                        @forelse ($category->treatments as $treatment)
+                            <div class="sp-treatment-row">
+                                <div>
+                                    <strong>{{ $treatment->name }}</strong>
+                                    @if ($treatment->short_description)
+                                        <p>{{ $treatment->short_description }}</p>
+                                    @endif
+                                </div>
+                                <a href="{{ route('ajanvaraus.public.book', ['treatment_id' => $treatment->id]) }}" class="sp-btn-text">Varaa aika →</a>
+                            </div>
+                        @empty
+                            <p>Palveluita lisätään pian.</p>
+                        @endforelse
+                    </div>
                 </div>
             </div>
         @endforeach
     </div>
 
     {{-- YHTEYSTIEDOT --}}
-    @include('kurssit::partials.footer')
+        @include('partials.site-footer', [
+        'company' => $company,
+        'footerBg' => 'var(--brand-primary)',
+        'footerText' => '#ffffff',
+        'footerAccent' => '#ffffff',
+        'footerBrandIcon' => '<svg viewBox="0 0 24 27" fill="none" stroke="currentColor" stroke-width="0.85" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19 C4 13.5 1 9 1 5.5 C1 2.5 3.2 1 5.5 1 C7.8 1 10 2.3 12 5 C14 2.3 16.2 1 18.5 1 C20.8 1 23 2.5 23 5.5 C23 9 20 13.5 12 19 Z" /></svg>',
+        'footerBrandName' => 'Sydänpolku',
+        'footerTagline' => 'Rakkaudella hyvinvoinnille ♡',
+        'footerBorderSoft' => 'rgba(255,255,255,0.35)',
+        'footerMuted' => 'rgba(255,255,255,0.75)',
+        'footerDivider' => 'rgba(255,255,255,0.18)',
+    ])
 
     </div>{{-- /.sp-page --}}
 

@@ -13,7 +13,13 @@
             </p>
         </div>
     </div>
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3">
+                <form method="POST" action="{{ route('ajanvaraus.treatments.update-organizing', $treatment) }}" class="flex items-center gap-2">
+            @csrf @method('PATCH')
+            <label for="order-{{ $treatment->id }}" class="text-xs text-gray-400">Järj.</label>
+            <input type="number" id="order-{{ $treatment->id }}" name="order" value="{{ $treatment->order }}" min="0" class="w-14 rounded-md border-gray-300 shadow-sm text-xs">
+            <button type="submit" class="text-xs text-gray-600 hover:text-gray-900">Tallenna</button>
+        </form>
         <a href="{{ route('ajanvaraus.public.book', $treatment) }}" target="_blank" class="text-sm font-semibold text-gray-500 hover:text-gray-800">Julkinen varaussivu ↗</a>
         <a href="{{ route('ajanvaraus.treatments.edit', $treatment) }}" class="text-sm font-semibold text-gray-600 hover:text-gray-900">Muokkaa →</a>
     </div>

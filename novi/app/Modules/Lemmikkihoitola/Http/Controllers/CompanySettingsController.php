@@ -83,6 +83,9 @@ class CompanySettingsController extends Controller
             'primary_color' => ['nullable', 'string', 'max:20'],
             'secondary_color' => ['nullable', 'string', 'max:20'],
             'logo' => ['nullable', 'image', 'max:2048'],
+            'facebook_url' => ['nullable', 'url', 'max:255'],
+            'instagram_url' => ['nullable', 'url', 'max:255'],
+            'care_contract_text' => ['nullable', 'string'],
         ]);
 
         $company = $request->user()->company;
@@ -93,6 +96,9 @@ class CompanySettingsController extends Controller
         $settings['iban'] = $validated['iban'] ?? null;
         $settings['payment_term_days'] = $validated['payment_term_days'];
         $settings['vat_percentage'] = $validated['vat_percentage'];
+        $settings['facebook_url'] = $validated['facebook_url'] ?? null;
+        $settings['instagram_url'] = $validated['instagram_url'] ?? null;
+        $settings['care_contract_text'] = $validated['care_contract_text'] ?? null;
         $company->settings = $settings;
         $company->phone = $validated['phone'] ?? null;
         $company->primary_color = $validated['primary_color'] ?? $company->primary_color;

@@ -13,11 +13,13 @@ class TreatmentCategory extends Model
     protected $fillable = [
         'company_id',
         'name',
+        'description',
+        'link_url',
         'order',
     ];
 
     public function treatments(): HasMany
     {
-        return $this->hasMany(Treatment::class)->orderBy('name');
+        return $this->hasMany(Treatment::class)->orderBy('order')->orderBy('name');
     }
 }

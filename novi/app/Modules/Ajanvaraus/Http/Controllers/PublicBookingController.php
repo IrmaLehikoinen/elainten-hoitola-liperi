@@ -21,37 +21,53 @@ class PublicBookingController extends Controller
 
     public function index(Request $request)
     {
-            $company = Company::whereJsonContains('active_modules', 'ajanvaraus')->firstOrFail();
+        $company = Company::whereJsonContains('active_modules', 'ajanvaraus')->firstOrFail();
 
         $this->shareCompanyBrand($company);
 
-                $treatments = Treatment::with('category')
+        $treatments = Treatment::withoutGlobalScope('company')
+            ->with('category')
             ->where('company_id', $company->id)
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
         $treatment = null;
-        $slots = [];
-        $date = Carbon::today();
+        $dateSlots = [];
 
         if ($request->filled('treatment_id')) {
             $treatment = $treatments->firstWhere('id', (int) $request->query('treatment_id'));
 
             if ($treatment) {
-                $date = $request->query('date')
-                    ? Carbon::createFromFormat('Y-m-d', $request->query('date'))->startOfDay()
-                    : Carbon::today();
+                $cursor = Carbon::today();
+                for ($i = 0; $i < 60; $i++) {
+                    $daySlots = $this->availability->slotsForDate($treatment, $cursor->copy());
 
-                $slots = $this->availability->slotsForDate($treatment, $date);
+                    if (! empty($daySlots)) {
+                        $dateSlots[$cursor->format('Y-m-d')] = collect($daySlots)->map(fn ($slot) => [
+                            'iso' => $slot['start']->toDateTimeString(),
+                            'label' => $slot['start']->format('H:i'),
+                        ])->values()->all();
+                    }
+
+                    $cursor->addDay();
+                }
             }
         }
+
+        $upcomingSlots = collect($dateSlots)
+            ->flatMap(fn ($slots, $date) => collect($slots)->map(fn ($slot) => array_merge($slot, [
+                'dateLabel' => Carbon::parse($date)->translatedFormat('D j.n.'),
+            ])))
+            ->take(10)
+            ->values()
+            ->all();
 
         return view('ajanvaraus::public.book', [
             'treatments' => $treatments,
             'treatment' => $treatment,
-            'date' => $date,
-            'slots' => $slots,
+            'dateSlots' => $dateSlots,
+            'upcomingSlots' => $upcomingSlots,
             'name' => $request->query('name', ''),
             'email' => $request->query('email', ''),
             'phone' => $request->query('phone', ''),
@@ -68,7 +84,7 @@ class PublicBookingController extends Controller
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $treatment = Treatment::findOrFail($validated['treatment_id']);
+        $treatment = Treatment::withoutGlobalScope('company')->findOrFail($validated['treatment_id']);
 
         if (! $treatment->is_active) {
             abort(404);
@@ -118,8 +134,12 @@ class PublicBookingController extends Controller
         return redirect($url);
     }
 
-        public function success(TreatmentAppointment $appointment)
+    public function success(int $appointment)
     {
+        $appointment = TreatmentAppointment::withoutGlobalScope('company')
+            ->with(['treatment' => fn ($query) => $query->withoutGlobalScope('company')])
+            ->findOrFail($appointment);
+
         $this->shareCompanyBrand($appointment->treatment->company);
 
         return view('ajanvaraus::public.success', [

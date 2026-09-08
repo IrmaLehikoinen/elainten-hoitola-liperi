@@ -4,6 +4,7 @@ namespace App\Modules\Kurssit\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Modules\Ajanvaraus\Models\TreatmentCategory;
 use App\Modules\Kurssit\Models\Course;
 
 class SydanpolkuController extends Controller
@@ -22,8 +23,26 @@ class SydanpolkuController extends Controller
             ->take(3)
             ->get();
 
+        $treatmentCategories = TreatmentCategory::where('company_id', $company->id)
+            ->with(['treatments' => function ($query) {
+                $query->where('is_active', true);
+            }])
+            ->orderBy('order')
+            ->get();
+
         return view('kurssit::public.sydanpolku', [
             'courses' => $courses,
+            'company' => $company,
+            'treatmentCategories' => $treatmentCategories,
+        ]);
+    }
+
+    public function tyohyvinvointi()
+    {
+        $company = Company::where('industry', 'kurssit')->firstOrFail();
+
+        return view('kurssit::public.tyohyvinvointi', [
+            'company' => $company,
         ]);
     }
 }
