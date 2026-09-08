@@ -75,6 +75,7 @@ class CompanySettingsController extends Controller
         $validated = $request->validate([
             'official_name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
             'business_id' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:255'],
             'iban' => ['nullable', 'string', 'max:50'],
@@ -83,9 +84,10 @@ class CompanySettingsController extends Controller
             'primary_color' => ['nullable', 'string', 'max:20'],
             'secondary_color' => ['nullable', 'string', 'max:20'],
             'logo' => ['nullable', 'image', 'max:2048'],
-            'facebook_url' => ['nullable', 'url', 'max:255'],
+                        'facebook_url' => ['nullable', 'url', 'max:255'],
             'instagram_url' => ['nullable', 'url', 'max:255'],
             'care_contract_text' => ['nullable', 'string'],
+            'care_contract_enabled' => ['nullable', 'boolean'],
         ]);
 
         $company = $request->user()->company;
@@ -99,8 +101,10 @@ class CompanySettingsController extends Controller
         $settings['facebook_url'] = $validated['facebook_url'] ?? null;
         $settings['instagram_url'] = $validated['instagram_url'] ?? null;
         $settings['care_contract_text'] = $validated['care_contract_text'] ?? null;
+        $settings['care_contract_enabled'] = $request->boolean('care_contract_enabled');
         $company->settings = $settings;
         $company->phone = $validated['phone'] ?? null;
+        $company->email = $validated['email'] ?? null;
         $company->primary_color = $validated['primary_color'] ?? $company->primary_color;
         $company->secondary_color = $validated['secondary_color'] ?? $company->secondary_color;
 

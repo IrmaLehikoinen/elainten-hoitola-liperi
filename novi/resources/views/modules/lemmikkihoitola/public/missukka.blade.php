@@ -418,25 +418,25 @@
         .mh-gallery-grid a { display: block; overflow: hidden; border-radius: 16px; }
         .mh-gallery-grid a:hover img { transform: scale(1.04); }
 
-                /* ===== CTA BAND ===== */
+                        /* ===== CTA BAND ===== */
         .mh-cta-band {
-            background-color: var(--mh-sage);
-            color: var(--mh-bg);
+            background-color: var(--mh-bg-accent);
+            color: var(--mh-brown);
             text-align: center;
-            padding: 32px 0;
+            padding: 64px 0;
         }
         .mh-cta-band h2 {
             font-family: var(--mh-heading-font);
             font-weight: 600;
             letter-spacing: -0.01em;
             font-size: clamp(22px, 3.6vw, 30px);
-            color: var(--mh-bg);
+            color: var(--mh-brown);
             margin: 0 0 8px;
         }
         .mh-cta-band p {
             font-family: var(--mh-body-font);
             font-size: 14.5px;
-            color: rgba(250, 248, 243, 0.85);
+            color: var(--mh-text);
             max-width: 46ch;
             margin: 0 auto 16px;
         }
@@ -446,10 +446,96 @@
         .mh-reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s ease, transform .7s ease; }
         .mh-reveal.mh-revealed { opacity: 1; transform: translateY(0); }
 
-        @media (max-width: 639px) {
+                @media (max-width: 639px) {
             .mh-btn-cta { width: 100%; justify-content: center; }
             .mh-hero-actions { flex-direction: column; align-items: flex-start; width: 100%; }
             .mh-hero-actions .mh-btn-cta { width: 100%; }
+        }
+
+        /* ===== FOOTER ===== */
+        .mh-footer {
+            background-color: #5E7254;
+            color: #F5F1E8;
+            padding: 48px 0 24px;
+        }
+        .mh-footer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+        }
+        @media (min-width: 780px) {
+            .mh-footer-grid { grid-template-columns: 1.2fr 1.3fr 1fr; gap: 40px; }
+        }
+        .mh-footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--mh-heading-font);
+            font-weight: 600;
+            font-size: 17px;
+            color: #fff;
+        }
+        .mh-footer-brand svg { width: 20px; height: 20px; }
+        .mh-footer-heading {
+            font-family: var(--mh-heading-font);
+            font-weight: 600;
+            font-size: 15px;
+            color: #fff;
+            margin: 0 0 12px;
+        }
+        .mh-footer-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(245, 241, 232, 0.82);
+            margin: 0 0 8px;
+        }
+        .mh-footer-text a { color: rgba(245, 241, 232, 0.82); text-decoration: none; }
+        .mh-footer-text a:hover { color: #fff; text-decoration: underline; }
+        .mh-footer-link {
+            display: block;
+            font-size: 14px;
+            color: rgba(245, 241, 232, 0.82);
+            text-decoration: none;
+            margin-bottom: 8px;
+            transition: color .15s ease;
+        }
+        .mh-footer-link:hover { color: #fff; text-decoration: underline; }
+        .mh-footer-social {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .mh-footer-social a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(245, 241, 232, 0.35);
+            border-radius: 50%;
+            color: #F5F1E8;
+            transition: border-color .15s ease, color .15s ease;
+        }
+        .mh-footer-social a:hover { border-color: #fff; color: #fff; }
+        .mh-footer-social svg { width: 15px; height: 15px; }
+        .mh-footer-map {
+            position: relative;
+            width: 100%;
+            max-width: 260px;
+            height: 150px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .mh-footer-map iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+        .mh-footer-map a { position: absolute; inset: 0; }
+        .mh-footer-copy {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(245, 241, 232, 0.18);
+            font-size: 13px;
+            text-align: center;
+            color: rgba(245, 241, 232, 0.65);
         }
     </style>
 
@@ -462,6 +548,10 @@
         $mhLeaf = '<svg viewBox="0 0 24 22" fill="none" stroke="var(--mh-sage)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20c0-9 6-16 16-16-1 10-7 16-16 16Z" /><path d="M6 18c4-4 7-7 12-10" /></svg>';
         $mhFacebook = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M14 9h3V6h-3c-2 0-3.5 1.5-3.5 3.5V11H8v3h2.5v6h3v-6H16l.5-3h-3V9.8c0-.5.2-.8.9-.8Z" /></svg>';
         $mhInstagram = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="4" y="4" width="16" height="16" rx="4.5" /><circle cx="12" cy="12" r="3.6" /><circle cx="16.2" cy="7.8" r="0.6" fill="currentColor" stroke="none" /></svg>';
+        $mhAddress = $company->settings['address'] ?? null;$mhMapQuery = $mhAddress;
+
+        $mhFacebookUrl = $company->settings['facebook_url'] ?? null;
+        $mhInstagramUrl = $company->settings['instagram_url'] ?? null;
     @endphp
 </head>
 <body>
@@ -639,20 +729,64 @@
             </div>
         </div>
 
-                        {{-- FOOTER --}}
-                <div id="yhteystiedot">
-                    @include('partials.site-footer', [
-                        'company' => $company,
-                        'footerBg' => 'var(--mh-bg-warm)',
-                        'footerText' => 'var(--mh-brown)',
-                        'footerAccent' => 'var(--mh-terracotta)',
-                        'footerBrandIcon' => $mhPawSmall,
-                        'footerTagline' => 'Sivut rakkaudella eläimille ♡',
-                        'footerBorderSoft' => 'rgba(97,62,50,0.25)',
-                        'footerMuted' => 'rgba(97,62,50,0.72)',
-                        'footerDivider' => 'rgba(97,62,50,0.12)',
-                    ])
-                </div>
+                               {{-- FOOTER --}}
+                <div id="yhteystiedot" class="mh-footer">
+                    <div class="mh-container">
+                        <div class="mh-footer-grid">
+                            <div>
+                                <div class="mh-footer-brand">
+                                    {!! $mhPawSmall !!}
+                                    Missukan Lemmikkihoitola
+                                </div>
+                                <p class="mh-footer-text" style="margin-top:12px;">Kodinomaista ja turvallista hoitoa lemmikillesi Liperissä.</p>
+                                @if ($mhFacebookUrl || $mhInstagramUrl)
+                                    <div class="mh-footer-social">
+                                        @if ($mhFacebookUrl)
+                                            <a href="{{ $mhFacebookUrl }}" target="_blank" rel="noopener" aria-label="Facebook">{!! $mhFacebook !!}</a>
+                                        @endif
+                                        @if ($mhInstagramUrl)
+                                            <a href="{{ $mhInstagramUrl }}" target="_blank" rel="noopener" aria-label="Instagram">{!! $mhInstagram !!}</a>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div>
+                                <h3 class="mh-footer-heading">Yhteystiedot</h3>
+                                @if ($company->phone)
+                                    <p class="mh-footer-text"><a href="tel:{{ preg_replace('/\s+/', '', $company->phone) }}">{{ $company->phone }}</a></p>
+                                @endif
+                                @if ($mhAddress)
+                                    <p class="mh-footer-text">{{ $mhAddress }}</p>
+                                @endif
+                                @if ($company->email)
+                                    <p class="mh-footer-text"><a href="mailto:{{ $company->email }}">{{ $company->email }}</a></p>
+                                @endif
+                                @if ($mhMapQuery)
+                                    <div class="mh-footer-map">
+                                        <iframe
+                                            src="https://www.google.com/maps?q={{ urlencode($mhMapQuery) }}&output=embed"
+                                            loading="lazy"
+                                            referrerpolicy="no-referrer-when-downgrade"
+                                        ></iframe>
+                                        <a href="https://www.google.com/maps/dir/?api=1&destination={{ urlencode($mhMapQuery) }}" target="_blank" rel="noopener" aria-label="Avaa reittiohjeet Google Mapsissa"></a>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div>
+                                <h3 class="mh-footer-heading">Pikalinkit</h3>
+                                <a href="{{ route('missukka.index') }}" class="mh-footer-link">Etusivu</a>
+                                <a href="#palvelut" class="mh-footer-link">Palvelut</a>
+                                <a href="#hinnasto" class="mh-footer-link">Hinnasto</a>
+                                <a href="#galleria" class="mh-footer-link">Galleria</a>
+                                <a href="{{ route('public.booking.start') }}" class="mh-footer-link">Varaa hoitopaikka</a>
+                            </div>
+                        </div>
+
+                        <p class="mh-footer-copy">© {{ date('Y') }} Missukan Lemmikkihoitola</p>
+                    </div>
+                </div>                
 
     </div>{{-- /.mh-page --}}
 

@@ -18,35 +18,30 @@
     $sfFacebook = $company->settings['facebook_url'] ?? null;
     $sfInstagram = $company->settings['instagram_url'] ?? null;
     $footerBrandName = $company->settings['official_name'] ?? $company->name;
+    $sfMapQuery = $sfAddress;
 @endphp
 <div class="site-footer" id="yhteystiedot" style="background-color: {{ $footerBg }};">
     <div class="site-footer-container">
-        <div class="site-footer-grid">
-            <div class="site-footer-brand" style="color: {{ $footerText }};">
-                <span class="site-footer-brand-icon" style="color: {{ $footerAccent }};">{!! $footerBrandIcon !!}</span>
-                {{ $footerBrandName }}
-            </div>
-
-            @if ($company->phone)
-                <div class="site-footer-col">
-                    <p><a href="tel:{{ preg_replace('/\s+/', '', $company->phone) }}" style="color: {{ $footerText }};">{{ $company->phone }}</a></p>
+        <div class="site-footer-layout">
+            <div class="site-footer-info">
+                <div class="site-footer-brand" style="color: {{ $footerText }};">
+                    <span class="site-footer-brand-icon" style="color: {{ $footerAccent }};">{!! $footerBrandIcon !!}</span>
+                    {{ $footerBrandName }}
                 </div>
-            @endif
 
-            @if ($sfAddress)
-                <div class="site-footer-col">
-                    <p style="color: {{ $footerText }};">{{ $sfAddress }}</p>
-                </div>
-            @endif
+                @if ($company->phone)
+                    <p class="site-footer-line"><a href="tel:{{ preg_replace('/\s+/', '', $company->phone) }}" style="color: {{ $footerText }};">{{ $company->phone }}</a></p>
+                @endif
 
-            @if ($company->email)
-                <div class="site-footer-col">
-                    <p><a href="mailto:{{ $company->email }}" style="color: {{ $footerText }};">{{ $company->email }}</a></p>
-                </div>
-            @endif
+                @if ($sfAddress)
+                    <p class="site-footer-line" style="color: {{ $footerText }};">{{ $sfAddress }}</p>
+                @endif
 
-            @if ($sfFacebook || $sfInstagram)
-                <div class="site-footer-col site-footer-col-social">
+                @if ($company->email)
+                    <p class="site-footer-line"><a href="mailto:{{ $company->email }}" style="color: {{ $footerText }};">{{ $company->email }}</a></p>
+                @endif
+
+                @if ($sfFacebook || $sfInstagram)
                     <div class="site-footer-social-icons">
                         @if ($sfFacebook)
                             <a href="{{ $sfFacebook }}" target="_blank" rel="noopener" style="border-color: {{ $footerBorderSoft }}; color: {{ $footerAccent }};">
@@ -59,6 +54,17 @@
                             </a>
                         @endif
                     </div>
+                @endif
+            </div>
+
+            @if ($sfMapQuery)
+                <div class="site-footer-map-thumb">
+                    <iframe
+                        src="https://www.google.com/maps?q={{ urlencode($sfMapQuery) }}&output=embed"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ urlencode($sfMapQuery) }}" target="_blank" rel="noopener" aria-label="Avaa reittiohjeet Google Mapsissa"></a>
                 </div>
             @endif
         </div>
@@ -72,18 +78,21 @@
 <style>
     .site-footer { padding: 40px 0; }
     .site-footer-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-    .site-footer-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    @media (min-width: 860px) {
-        .site-footer-grid { grid-template-columns: 1.3fr 1fr 1.3fr 1.4fr 0.9fr; align-items: center; gap: 16px; }
-        .site-footer-col-social { display: flex; justify-content: flex-end; }
+    .site-footer-layout { display: flex; flex-direction: column; gap: 24px; }
+    @media (min-width: 640px) {
+            .site-footer-layout { flex-direction: row; align-items: flex-start; justify-content: flex-start; gap: 48px; }
     }
+    .site-footer-info { display: flex; flex-direction: column; gap: 8px; }
     .site-footer-brand { display: flex; align-items: center; gap: 8px; font-family: var(--brand-heading-font, serif); font-weight: 600; font-size: 16px; }
     .site-footer-brand-icon { display: inline-flex; width: 18px; height: 18px; }
     .site-footer-brand-icon svg { width: 100%; height: 100%; }
-    .site-footer-col p, .site-footer-col a { font-size: 14.5px; margin: 0; text-decoration: none; }
-    .site-footer-col a:hover { text-decoration: underline; }
-    .site-footer-social-icons { display: flex; gap: 10px; }
+    .site-footer-line, .site-footer-line a { font-size: 14.5px; margin: 0; text-decoration: none; }
+    .site-footer-line a:hover { text-decoration: underline; }
+    .site-footer-social-icons { display: flex; gap: 10px; margin-top: 4px; }
     .site-footer-social-icons a { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1px solid; border-radius: 50%; }
     .site-footer-social-icons svg { width: 14px; height: 14px; }
+            .site-footer-map-thumb { position: relative; width: 320px; height: 220px; flex-shrink: 0; border-radius: 12px; overflow: hidden; align-self: flex-start; }
+    .site-footer-map-thumb iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+    .site-footer-map-thumb a { position: absolute; inset: 0; }
     .site-footer-copy { margin-top: 28px; padding-top: 18px; border-top: 1px solid; font-size: 13px; text-align: center; }
 </style>

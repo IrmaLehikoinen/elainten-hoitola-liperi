@@ -462,6 +462,16 @@
                     </div>
 
                     <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Sähköposti</label>
+                        <input
+                            type="email"
+                            name="email"
+                            value="{{ $company->email }}"
+                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                        >
+                    </div>
+
+                    <div>
                         <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Y-tunnus</label>
                         <input
                             type="text"
@@ -541,7 +551,7 @@
                         >
                     </div>
 
-                    <div>
+                                        <div>
                         <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Hoitosopimus (teksti)</label>
                         <textarea
                             name="care_contract_text"
@@ -550,6 +560,18 @@
                             class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"
                         >{{ $company->settings['care_contract_text'] ?? '' }}</textarea>
                         <p class="mt-1 text-xs text-gray-400">Tätä tekstiä käytetään jatkossa varaussivun hoitosopimuksessa.</p>
+
+                        <label class="mt-3 flex items-center gap-2 text-sm text-gray-600">
+                            <input
+                                type="checkbox"
+                                name="care_contract_enabled"
+                                value="1"
+                                @checked($company->settings['care_contract_enabled'] ?? true)
+                                class="rounded border-gray-300"
+                            >
+                            Näytä hoitosopimus ja vaadi sen hyväksyntä varauksen viimeisellä sivulla
+                        </label>
+                        <p class="mt-1 text-xs text-gray-400">Jos et halua hoitosopimusta käyttöön, poista rasti — teksti säilyy tallessa, mutta sitä ei näytetä eikä vaadita asiakkaalta.</p>
                     </div>
 
                     <div class="flex gap-6">

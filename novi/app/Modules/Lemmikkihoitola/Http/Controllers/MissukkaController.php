@@ -13,6 +13,15 @@ class MissukkaController extends Controller
 
         return view('public.missukka', [
             'company' => $company,
+            'careContractText' => $this->careContractTextFor($company),
         ]);
+    }
+
+    private function careContractTextFor(Company $company): ?string
+    {
+        $enabled = $company->settings['care_contract_enabled'] ?? true;
+        $text = $company->settings['care_contract_text'] ?? null;
+
+        return ($enabled && filled($text)) ? $text : null;
     }
 }

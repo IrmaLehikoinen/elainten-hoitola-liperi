@@ -165,6 +165,21 @@
             </div>
         @endforeach
 
+                @if (!empty($careContractText))
+            <div class="public-field" style="margin-top: 32px;">
+                <div class="public-pet-heading"><span>📄</span><span>Hoitosopimus</span></div>
+                <div style="margin-top:12px; max-height:220px; overflow-y:auto; padding:14px 16px; border:1px solid var(--brand-secondary, #D8C6BD); border-radius: var(--brand-radius, 12px); font-size:13px; line-height:1.6; white-space:pre-line; color: var(--brand-text);">{{ $careContractText }}</div>
+
+                <label style="display:flex; align-items:flex-start; gap:10px; margin-top:16px; font-size:14px; color: var(--brand-text); cursor:pointer;">
+                    <input type="checkbox" name="agree_to_terms" value="1" required style="margin-top:3px; width:18px; height:18px; flex-shrink:0;">
+                    <span>Olen lukenut ja hyväksyn hoitosopimuksen ehdot.</span>
+                </label>
+                @error('agree_to_terms')
+                    <p style="color:#b3261e; font-size:13px; margin-top:6px;">{{ $message }}</p>
+                @enderror
+            </div>
+        @endif
+
         <button type="submit" class="btn-brand w-full px-4 py-3 text-sm font-semibold" style="margin-top:32px;">
             Vahvista varaus →
         </button>

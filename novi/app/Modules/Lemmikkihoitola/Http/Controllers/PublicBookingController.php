@@ -19,7 +19,15 @@ class PublicBookingController extends Controller
      * lukevat vain jaettua ($__env->shared) dataa eivätkä view()-datana annettua,
      * tämä on ainoa paikka josta brändi oikeasti kulkeutuu niihin asti.
      */
-    private function shareLemmikkihoitolaBrand(Company $company): void
+        private function careContractTextFor(Company $company): ?string
+    {
+        $enabled = $company->settings['care_contract_enabled'] ?? true;
+        $text = $company->settings['care_contract_text'] ?? null;
+
+        return ($enabled && filled($text)) ? $text : null;
+    }
+
+        private function shareLemmikkihoitolaBrand(Company $company): void
     {
         $settings = $company->settings ?? [];
 
@@ -173,12 +181,13 @@ class PublicBookingController extends Controller
 
         $enabledFields = $this->enabledBookingFields();
 
-        if (!$customer) {
+                if (!$customer) {
             return view('public.booking.step4', [
                 'customer' => null,
                 'animals' => session('public_booking.animals'),
                 'email' => $validated['email'],
                 'enabledFields' => $enabledFields,
+                'careContractText' => $this->careContractTextFor($company),
             ]);
         }
 
@@ -208,14 +217,16 @@ class PublicBookingController extends Controller
 
         session(['public_booking.customer_id' => $customer->id]);
 
-        $this->shareLemmikkihoitolaBrand(Company::where('industry', 'lemmikkihoitola')->firstOrFail());
+             $company = Company::where('industry', 'lemmikkihoitola')->firstOrFail();
+        $this->shareLemmikkihoitolaBrand($company);
 
                 return view('public.booking.step4', [
             'customer' => $customer->load('pets'),
             'animals' => session('public_booking.animals'),
             'email' => $customer->email,
             'enabledFields' => $this->enabledBookingFields(),
-        ]);
+            'careContractText' => $this->careContractTextFor($company),
+        ]);   
     }
 
     public function paymentSuccess(Request $request)
@@ -235,13 +246,16 @@ class PublicBookingController extends Controller
         return view('public.booking.cancelled');
     }
 
-    public function store(Request $request)
+            public function store(Request $request)
     {
         if (!session('public_booking.hold_ids') || !session('public_booking.animals')) {
             return redirect()->route('public.booking.start');
         }
 
-        $validated = $request->validate([
+        $company = Company::where('industry', 'lemmikkihoitola')->firstOrFail();
+                $requiresContractAgreement = filled($this->careContractTextFor($company));
+
+        $rules = [
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_phone' => ['required', 'string', 'max:50'],
             'pets' => ['required', 'array', 'min:1'],
@@ -262,10 +276,17 @@ class PublicBookingController extends Controller
             'pets.*.emergency_notes' => ['nullable', 'string'],
             'pets.*.general_notes' => ['nullable', 'string'],
             'pets.*.booking_notes' => ['nullable', 'string'],
+        ];
+
+        if ($requiresContractAgreement) {
+            $rules['agree_to_terms'] = ['accepted'];
+        }
+
+        $validated = $request->validate($rules, [
+            'agree_to_terms.accepted' => 'Sinun täytyy hyväksyä hoitosopimuksen ehdot voidaksesi varata ajan.',
         ]);
 
         $email = session('public_booking.email');
-        $company = Company::where('industry', 'lemmikkihoitola')->firstOrFail();
 
             $customerId = session('public_booking.customer_id');
         if ($customerId) {
