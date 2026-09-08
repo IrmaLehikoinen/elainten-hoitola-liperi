@@ -1,5 +1,19 @@
 <x-kurssit::layouts.public :title="$course->name">
+    @include('kurssit::partials.brand-styles')
+
+    <style>
+        .sp-kurssit-page {
+            --brand-primary: #7CAB33;
+            --sp-rose: #80107A;
+            --sp-rose-soft: #C4DD5E;
+            --sp-gold: #B49170;
+            --sp-gold-light: #C2AF6F;
+        }
+    </style>
+
     @include('kurssit::partials.nav')
+
+    <div class="sp-kurssit-page">
 
     @if (session('registration_error'))
         <div style="background:#FEF2F2; border:1px solid #FCA5A5; color:#991B1B; padding:12px 16px; border-radius:8px; font-size:14px; margin-bottom:20px;">
@@ -36,8 +50,8 @@
             style="width:100%; border-radius: var(--brand-radius, 16px); margin-bottom:24px; display:block;">
     @endif
 
-    <div style="background:white; border-radius: var(--brand-radius, 16px); padding:24px 28px; box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 12px 32px -20px rgba(0,0,0,0.10); border:1px solid rgba(42,52,40,0.08); margin-bottom:32px;">
-        <h1 style="font-family: var(--brand-heading-font); font-size: 24px; font-weight:700; color: var(--brand-text); margin:0 0 10px;">
+    <div style="background:white; border-radius: var(--brand-radius, 16px); padding:24px 28px; box-shadow:0 1px 4px rgba(42,52,40,0.05); border:1px solid rgba(42,52,40,0.08); margin-bottom:32px;">
+        <h1 style="font-family: var(--brand-heading-font); font-size: 24px; font-weight:600; color: var(--brand-text); margin:0 0 10px;">
             {{ $course->name }}
         </h1>
 
@@ -47,7 +61,7 @@
             </p>
         @endif
 
-        <p style="font-family: var(--brand-body-font); font-size:15px; color: var(--brand-accent); opacity:0.75; margin:0;">
+        <p style="font-family: var(--brand-body-font); font-size:15px; color: var(--brand-text); opacity:0.75; margin:0;">
             {{ $course->price > 0 ? number_format($course->price, 2, ',', ' ').' €' : 'Maksuton' }}
             · {{ $course->remainingSpots() }} / {{ $course->max_participants }} paikkaa vapaana
         </p>
@@ -57,7 +71,7 @@
         <div style="margin-bottom:32px;">
             @foreach ($remainingBlocks as $block)
                 @if ($block['type'] === 'heading')
-                    <h2 style="font-family: var(--brand-heading-font); font-size:22px; font-weight:700; color: var(--brand-text); margin:24px 0 12px;">
+                    <h2 style="font-family: var(--brand-heading-font); font-size:22px; font-weight:600; color: var(--brand-text); margin:24px 0 12px;">
                         {{ $block['text'] }}
                     </h2>
                 @elseif ($block['type'] === 'subheading')
@@ -77,7 +91,7 @@
                     <ul style="list-style:none; padding:0; margin:16px 0;">
                         @foreach ($block['items'] as $item)
                             <li style="display:flex; gap:8px; align-items:flex-start; margin-bottom:8px; font-family: var(--brand-body-font); font-size:15px; color: var(--brand-text);">
-                                <span style="color: var(--brand-secondary); font-weight:700;">✓</span>
+                                <span style="color: var(--sp-rose); font-weight:700;">✓</span>
                                 <span>{{ $item }}</span>
                             </li>
                         @endforeach
@@ -87,25 +101,25 @@
         </div>
     @endif
 
-                        @if ($course->isCancelled())
+    @if ($course->isCancelled())
         <p style="color:#991B1B; font-weight:600;">Tämä kurssi on peruttu.</p>
     @elseif ($course->isRegistrationClosed())
-        <p style="color: var(--brand-accent); font-weight:600;">Ilmoittautuminen tälle kurssille on suljettu.</p>
+        <p style="color: var(--brand-text); font-weight:600;">Ilmoittautuminen tälle kurssille on suljettu.</p>
     @elseif ($course->isFull())
         @if ($course->isTemporarilyFull())
-            <p style="color: var(--brand-accent); font-weight:600;">
+            <p style="color: var(--brand-text); font-weight:600;">
                 Kurssi on juuri nyt varattu täyteen, mutta varauksia ei vielä ole viety loppuun asti. Paikkoja voi vapautua muutaman minuutin kuluessa — käy katsomassa tilanne hetken päästä uudelleen.
             </p>
         @else
             <p style="color:#991B1B; font-weight:600;">Kurssi on valitettavasti täynnä.</p>
         @endif
     @else
-        <div style="background:white; border-radius: var(--brand-radius, 16px); padding:28px; box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 12px 32px -20px rgba(0,0,0,0.10); border:1px solid rgba(42,52,40,0.08);">
-            <h2 style="font-family: var(--brand-heading-font); font-size:18px; font-weight:700; color: var(--brand-text); margin:0 0 16px;">
+        <div style="background:white; border-radius: var(--brand-radius, 16px); padding:28px; box-shadow:0 1px 4px rgba(42,52,40,0.05); border:1px solid rgba(42,52,40,0.08);">
+            <h2 style="font-family: var(--brand-heading-font); font-size:18px; font-weight:600; color: var(--brand-text); margin:0 0 16px;">
                 Ilmoittaudu
             </h2>
 
-                         <form method="POST" action="{{ route('kurssit.public.store', $course) }}" style="display:flex; flex-direction:column; gap:14px; max-width:400px; margin:0 auto;">
+            <form method="POST" action="{{ route('kurssit.public.store', $course) }}" style="display:flex; flex-direction:column; gap:14px; max-width:400px; margin:0 auto;">
                 @csrf
 
                 <div>
@@ -125,7 +139,7 @@
                     <input type="tel" name="phone" value="{{ old('phone') }}" style="width:100%; padding:10px 12px; border:1px solid #D1D5DB; border-radius: var(--brand-radius, 8px); box-sizing:border-box; font-family: var(--brand-body-font);">
                 </div>
 
-                                <div>
+                <div>
                     <label style="display:block; font-size:14px; font-weight:500; color: var(--brand-text); margin-bottom:4px;">Lahjakortin numero (valinnainen)</label>
                     <input type="text" name="gift_card_code" value="{{ old('gift_card_code') }}" style="width:100%; padding:10px 12px; border:1px solid #D1D5DB; border-radius: var(--brand-radius, 8px); box-sizing:border-box; font-family: var(--brand-body-font);">
                 </div>
@@ -136,8 +150,7 @@
                 </label>
                 @error('privacy_consent') <p style="color:#991B1B; font-size:13px; margin-top:-8px;">{{ $message }}</p> @enderror
 
-                <button type="submit" class="btn-brand"
-                    style="margin-top:8px; border:none; padding:12px 20px; border-radius: var(--brand-radius, 8px); font-size:15px; font-weight:600; cursor:pointer; font-family: var(--brand-body-font);">
+                <button type="submit" class="sp-btn-cta" style="margin-top:8px; width:100%; justify-content:center;">
                     {{ $course->price > 0 ? 'Jatka maksuun' : 'Ilmoittaudu' }}
                 </button>
             </form>
@@ -145,4 +158,5 @@
     @endif
 
     @include('kurssit::partials.powered-by-novi')
+    </div>
 </x-kurssit::layouts.public>
