@@ -56,8 +56,12 @@ class LemmikkihoitolaServiceProvider extends ServiceProvider
      */
             public function boot(): void
     {
-        // Moduulin omat reitit — pohja ei tunne niitä suoraan.
+            // Moduulin omat reitit — pohja ei tunne niitä suoraan.
         $this->loadRoutesFrom(__DIR__.'/routes.php');
+
+        // Moduulin omat migraatiot — kulkevat moduulin mukana, pohja ei
+        // tarvitse tietää näistä tauluista jos moduulia ei ole käytössä.
+        $this->loadMigrationsFrom(__DIR__.'/database/migrations');
 
         // Moduulin omat näkymät löytyvät tästä kansiosta pohjan
         // näkymien (resources/views) lisäksi. Pohja ei tunne tätä polkua.
