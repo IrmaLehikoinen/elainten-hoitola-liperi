@@ -32,9 +32,12 @@ class AjanvarausServiceProvider extends ServiceProvider
         //
     }
 
-        public function boot(): void
+                public function boot(): void
     {
         $this->loadRoutesFrom(__DIR__.'/routes.php');
+
+        // Moduulin omat migraatiot — kulkevat moduulin mukana.
+        $this->loadMigrationsFrom(__DIR__.'/database/migrations');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
