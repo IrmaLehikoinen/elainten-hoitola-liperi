@@ -353,23 +353,27 @@
         }
 
         /* ===== MODAALI ===== */
-        .sp-modal-overlay {
+            .sp-modal-overlay {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(42,52,40,0.55);
             z-index: 50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
         }
         .sp-modal-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: var(--brand-background);
             border-radius: 20px;
             max-width: 460px;
-            width: 100%;
+            width: calc(100% - 40px);
+            max-height: 80vh;
+            overflow-y: auto;
             padding: 36px;
-            position: relative;
         }
         .sp-modal-close {
             position: absolute;

@@ -13,7 +13,8 @@ class SydanpolkuController extends Controller
     {
         $company = Company::where('industry', 'kurssit')->firstOrFail();
 
-        $courses = Course::where('company_id', $company->id)
+            $courses = Course::withoutGlobalScope('company')
+            ->where('company_id', $company->id)
             ->whereNull('cancelled_at')
             ->where(function ($query) {
                 $query->whereNull('starts_at')
@@ -23,9 +24,10 @@ class SydanpolkuController extends Controller
             ->take(3)
             ->get();
 
-        $treatmentCategories = TreatmentCategory::where('company_id', $company->id)
+        $treatmentCategories = TreatmentCategory::withoutGlobalScope('company')
+            ->where('company_id', $company->id)
             ->with(['treatments' => function ($query) {
-                $query->where('is_active', true);
+                $query->withoutGlobalScope('company')->where('is_active', true);
             }])
             ->orderBy('order')
             ->get();
