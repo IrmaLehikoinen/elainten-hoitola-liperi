@@ -52,6 +52,7 @@ class ServiceSelectionController extends Controller
             $today = today();
 
             $bookings = Booking::where('customer_id', $customer->id)
+                ->where('status', 'confirmed')
                 ->where(function ($q) use ($today) {
                     $q->whereNull('end_date')->orWhere('end_date', '>=', $today);
                 })
@@ -77,6 +78,7 @@ class ServiceSelectionController extends Controller
         $today = today();
 
         $inHousePets = BookingParticipant::with(['booking.customer', 'pet'])
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', 'cancelled'))
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
             ->get()
@@ -84,6 +86,7 @@ class ServiceSelectionController extends Controller
             ->values();
 
         $upcomingPets = BookingParticipant::with(['booking.customer', 'pet'])
+            ->whereHas('booking', fn ($q) => $q->where('status', 'confirmed'))
             ->whereDate('start_date', '>', $today)
             ->get()
             ->sortBy(fn ($p) => optional($p->booking)->arrival_at)

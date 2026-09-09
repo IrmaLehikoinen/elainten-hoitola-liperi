@@ -24,10 +24,10 @@ class SydanpolkuController extends Controller
             ->take(3)
             ->get();
 
-        $treatmentCategories = TreatmentCategory::withoutGlobalScope('company')
+            $treatmentCategories = TreatmentCategory::withoutGlobalScope('company')
             ->where('company_id', $company->id)
             ->with(['treatments' => function ($query) {
-                $query->withoutGlobalScope('company')->where('is_active', true);
+                $query->withoutGlobalScope('company');
             }])
             ->orderBy('order')
             ->get();

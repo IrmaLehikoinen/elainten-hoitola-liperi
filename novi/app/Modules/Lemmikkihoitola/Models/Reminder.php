@@ -68,4 +68,12 @@ class Reminder extends Model
     {
         return $query->whereNull('done_at');
     }
+
+    public function scopeOnlyConfirmedBooking($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereDoesntHave('bookingParticipant')
+                ->orWhereHas('bookingParticipant.booking', fn ($b) => $b->where('status', 'confirmed'));
+        });
+    }
 }

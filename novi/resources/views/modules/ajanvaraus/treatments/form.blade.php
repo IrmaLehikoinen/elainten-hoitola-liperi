@@ -3,22 +3,29 @@
         <a href="{{ route('ajanvaraus.treatments.index') }}" class="text-sm font-semibold text-gray-500 hover:text-gray-800">← Takaisin hoitoihin</a>
         <h1 class="mt-2 text-xl font-semibold">{{ $treatment->exists ? 'Muokkaa hoitoa' : 'Uusi hoito' }}</h1>
 
-        @if (session('status'))
+                @if (session('status'))
             <div class="mt-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">{{ session('status') }}</div>
         @endif
 
-        <form method="POST" action="{{ $treatment->exists ? route('ajanvaraus.treatments.update', $treatment) : route('ajanvaraus.treatments.store') }}" class="mt-6 space-y-4">
+                    <form method="POST" action="{{ $treatment->exists ? route('ajanvaraus.treatments.update', $treatment) : route('ajanvaraus.treatments.store') }}" class="mt-6 space-y-4">
             @csrf
             @if ($treatment->exists) @method('PATCH') @endif
 
-            <div>
+                        <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Nimi</label>
                 <input type="text" name="name" value="{{ old('name', $treatment->name) }}" required class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                @error('name')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
-                        <div>
+                                    <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Lyhyt kuvaus</label>
-                <input type="text" name="short_description" value="{{ old('short_description', $treatment->short_description) }}" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                <input type="text" name="short_description" value="{{ old('short_description', $treatment->short_description) }}" maxlength="1000" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                <p class="mt-1 text-xs text-gray-400">Enintään 1000 merkkiä.</p>
+                @error('short_description')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
                         <div>
@@ -26,7 +33,7 @@
                 <textarea name="internal_note" rows="3" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">{{ old('internal_note', $treatment->internal_note) }}</textarea>
             </div>
 
-            <div>
+                        <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Otsikko / kategoria</label>
                 <select name="treatment_category_id" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
                     <option value="">— ei otsikkoa —</option>
@@ -34,20 +41,32 @@
                         <option value="{{ $category->id }}" @selected(old('treatment_category_id', $treatment->treatment_category_id) == $category->id)>{{ $category->name }}</option>
                     @endforeach
                 </select>
+                @error('treatment_category_id')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
-            <div class="flex gap-4">
+                <div class="flex gap-4">
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Kesto (min)</label>
                     <input type="number" min="5" step="5" name="duration_minutes" value="{{ old('duration_minutes', $treatment->duration_minutes) }}" required class="mt-1 w-28 rounded-md border-gray-300 shadow-sm">
+                    @error('duration_minutes')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
                  <div>
                     <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Kapasiteetti (max)</label>
                     <input type="number" min="1" name="capacity" value="{{ old('capacity', $treatment->capacity ?? 1) }}" required class="mt-1 w-28 rounded-md border-gray-300 shadow-sm">
+                    @error('capacity')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Hinta (€)</label>
                     <input type="number" min="0" step="0.01" name="price" value="{{ old('price', $treatment->price) }}" class="mt-1 w-28 rounded-md border-gray-300 shadow-sm">
+                    @error('price')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
@@ -76,7 +95,7 @@
 
             <div class="flex items-center gap-2">
                 <input type="checkbox" name="is_active" id="is_active" value="1" @checked(old('is_active', $treatment->is_active ?? true)) class="rounded border-gray-300">
-                <label for="is_active" class="text-sm text-gray-700">Hoito on varattavissa</label>
+                                <label for="is_active" class="text-sm text-gray-700">Hoito on varattavissa verkosta</label>
             </div>
 
             <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">Tallenna</button>

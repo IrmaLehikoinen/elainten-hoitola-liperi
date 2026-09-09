@@ -14,6 +14,7 @@ class InvoiceController extends Controller
     public function index(Request $request)
     {
             $readyToInvoice = Booking::with(['customer', 'participants'])
+            ->where('status', '!=', 'cancelled')
             ->whereNotNull('end_date')
             ->where('end_date', '<', today())
             ->whereDoesntHave('invoice')
@@ -68,6 +69,10 @@ class InvoiceController extends Controller
 
     public function store(Booking $booking)
     {
+        if ($booking->status === 'cancelled') {
+            return back()->with('error', 'Peruutetusta varauksesta ei voi tehdä kuittia.');
+        }
+
         if ($booking->invoice) {
             return redirect()
                 ->route('invoices.show', $booking->invoice)

@@ -48,6 +48,7 @@ class DashboardController extends Controller
     private function participantsInCareOn(Carbon $date)
     {
         return BookingParticipant::with(['booking.customer', 'pet'])
+            ->whereHas('booking', fn ($q) => $q->where('status', 'confirmed'))
             ->whereDate('start_date', '<=', $date)
             ->whereDate('end_date', '>=', $date)
             ->get()
@@ -58,6 +59,7 @@ class DashboardController extends Controller
     private function participantsArrivingOn(Carbon $date)
     {
         return BookingParticipant::with(['booking.customer', 'pet'])
+            ->whereHas('booking', fn ($q) => $q->where('status', 'confirmed'))
             ->whereDate('start_date', $date)
             ->get()
             ->sortBy(fn ($p) => optional($p->booking)->arrival_at)
@@ -80,10 +82,12 @@ class DashboardController extends Controller
                 'species' => $participant->resource_type,
                 'customer' => optional(optional($participant->booking)->customer)->name,
                 'pet_id' => $participant->pet_id,
+                'customer_id' => optional($participant->booking)->customer_id,
             ]);
         }
 
         $leavingToday = BookingParticipant::with(['booking.customer', 'pet'])
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', 'cancelled'))
             ->whereDate('end_date', $today)
             ->get();
 
@@ -95,9 +99,9 @@ class DashboardController extends Controller
                 'species' => $participant->resource_type,
                 'customer' => optional(optional($participant->booking)->customer)->name,
                 'pet_id' => $participant->pet_id,
+                'customer_id' => optional($participant->booking)->customer_id,
             ]);
         }
-
         return $items->sortBy('time')->values();
     }
 
@@ -110,6 +114,7 @@ class DashboardController extends Controller
         $reminders = Reminder::with(['pet', 'bookingParticipant.booking.customer', 'customer'])
             ->forDate($today)
             ->open()
+            ->onlyConfirmedBooking()
             ->get();
 
         return $reminders->map(function ($reminder) {
@@ -140,6 +145,7 @@ class DashboardController extends Controller
         $end = $monthStart->copy()->endOfMonth();
 
         $participants = BookingParticipant::with(['pet', 'booking'])
+            ->whereHas('booking', fn ($q) => $q->where('status', 'confirmed'))
             ->whereDate('start_date', '<=', $end)
             ->whereDate('end_date', '>=', $start)
             ->get();

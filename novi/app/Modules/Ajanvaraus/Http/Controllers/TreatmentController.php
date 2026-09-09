@@ -73,11 +73,11 @@ class TreatmentController extends Controller
         return back()->with('status', 'Hoito päivitetty.');
     }
 
-    private function validated(Request $request): array
+        private function validated(Request $request): array
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'short_description' => ['nullable', 'string', 'max:500'],
+            'short_description' => ['nullable', 'string', 'max:1000'],
             'internal_note' => ['nullable', 'string', 'max:2000'],
             'treatment_category_id' => ['nullable', 'exists:treatment_categories,id'],
             'duration_minutes' => ['required', 'integer', 'min:5', 'max:600'],
@@ -86,6 +86,8 @@ class TreatmentController extends Controller
             'warning_days_before' => ['nullable', 'integer', 'min:0'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'color' => ['nullable', 'string', 'max:20'],
+        ], [
+                        'short_description.max' => 'Lyhyt kuvaus voi olla enintään 1000 merkkiä pitkä.',
         ]);
     }
 }

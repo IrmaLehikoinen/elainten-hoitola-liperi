@@ -62,7 +62,10 @@
                                 <input type="text" name="name" value="{{ $category->name }}" class="flex-1 rounded-md border-gray-300 shadow-sm text-sm">
                                 <button type="submit" class="text-xs text-gray-600 hover:text-gray-900 whitespace-nowrap">Tallenna</button>
                             </div>
-                            <input type="text" name="description" value="{{ $category->description }}" placeholder="Lyhyt kuvaus (näkyy etusivulla)" class="rounded-md border-gray-300 shadow-sm text-xs text-gray-500">
+                                                        <input type="text" name="description" value="{{ $category->description }}" placeholder="Lyhyt kuvaus (näkyy etusivulla)" maxlength="1000" class="rounded-md border-gray-300 shadow-sm text-xs text-gray-500">
+                            @error('description')
+                                <p class="text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                             <input type="text" name="link_url" value="{{ $category->link_url }}" placeholder="Linkki omalle sivulle (valinnainen, esim. /sydanpolku/tyohyvinvointipaivat)" class="rounded-md border-gray-300 shadow-sm text-xs text-gray-500">
                         </form>
                         <form method="POST" action="{{ route('ajanvaraus.categories.destroy', $category) }}" onsubmit="return confirm('Poistetaanko otsikko?');">

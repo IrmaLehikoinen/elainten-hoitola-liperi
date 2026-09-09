@@ -91,8 +91,8 @@
                                 </div>
 
                                 <span
-                                    x-show="item.pet_id"
-                                    @click="window.location.href = '/admin/pets/' + item.pet_id"
+                                    x-show="item.customer_id"
+                                    @click="window.location.href = '/admin/customers/' + item.customer_id + '?from=dashboard'"
                                     class="shrink-0 cursor-pointer text-sm font-medium"
                                     style="color: var(--brand-primary);"
                                 >

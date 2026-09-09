@@ -37,6 +37,7 @@ class CalendarController extends Controller
         }
 
         $participants = BookingParticipant::with(['pet', 'booking'])
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', 'cancelled'))
             ->whereDate('start_date', '<=', $periodEnd)
             ->whereDate('end_date', '>=', $periodStart)
             ->get();
@@ -99,6 +100,7 @@ class CalendarController extends Controller
         $day = Carbon::createFromFormat('Y-m-d', $date)->startOfDay();
 
         $participants = BookingParticipant::with(['booking.customer', 'pet'])
+            ->whereHas('booking', fn ($q) => $q->where('status', '!=', 'cancelled'))
             ->whereDate('start_date', '<=', $day)
             ->whereDate('end_date', '>=', $day)
             ->get()
@@ -124,6 +126,7 @@ class CalendarController extends Controller
 
         $reminders = \App\Modules\Lemmikkihoitola\Models\Reminder::with(['pet', 'bookingParticipant.booking.customer', 'customer'])
             ->forDate($day)
+            ->onlyConfirmedBooking()
             ->get();
 
                 $overrides = DateCapacityOverride::whereDate('date', $day->toDateString())->get();

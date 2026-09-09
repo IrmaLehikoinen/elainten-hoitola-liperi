@@ -7,10 +7,10 @@
                 {{ $treatment->duration_minutes }} min
                 · {{ $treatment->capacity }} {{ $treatment->capacity === 1 ? 'henkilö' : 'henkilöä' }}
                 · {{ $treatment->price > 0 ? number_format($treatment->price, 2, ',', ' ').' €' : 'Maksuton' }}
-                @unless ($treatment->is_active)
-                    · <span class="text-red-600">pois käytöstä</span>
-                @endunless
             </p>
+            @unless ($treatment->is_active)
+                <p class="text-xs text-red-600">Hoito ei varattavissa verkosta</p>
+            @endunless
         </div>
     </div>
     <div class="flex items-center gap-3">

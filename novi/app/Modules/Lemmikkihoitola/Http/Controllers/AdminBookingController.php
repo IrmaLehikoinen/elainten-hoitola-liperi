@@ -239,8 +239,22 @@ class AdminBookingController extends Controller
      */
     public function markDepositPaid(Booking $booking)
     {
-        if ($booking->status !== 'pending') {
-            return back()->with('error', 'Vain odottava varaus voidaan merkitä maksetuksi.');
+        if ($booking->status === 'confirmed') {
+            return back()->with('error', 'Varaus on jo vahvistettu.');
+        }
+
+        if ($booking->status === 'cancelled') {
+            $requirements = $booking->participants
+                ->groupBy(fn ($p) => mb_strtolower(trim($p->resource_type)))
+                ->map(fn ($group, $type) => ['resource_type' => $type, 'count' => $group->count()])
+                ->values()
+                ->all();
+
+            $durationDays = $booking->start_date->copy()->startOfDay()->diffInDays($booking->end_date->copy()->startOfDay()) + 1;
+
+            if (!app(\App\Services\AvailabilityService::class)->isAvailable($requirements, $booking->start_date->toDateString(), $durationDays)) {
+                return back()->with('error', 'Ei voida palauttaa: paikka on jo varattu tälle ajalle toiselle asiakkaalle.');
+            }
         }
 
         $booking->update([

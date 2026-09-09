@@ -63,7 +63,8 @@ class PublicBookingController extends Controller
             ->values()
             ->all();
 
-        return view('ajanvaraus::public.book', [
+            return view('ajanvaraus::public.book', [
+            'company' => $company,
             'treatments' => $treatments,
             'treatment' => $treatment,
             'dateSlots' => $dateSlots,

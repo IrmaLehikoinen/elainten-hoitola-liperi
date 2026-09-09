@@ -96,6 +96,7 @@ class LemmikkihoitolaServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \App\Modules\Lemmikkihoitola\Console\Commands\CancelExpiredBookings::class,
+                \App\Modules\Lemmikkihoitola\Console\Commands\SendPaymentReminders::class,
             ]);
         }
 

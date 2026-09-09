@@ -17,6 +17,24 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
+            @if (request('from') === 'day' && request('date'))
+                <div
+                    onclick="window.location.href='{{ route('admin.calendar.day', request('date')) }}'"
+                    class="cursor-pointer text-sm font-medium"
+                    style="color: var(--brand-primary);"
+                >
+                    ← Takaisin päivänäkymään
+                </div>
+            @elseif (request('from') === 'dashboard')
+                <div
+                    onclick="window.location.href='{{ route('dashboard') }}'"
+                    class="cursor-pointer text-sm font-medium"
+                    style="color: var(--brand-primary);"
+                >
+                    ← Takaisin etusivulle
+                </div>
+            @endif
+
             {{-- Perustiedot --}}
             <section class="bg-white p-6 shadow-sm rounded-lg">
                 <h2
@@ -300,7 +318,7 @@
                                         {{ number_format((float) $booking->deposit_amount, 2, ',', ' ') }} €
                                         {{ $booking->deposit_paid_at ? '· Maksettu' : '· Odottaa maksua' }}
                                     </span>
-                                    @if (!$booking->deposit_paid_at && $booking->status !== 'cancelled')
+                                    @if (!$booking->deposit_paid_at && $booking->status !== 'confirmed')
                                         <form method="POST" action="{{ route('admin.bookings.mark-deposit-paid', $booking) }}" onsubmit="return confirm('Merkitäänkö ennakkomaksu maksetuksi (esim. käteinen tai tilisiirto)?');">
                                             @csrf
                                             <button type="submit" class="text-xs font-medium underline" style="color: var(--brand-primary);">

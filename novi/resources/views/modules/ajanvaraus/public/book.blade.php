@@ -1,7 +1,7 @@
 <x-ajanvaraus::layouts.public title="Varaa aika">
     <style>
-        h1 { font-family: var(--brand-heading-font); font-size: 24px; color: var(--brand-text); margin-top: 0; }
-        h2 { font-family: var(--brand-heading-font); font-size: 19px; margin-top: 28px; color: var(--brand-text); }
+                h1 { font-family: var(--brand-heading-font); font-size: 24px; color: var(--brand-text); margin-top: 32px; }
+        h2 { font-family: var(--brand-heading-font); font-size: 24px; margin-top: 28px; color: #80107A; }        
         label { display: block; font-size: 13px; color: var(--brand-text); opacity: 0.7; margin-top: 12px; }
         select, input {
             width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--brand-secondary);
@@ -9,7 +9,7 @@
             font-family: var(--brand-body-font); color: var(--brand-text); background: #fff;
         }
         .pick-btn {
-            margin-top: 16px; padding: 11px 22px; background: var(--brand-primary); color: #fff;
+            margin-top: 24px; padding: 11px 22px; background: var(--brand-primary); color: #fff;
             border: none; border-radius: 999px; font-weight: 600; cursor: pointer; font-family: var(--brand-body-font);
         }
         .slot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
@@ -19,8 +19,12 @@
             font-family: var(--brand-body-font);
         }
         .slot-btn:hover { border-color: var(--brand-primary); }
+        
         .error { color: #b3261e; font-size: 13px; }
-        .hint { font-size: 13px; color: #b3261e; }
+        .hint { font-size: 13px; color: #b3261e; margin-top: 16px; margin-bottom: 24px; }
+        .treatment-desc { margin-top: 14px; }
+        .no-slots { margin-top: 28px; }
+        .no-slots a { color: var(--brand-accent); text-decoration: underline; }       
         .cal-nav-btn { border: 1px solid var(--brand-secondary); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; background: #fff; color: var(--brand-text); }
         .cal-day-label { font-size: 11px; font-weight: 600; opacity: 0.5; text-align: center; color: var(--brand-text); }
         .upcoming-item {
@@ -39,7 +43,7 @@
         .back-link:hover { text-decoration: underline; }
 
         /* ===== HOIDON VALINTA (custom listbox) ===== */
-        .th-select-wrap { position: relative; margin-top: 4px; }
+        .th-select-wrap { position: relative; margin-top: 8px; margin-bottom: 24px; }
         .th-select-trigger {
             width: 100%; max-width: 760px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
             min-height: 56px; padding: 14px 18px; background: #FCFBF8; border: 1px solid var(--brand-secondary);
@@ -80,7 +84,19 @@
     </style>
 
         <button type="button" class="back-link" onclick="history.back()">← Takaisin palveluihin</button>
+
+    @if ($treatment)
+        <h2>{{ $treatment->name }}</h2>
+        <p class="treatment-desc">{{ $treatment->short_description }}</p>
+    @endif
+
     <h1>Varaa aika</h1>
+
+    @if ($treatment)
+        @if (! $name || ! $email)
+            <p class="hint">Täytä ensin nimi ja sähköposti alle, jotta voit varata ajan.</p>
+        @endif
+    @endif
 
     <form method="GET" action="{{ route('ajanvaraus.public.book') }}" id="treatmentPickerForm">
                 <label>Valitse hoito</label>
@@ -225,13 +241,6 @@
     @enderror
 
     @if ($treatment)
-        <h2>{{ $treatment->name }}</h2>
-        <p>{{ $treatment->short_description }}</p>
-
-        @if (! $name || ! $email)
-            <p class="hint">Täytä ensin nimi ja sähköposti yllä, jotta voit varata ajan.</p>
-        @endif
-
         <form method="POST" action="{{ route('ajanvaraus.public.store') }}" id="bookForm">
             @csrf
             <input type="hidden" name="treatment_id" value="{{ $treatment->id }}">
@@ -242,7 +251,7 @@
         </form>
 
         @if (empty($dateSlots))
-            <p>Ei vapaita aikoja lähiaikoina. Ota yhteyttä suoraan hoitolaan.</p>
+            <p class="no-slots">Ei vapaita aikoja lähiaikoina. <a href="{{ route('sydanpolku.index') }}#yhteystiedot">Ota yhteyttä suoraan hoitolaan.</a></p>
         @else
             <div
                 x-data="{
@@ -358,8 +367,20 @@
                     @endforeach
                 </div>
             @endif
-        @endif
+                @endif
     @endif
+
+    <p style="margin-top: 32px; text-align: center; font-size: 12px; opacity: 0.6;">
+        <button type="button" onclick="window.open('{{ route('legal.privacy') }}', '_blank')" style="background: none; border: none; cursor: pointer; color: var(--brand-text); text-decoration: underline; font-family: var(--brand-body-font); font-size: 12px;">
+            Tietosuojaseloste
+        </button>
+    </p>
+    <p style="margin-top: 8px; text-align: center; font-size: 12px; font-weight: 600; opacity: 0.6;">
+        Powered by Novi
+    </p>
+    <p style="margin-top: 2px; text-align: center; font-size: 10px; font-weight: 300; opacity: 0.4;">
+        ajanvaraus &amp; asiakashallinta
+    </p>
 
     <script>
         var form = document.getElementById('bookForm');

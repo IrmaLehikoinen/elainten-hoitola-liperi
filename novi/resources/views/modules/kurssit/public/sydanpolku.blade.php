@@ -308,17 +308,18 @@
             margin: 0 0 14px;
         }
 
-        /* ===== VARAA AIKA -NOSTO ===== */
+                /* ===== VARAA AIKA -NOSTO ===== */
         .sp-booking-cta {
-            max-width: 1150px;
-            margin: 56px auto 0;
+            max-width: 640px;
+            margin: 96px auto 0;
             background: #F1F0E4;
             border-radius: 20px;
-            padding: 44px 48px;
+            padding: 40px 48px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            gap: 32px;
+            text-align: center;
+            gap: 18px;
         }
         .sp-booking-cta-text h3 {
             font-family: var(--brand-heading-font);
@@ -334,16 +335,13 @@
             color: var(--brand-text);
             opacity: 0.75;
             max-width: 46ch;
-            margin: 0;
+            margin: 0 auto;
         }
         .sp-booking-cta-action {
             flex-shrink: 0;
         }
         @media (max-width: 699px) {
             .sp-booking-cta {
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
                 padding: 32px 24px;
             }
             .sp-booking-cta-action .sp-btn-cta {
@@ -351,7 +349,6 @@
                 justify-content: center;
             }
         }
-
         /* ===== MODAALI ===== */
             .sp-modal-overlay {
             position: fixed;
@@ -426,8 +423,8 @@
         .sp-treatment-row strong {
             font-family: var(--brand-heading-font);
             font-weight: 600;
-            font-size: 15px;
-            color: var(--brand-text);
+            font-size: 21px;
+            color: var(--sp-rose);
         }
         .sp-treatment-row p {
             font-family: var(--brand-body-font);
@@ -814,7 +811,7 @@
                         </button>
                                         @else
                         <button type="button" class="sp-btn-text" @click="openCategory = {{ $i }}">
-                            Varaa aika →
+                            {{ $category->treatments->contains('is_active', true) ? 'Varaa aika' : 'Ota yhteyttä' }} →
                         </button>
                     @endif
                 </div>
@@ -851,7 +848,11 @@
                                         <p>{{ $treatment->short_description }}</p>
                                     @endif
                                 </div>
-                                <a href="{{ route('ajanvaraus.public.book', ['treatment_id' => $treatment->id]) }}" class="sp-btn-text">Varaa aika →</a>
+                                                                @if ($treatment->is_active)
+                                    <a href="{{ route('ajanvaraus.public.book', ['treatment_id' => $treatment->id]) }}" class="sp-btn-text">Varaa aika →</a>
+                                @else
+                                    <a href="#yhteystiedot" class="sp-btn-text" @click="openCategory = null">Ota yhteyttä →</a>
+                                @endif
                             </div>
                         @empty
                             <p>Palveluita lisätään pian.</p>

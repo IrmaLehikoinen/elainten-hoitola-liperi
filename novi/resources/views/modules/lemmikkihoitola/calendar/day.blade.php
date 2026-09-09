@@ -66,9 +66,9 @@
                                             </p>
                                         </div>
 
-                                        @if ($p->pet_id && Route::has('admin.pets.show'))
+                                        @if (optional($p->booking)->customer_id)
                                             <div
-                                                onclick="window.location.href='{{ route('admin.pets.show', $p->pet_id) }}?from=day&date={{ $day->format('Y-m-d') }}'"
+                                                onclick="window.location.href='{{ route('admin.customers.show', $p->booking->customer_id) }}?from=day&date={{ $day->format('Y-m-d') }}'"
                                                 class="shrink-0 cursor-pointer text-sm font-medium"
                                                 style="color: var(--brand-primary);"
                                             >
@@ -158,9 +158,9 @@
                                 </p>
                             </div>
 
-                            @if ($p->pet_id && Route::has('admin.pets.show'))
+                            @if (optional($p->booking)->customer_id)
                                 <div
-                                    onclick="window.location.href='{{ route('admin.pets.show', $p->pet_id) }}?from=day&date={{ $day->format('Y-m-d') }}'"
+                                    onclick="window.location.href='{{ route('admin.customers.show', $p->booking->customer_id) }}?from=day&date={{ $day->format('Y-m-d') }}'"
                                     class="shrink-0 cursor-pointer text-sm font-medium"
                                     style="color: var(--brand-primary);"
                                 >
@@ -200,9 +200,9 @@
                                 </p>
                             </div>
 
-                            @if ($p->pet_id && Route::has('admin.pets.show'))
+                            @if (optional($p->booking)->customer_id)
                                 <div
-                                    onclick="window.location.href='{{ route('admin.pets.show', $p->pet_id) }}?from=day&date={{ $day->format('Y-m-d') }}'"
+                                    onclick="window.location.href='{{ route('admin.customers.show', $p->booking->customer_id) }}?from=day&date={{ $day->format('Y-m-d') }}'"
                                     class="shrink-0 cursor-pointer text-sm font-medium"
                                     style="color: var(--brand-primary);"
                                 >
