@@ -33,6 +33,22 @@
                 >
                     ← Takaisin etusivulle
                 </div>
+            @elseif (request('from') === 'services')
+                <div
+                    onclick="window.location.href='{{ route('admin.services.index', ['customer_id' => $customer->id, 'booking_id' => request('booking_id')]) }}'"
+                    class="cursor-pointer text-sm font-medium"
+                    style="color: var(--brand-primary);"
+                >
+                    ← Takaisin palveluihin
+                </div>
+            @elseif (request('from') === 'reports')
+                <div
+                    onclick="window.location.href='{{ route('admin.reports.index') }}'"
+                    class="cursor-pointer text-sm font-medium"
+                    style="color: var(--brand-primary);"
+                >
+                    ← Takaisin raportteihin
+                </div>
             @endif
 
             {{-- Perustiedot --}}
@@ -200,7 +216,7 @@
              <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     @forelse ($customer->pets as $pet)
                         @if (Route::has('admin.pets.show'))
-                                                        <a href="{{ route('admin.pets.show', $pet->id) }}?from=customer&customer={{ $customer->id }}" class="block rounded-lg border p-4 transition hover:shadow-md" style="border-color: var(--brand-secondary);">
+                                                        <a href="{{ route('admin.pets.show', $pet->id) }}?from=customer&customer={{ $customer->id }}&origFrom={{ request('from') }}&origDate={{ request('date') }}&origBookingId={{ request('booking_id') }}" class="block rounded-lg border p-4 transition hover:shadow-md" style="border-color: var(--brand-secondary);">
                                 <p class="font-semibold" style="color: var(--brand-primary);">{{ $pet->name }}</p>
                                 <p class="text-sm text-gray-500">{{ $pet->species }}{{ $pet->breed ? ' · '.$pet->breed : '' }}</p>
                             </a>

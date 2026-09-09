@@ -1,3 +1,26 @@
+@if (($view ?? 'month') === 'day')
+    @php $day = $days[0] ?? null; @endphp
+
+    @if ($day)
+        @php $dayHref = route($dayRoute, ['date' => $day['date']->format('Y-m-d')]); @endphp
+
+        <div
+            onclick="window.location.href='{{ $dayHref }}'"
+            class="mx-auto max-w-md min-h-[300px] rounded-lg border border-gray-200 p-6 hover:bg-gray-50 cursor-pointer"
+            style="{{ $day['date']->isToday() ? 'background-color: var(--brand-secondary);' : '' }}"
+        >
+            <span class="text-lg font-semibold" style="color: var(--brand-text);">
+                {{ ucfirst($day['date']->translatedFormat('l j.n.Y')) }}
+            </span>
+
+            <div class="mt-4 space-y-2">
+                @foreach ($day['entries'] as $entry)
+                    @include('partials.calendar-pill', ['color' => $entry['color'], 'title' => $entry['title'], 'filled' => $entry['filled'] ?? true])
+                @endforeach
+            </div>
+        </div>
+    @endif
+@else
 <div class="grid grid-cols-7 border-l border-t border-gray-200">
     @foreach (['Ma','Ti','Ke','To','Pe','La','Su'] as $label)
         <div class="border-b border-r border-gray-200 px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-gray-400">{{ $label }}</div>
@@ -24,3 +47,4 @@
         </div>
     @endforeach
 </div>
+@endif

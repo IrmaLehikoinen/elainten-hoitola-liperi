@@ -56,7 +56,7 @@
                         </div>
 
                         <div
-                            onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}'"
+                            onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}?from=reports'"
                             class="cursor-pointer text-sm font-medium shrink-0"
                             style="color: var(--brand-primary);"
                         >
@@ -95,8 +95,8 @@
                                         </p>
                                     </div>
 
-                                                                    <div class="flex items-center gap-3">
-                                        @if ($visit->status !== 'cancelled')
+                                    <div class="flex items-center gap-3">
+                                        @if ($visit->status === 'confirmed')
                                             <form method="POST" action="{{ route('admin.invoices.store', $visit) }}" target="_blank" onclick="event.stopPropagation()">
                                                 @csrf
                                                 <button

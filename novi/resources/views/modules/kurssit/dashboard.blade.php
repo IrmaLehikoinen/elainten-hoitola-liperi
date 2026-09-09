@@ -71,6 +71,7 @@
                 </div>
             </section>
 
+            <div class="space-y-6">
             <section class="rounded-xl border bg-white p-5">
                 <div class="flex items-center justify-between">
                     <h2 class="text-base font-semibold">Muistettavaa</h2>
@@ -123,6 +124,23 @@
                     <button type="submit" class="btn-brand rounded-md px-3 py-1.5 text-sm">Tallenna muistutus</button>
                 </form>
             </section>
+
+            <section class="rounded-xl border bg-white p-5">
+                <h2 class="text-base font-semibold">Muistutukset (viikon sisällä)</h2>
+
+                <div class="mt-3 space-y-2">
+                    @forelse ($upcomingReminders as $entry)
+                        <div class="rounded-md border p-2">
+                            <p class="text-sm font-medium">{{ $entry['label'] }}</p>
+                            <p class="text-xs text-gray-500">{{ $entry['date']->translatedFormat('d.m.Y') }}</p>
+                            <p class="mt-1 text-sm">{{ $entry['note'] }}</p>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-500">Ei muistutuksia tulevalle viikolle.</p>
+                    @endforelse
+                </div>
+            </section>
+            </div>
         </div>
 
         <div class="mt-6 text-center">

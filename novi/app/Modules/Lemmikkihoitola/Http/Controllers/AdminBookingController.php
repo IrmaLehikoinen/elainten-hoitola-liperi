@@ -2,6 +2,9 @@
 
 namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
+use App\Events\ExternalTimeBlocked;
+use App\Events\ExternalTimeUnblocked;
+use App\Events\SchedulingConflictDetected;
 use App\Http\Controllers\Controller;
 use App\Modules\Lemmikkihoitola\Mail\BookingConfirmed;
 use App\Modules\Lemmikkihoitola\Mail\BookingPaymentRequired;
@@ -9,6 +12,7 @@ use App\Modules\Lemmikkihoitola\Models\Booking;
 use App\Modules\Lemmikkihoitola\Models\Customer;
 use App\Modules\Lemmikkihoitola\Models\Pet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 
 class AdminBookingController extends Controller
@@ -212,6 +216,45 @@ class AdminBookingController extends Controller
             ]);
         }
 
+        // Varaa tuonti- ja hakuajat myös Sydänpolun kalenterista (30 min per
+        // ajankohta), jotta ne näkyvät estettynä siellä.
+        Event::dispatch(new ExternalTimeBlocked(
+            \App\Models\Company::where('industry', 'kurssit')->value('id'),
+            $arrivalAt->copy(),
+            $arrivalAt->format('H:i:s'),
+            $arrivalAt->copy()->addMinutes(30)->format('H:i:s'),
+            'Lemmikkihoitola: tuonti (varaus #'.$booking->id.')'
+        ));
+
+        Event::dispatch(new ExternalTimeBlocked(
+            \App\Models\Company::where('industry', 'kurssit')->value('id'),
+            $pickupAt->copy(),
+            $pickupAt->format('H:i:s'),
+            $pickupAt->copy()->addMinutes(30)->format('H:i:s'),
+            'Lemmikkihoitola: hakuaika (varaus #'.$booking->id.')'
+        ));
+
+        $conflictWarning = null;
+        $conflictSwitchUrl = null;
+        $conflictRedirect = null;
+
+        $allConflicts = array_merge(
+            $this->sydanpolkuConflicts($arrivalAt->copy(), $arrivalAt->copy()->addMinutes(30)),
+            $this->sydanpolkuConflicts($pickupAt->copy(), $pickupAt->copy()->addMinutes(30))
+        );
+
+        if (count($allConflicts) > 0) {
+            $conflictWarning = 'Menee päällekkäin Sydänpolun kalenterissa: '.implode(', ', $allConflicts).'.';
+            $conflictSwitchUrl = route('company.switch', \App\Models\Company::where('industry', 'kurssit')->value('id'));
+            $conflictRedirect = route('ajanvaraus.dashboard', ['date' => $arrivalAt->format('Y-m-d')], false);
+
+            Event::dispatch(new SchedulingConflictDetected(
+                $request->user()->company_id,
+                'Varaus #'.$booking->id.' menee päällekkäin Sydänpolun kanssa',
+                $conflictWarning
+            ));
+        }
+
         $paymentUrl = $requiresPayment ? route('payment.checkout', $booking) : null;
 
         if ($requiresPayment && $customer->email) {
@@ -223,12 +266,18 @@ class AdminBookingController extends Controller
             'booking' => $booking,
             'payment_url' => $paymentUrl,
             'email_sent' => $requiresPayment && $customer->email ? true : false,
+            'conflict_warning' => $conflictWarning,
+            'conflict_switch_url' => $conflictSwitchUrl,
+            'conflict_redirect' => $conflictRedirect,
         ], 201);
     }
 
            public function cancel(Booking $booking)
     {
         $booking->update(['status' => 'cancelled']);
+
+        Event::dispatch(new ExternalTimeUnblocked(\App\Models\Company::where('industry', 'kurssit')->value('id'), 'Lemmikkihoitola: tuonti (varaus #'.$booking->id.')'));
+        Event::dispatch(new ExternalTimeUnblocked(\App\Models\Company::where('industry', 'kurssit')->value('id'), 'Lemmikkihoitola: hakuaika (varaus #'.$booking->id.')'));
 
         return back()->with('status', 'Varaus peruttu.');
     }
@@ -338,5 +387,45 @@ class AdminBookingController extends Controller
         ]);
 
         return back()->with('status', 'Hoitojakso päivitetty.');
+    }
+
+    /**
+     * Tarkistaa menneekö annettu aikaväli päällekkäin Sydänpolun
+     * hoitoaikojen (TreatmentAppointment) tai kurssien kanssa.
+     * Ei estä tallennusta — palauttaa vain listan törmäyksistä varoitusta varten.
+     */
+    private function sydanpolkuConflicts(\Carbon\Carbon $start, \Carbon\Carbon $end): array
+    {
+        $sydanpolkuId = \App\Models\Company::where('industry', 'kurssit')->value('id');
+
+        if (! $sydanpolkuId) {
+            return [];
+        }
+
+        $conflicts = [];
+
+        \App\Modules\Ajanvaraus\Models\TreatmentAppointment::withoutGlobalScope('company')
+            ->where('company_id', $sydanpolkuId)
+            ->where('status', '!=', 'cancelled')
+            ->where('starts_at', '<', $end)
+            ->where('ends_at', '>', $start)
+            ->with('treatment')
+            ->get()
+            ->each(function ($appointment) use (&$conflicts) {
+                $conflicts[] = ($appointment->treatment->name ?? 'Hoito').' klo '.$appointment->starts_at->format('H:i');
+            });
+
+        \App\Modules\Kurssit\Models\Course::withoutGlobalScope('company')
+            ->where('company_id', $sydanpolkuId)
+            ->whereNotNull('starts_at')
+            ->whereNotNull('ends_at')
+            ->where('starts_at', '<', $end)
+            ->where('ends_at', '>', $start)
+            ->get()
+            ->each(function ($course) use (&$conflicts) {
+                $conflicts[] = $course->name.' klo '.$course->starts_at->format('H:i');
+            });
+
+        return $conflicts;
     }
 }

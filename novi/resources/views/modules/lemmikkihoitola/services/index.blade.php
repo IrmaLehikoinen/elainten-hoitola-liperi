@@ -224,7 +224,7 @@
                                         </button>
 
                                         <div
-                                            onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}'"
+                                            onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}?from=services&booking_id={{ optional($selectedBooking)->id }}'"
                                             class="cursor-pointer text-sm font-medium"
                                             style="color: var(--brand-primary);"
                                         >

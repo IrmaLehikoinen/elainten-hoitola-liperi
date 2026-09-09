@@ -228,7 +228,7 @@
 
                                 <span
                                     x-show="item.pet_id"
-                                    @click="window.location.href = '/admin/pets/' + item.pet_id"
+                                    @click="window.location.href = '/admin/pets/' + item.pet_id + '?from=dashboard'"
                                     class="shrink-0 cursor-pointer text-sm font-medium"
                                     style="color: var(--brand-primary);"
                                 >
@@ -359,22 +359,24 @@
 
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate text-sm font-medium" style="color: var(--brand-text);">
-                                        @if ($participant->pet_id && Route::has('admin.pets.show'))
-                                            <span onclick="window.location.href='{{ route('admin.pets.show', $participant->pet_id) }}'" class="cursor-pointer" style="color: var(--brand-text);">{{ $participant->name }}</span>
-                                        @else
-                                            {{ $participant->name }}
-                                        @endif
-                                                                                <span class="text-gray-400">· {{ $participant->resource_type }}</span>
+                                        {{ $participant->name }}
+                                        <span class="text-gray-400">· {{ $participant->resource_type }}</span>
                                     </p>
 
                                     <p class="truncate text-xs text-gray-500">
-                                        @if ($customer && Route::has('admin.customers.show'))
-                                            <span onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}'" class="cursor-pointer" style="color: var(--brand-primary);">{{ $customer->name }}</span>
-                                        @else
-                                            {{ $customer->name ?? '—' }}
-                                        @endif
+                                        {{ $customer->name ?? '—' }}
                                     </p>
                                 </div>
+
+                                @if ($customer && Route::has('admin.customers.show'))
+                                    <span
+                                        onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}?from=dashboard'"
+                                        class="shrink-0 cursor-pointer text-sm font-medium"
+                                        style="color: var(--brand-primary);"
+                                    >
+                                        Avaa →
+                                    </span>
+                                @endif
                             </div>
                         @empty
                             <p class="py-6 text-center text-sm text-gray-500">
@@ -420,7 +422,7 @@
                             <tr @if ($participant->end_date?->isToday()) style="background-color: var(--brand-secondary);" @endif>
                                 <td class="py-2 pr-4 font-medium">
                                     @if ($participant->pet_id && Route::has('admin.pets.show'))
-                                        <span onclick="window.location.href='{{ route('admin.pets.show', $participant->pet_id) }}'" class="cursor-pointer" style="color: var(--brand-primary);">
+                                        <span onclick="window.location.href='{{ route('admin.pets.show', $participant->pet_id) }}?from=dashboard'" class="cursor-pointer" style="color: var(--brand-primary);">
                                             {{ $participant->name }}
                                         </span>
                                     @else
@@ -430,7 +432,7 @@
                                                                    <td class="py-2 pr-4">{{ $participant->resource_type }}</td> 
                                 <td class="py-2 pr-4">
                                     @if ($customer && Route::has('admin.customers.show'))
-                                        <span onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}'" class="cursor-pointer" style="color: var(--brand-primary);">
+                                        <span onclick="window.location.href='{{ route('admin.customers.show', $customer->id) }}?from=dashboard'" class="cursor-pointer" style="color: var(--brand-primary);">
                                             {{ $customer->name }}
                                         </span>
                                     @else

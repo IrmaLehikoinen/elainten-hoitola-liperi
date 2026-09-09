@@ -12,6 +12,8 @@ class TreatmentSpecialOpening extends Model
         'date',
         'start_time',
         'end_time',
+        'reminder_note',
+        'reminder_date',
     ];
 
     protected $casts = [

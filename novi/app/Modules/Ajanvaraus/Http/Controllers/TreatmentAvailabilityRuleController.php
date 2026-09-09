@@ -15,6 +15,8 @@ class TreatmentAvailabilityRuleController extends Controller
             'weekday' => ['required', 'integer', 'min:0', 'max:6'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'reminder_note' => ['nullable', 'string', 'max:2000'],
+            'reminder_date' => ['nullable', 'date'],
         ]);
 
         $conflict = $this->findConflictingTreatment($treatment, (int) $validated['weekday'], $validated['start_time'], $validated['end_time']);

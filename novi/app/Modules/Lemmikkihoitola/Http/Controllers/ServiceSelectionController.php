@@ -78,7 +78,7 @@ class ServiceSelectionController extends Controller
         $today = today();
 
         $inHousePets = BookingParticipant::with(['booking.customer', 'pet'])
-            ->whereHas('booking', fn ($q) => $q->where('status', '!=', 'cancelled'))
+            ->whereHas('booking', fn ($q) => $q->where('status', 'confirmed'))
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
             ->get()

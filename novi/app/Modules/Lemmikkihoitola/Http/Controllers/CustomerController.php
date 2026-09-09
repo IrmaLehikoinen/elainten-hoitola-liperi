@@ -22,7 +22,7 @@ class CustomerController extends Controller
         $inCareCustomers = BookingParticipant::query()
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
-            ->whereHas('booking', fn ($query) => $query->where('status', '!=', 'cancelled'))
+            ->whereHas('booking', fn ($query) => $query->where('status', 'confirmed'))
             ->with('booking.customer')
             ->get()
             ->pluck('booking.customer')
@@ -33,7 +33,7 @@ class CustomerController extends Controller
 
         $arrivingTomorrowCustomers = BookingParticipant::query()
             ->whereDate('start_date', $tomorrow)
-            ->whereHas('booking', fn ($query) => $query->where('status', '!=', 'cancelled'))
+            ->whereHas('booking', fn ($query) => $query->where('status', 'confirmed'))
             ->with('booking.customer')
             ->get()
             ->pluck('booking.customer')
@@ -102,12 +102,12 @@ class CustomerController extends Controller
         $today = today();
 
         $upcomingBookings = $customer->bookings
-            ->filter(fn ($booking) => $booking->end_date && $booking->end_date->gte($today))
+            ->filter(fn ($booking) => $booking->status === 'confirmed' && $booking->end_date && $booking->end_date->gte($today))
             ->sortBy('start_date')
             ->values();
 
         $pastBookings = $customer->bookings
-            ->filter(fn ($booking) => ! $booking->end_date || $booking->end_date->lt($today))
+            ->filter(fn ($booking) => $booking->status === 'confirmed' && (! $booking->end_date || $booking->end_date->lt($today)))
             ->sortByDesc('start_date')
             ->values();
 

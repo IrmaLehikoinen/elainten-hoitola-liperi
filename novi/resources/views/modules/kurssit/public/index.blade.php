@@ -180,7 +180,7 @@
 
                         <div class="sp-course-meta-row">
                             @if ($course->starts_at)
-                                <span class="sp-course-meta">{{ $course->starts_at->format('d.m.Y H:i') }}</span>
+                                <span class="sp-course-meta">{{ $course->starts_at->format('d.m.Y H:i') }}@if ($course->ends_at)–{{ $course->ends_at->format('H:i') }}@endif</span>
                             @endif
                         </div>
 

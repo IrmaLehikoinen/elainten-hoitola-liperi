@@ -42,7 +42,7 @@ class CalendarCapacityController extends Controller
             // ilmoitetaan muille moduuleille, jotta esim. Ajanvaraus voi
             // sulkea saman päivän omasta kalenteristaan.
             if ($species === null && (int) $validated['capacity'] === 0) {
-                Event::dispatch(new CompanyDateClosed($override->company_id, $date->copy(), $validated['note'] ?? null));
+                Event::dispatch(new CompanyDateClosed(\App\Models\Company::where('industry', 'kurssit')->value('id'), $date->copy(), $validated['note'] ?? null));
             }
         }
 

@@ -40,15 +40,23 @@
                 >
                     ← Takaisin päivänäkymään
                 </div>
+            @elseif (request('from') === 'dashboard')
+                <div
+                    onclick="window.location.href='{{ route('dashboard') }}'"
+                    class="cursor-pointer text-sm font-medium"
+                    style="color: var(--brand-primary);"
+                >
+                    ← Takaisin etusivulle
+                </div>
             @elseif (request('from') === 'customer' && request('customer'))
                 <div
-                    onclick="window.location.href='{{ route('admin.customers.show', request('customer')) }}'"
+                    onclick="window.location.href='{{ route('admin.customers.show', array_filter(['customer' => request('customer'), 'from' => request('origFrom'), 'date' => request('origDate'), 'booking_id' => request('origBookingId')])) }}'"
                     class="cursor-pointer text-sm font-medium"
                     style="color: var(--brand-primary);"
                 >
                     ← Takaisin asiakaskorttiin
                 </div>
-            @endif  
+            @endif 
 
             @if (session('status'))
                 <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">

@@ -108,12 +108,17 @@
 
                 <div class="mt-3 space-y-2">
                     @forelse ($treatment->availabilityRules as $rule)
-                        <div class="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2 text-sm">
-                            <span>{{ ['Sunnuntai','Maanantai','Tiistai','Keskiviikko','Torstai','Perjantai','Lauantai'][$rule->weekday] }}, klo {{ substr($rule->start_time, 0, 5) }}–{{ substr($rule->end_time, 0, 5) }}</span>
-                            <form method="POST" action="{{ route('ajanvaraus.rules.destroy', $rule) }}" onsubmit="return confirm('Poistetaanko tämä viikkoaika?');">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="text-xs text-red-600 hover:text-red-800">Poista</button>
-                            </form>
+                        <div class="rounded-md border border-gray-200 px-3 py-2 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span>{{ ['Sunnuntai','Maanantai','Tiistai','Keskiviikko','Torstai','Perjantai','Lauantai'][$rule->weekday] }}, klo {{ substr($rule->start_time, 0, 5) }}–{{ substr($rule->end_time, 0, 5) }}</span>
+                                <form method="POST" action="{{ route('ajanvaraus.rules.destroy', $rule) }}" onsubmit="return confirm('Poistetaanko tämä viikkoaika?');">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800">Poista</button>
+                                </form>
+                            </div>
+                            @if ($rule->reminder_note)
+                                <p class="mt-1 text-xs text-gray-500">💬 {{ $rule->reminder_note }}@if ($rule->reminder_date) — näkyy {{ \Illuminate\Support\Carbon::parse($rule->reminder_date)->translatedFormat('d.m.Y') }} @endif</p>
+                            @endif
                         </div>
                     @empty
                         <p class="text-sm text-gray-400">Ei vielä viikoittaisia aikoja.</p>
@@ -124,25 +129,33 @@
                 <p class="mt-2 text-sm text-red-600">{!! $message !!}</p>    
                 @enderror
 
-                <form method="POST" action="{{ route('ajanvaraus.rules.store', $treatment) }}" class="mt-4 flex items-end gap-2">
+                <form method="POST" action="{{ route('ajanvaraus.rules.store', $treatment) }}" class="mt-4 space-y-2">
                     @csrf
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Viikonpäivä</label>
-                        <select name="weekday" class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
-                            @foreach (['Sunnuntai','Maanantai','Tiistai','Keskiviikko','Torstai','Perjantai','Lauantai'] as $i => $label)
-                                <option value="{{ $i }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
+                    <div class="flex items-end gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Viikonpäivä</label>
+                            <select name="weekday" class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
+                                @foreach (['Sunnuntai','Maanantai','Tiistai','Keskiviikko','Torstai','Perjantai','Lauantai'] as $i => $label)
+                                    <option value="{{ $i }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Alkaa</label>
+                            <input type="time" name="start_time" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Päättyy</label>
+                            <input type="time" name="end_time" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
+                        </div>
+                        <button type="submit" class="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50">Lisää</button>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Alkaa</label>
-                        <input type="time" name="start_time" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Muistutus (valinnainen)</label>
+                        <textarea name="reminder_note" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"></textarea>
+                        <label class="mt-2 block text-xs font-semibold uppercase tracking-wide text-gray-400">Näytä muistutus Etusivulla tästä päivästä (valitse kalenterista)</label>
+                        <input type="date" name="reminder_date" class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Päättyy</label>
-                        <input type="time" name="end_time" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
-                    </div>
-                    <button type="submit" class="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50">Lisää</button>
                 </form>
             </div>
 
@@ -152,12 +165,17 @@
 
                 <div class="mt-3 space-y-2">
                     @forelse ($treatment->specialOpenings as $opening)
-                        <div class="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2 text-sm">
-                            <span>{{ \Illuminate\Support\Carbon::parse($opening->date)->translatedFormat('d.m.Y') }}, klo {{ substr($opening->start_time, 0, 5) }}–{{ substr($opening->end_time, 0, 5) }}</span>
-                            <form method="POST" action="{{ route('ajanvaraus.openings.destroy', $opening) }}" onsubmit="return confirm('Poistetaanko tämä avaus?');">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="text-xs text-red-600 hover:text-red-800">Poista</button>
-                            </form>
+                        <div class="rounded-md border border-gray-200 px-3 py-2 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span>{{ \Illuminate\Support\Carbon::parse($opening->date)->translatedFormat('d.m.Y') }}, klo {{ substr($opening->start_time, 0, 5) }}–{{ substr($opening->end_time, 0, 5) }}</span>
+                                <form method="POST" action="{{ route('ajanvaraus.openings.destroy', $opening) }}" onsubmit="return confirm('Poistetaanko tämä avaus?');">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800">Poista</button>
+                                </form>
+                            </div>
+                            @if ($opening->reminder_note)
+                                <p class="mt-1 text-xs text-gray-500">💬 {{ $opening->reminder_note }}@if ($opening->reminder_date) — näkyy {{ \Illuminate\Support\Carbon::parse($opening->reminder_date)->translatedFormat('d.m.Y') }} @endif</p>
+                            @endif
                         </div>
                     @empty
                         <p class="text-sm text-gray-400">Ei yksittäisiä avauksia.</p>
@@ -168,21 +186,29 @@
                 <p class="mt-2 text-sm text-red-600">{!! $message !!}</p>    
                 @enderror
 
-                <form method="POST" action="{{ route('ajanvaraus.openings.store', $treatment) }}" class="mt-4 flex items-end gap-2">
+                <form method="POST" action="{{ route('ajanvaraus.openings.store', $treatment) }}" class="mt-4 space-y-2">
                     @csrf
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Päivä</label>
-                        <input type="date" name="date" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
+                    <div class="flex items-end gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Päivä</label>
+                            <input type="date" name="date" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Alkaa</label>
+                            <input type="time" name="start_time" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Päättyy</label>
+                            <input type="time" name="end_time" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
+                        </div>
+                        <button type="submit" class="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50">Lisää</button>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Alkaa</label>
-                        <input type="time" name="start_time" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Päättyy</label>
-                        <input type="time" name="end_time" required class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
-                    </div>
-                    <button type="submit" class="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold hover:bg-gray-50">Lisää</button>
+                        <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Muistutus (valinnainen)</label>
+                        <textarea name="reminder_note" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm text-sm"></textarea>
+                        <label class="mt-2 block text-xs font-semibold uppercase tracking-wide text-gray-400">Näytä muistutus Etusivulla tästä päivästä (valitse kalenterista)</label>
+                        <input type="date" name="reminder_date" class="mt-1 rounded-md border-gray-300 shadow-sm text-sm">
+                    </div> 
                 </form>
             </div>
 

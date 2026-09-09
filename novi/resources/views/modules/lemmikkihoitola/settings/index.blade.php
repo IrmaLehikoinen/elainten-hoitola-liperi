@@ -336,6 +336,10 @@
                                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Järjestys</label>
                                 <input type="number" name="sort_order" value="{{ $type->sort_order }}" class="mt-1 w-20 rounded-md border-gray-300 shadow-sm">
                             </div>
+                            <div class="flex items-center gap-2 pb-2">
+                                <input type="checkbox" name="show_in_ajanvaraus_calendar" id="sync_{{ $type->id }}" value="1" {{ $type->show_in_ajanvaraus_calendar ? 'checked' : '' }} class="rounded border-gray-300">
+                                <label for="sync_{{ $type->id }}" class="text-xs text-gray-600">Näytä tämä muistutustyyppi myös Sydänpolun kalenterissa</label>
+                            </div>
 
                             <button type="submit" class="btn-brand rounded-md px-3 py-2 text-sm font-semibold">Tallenna</button>
                         </form>
@@ -361,6 +365,10 @@
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wide text-gray-400">Järjestys</label>
                         <input type="number" name="sort_order" value="0" class="mt-1 w-20 rounded-md border-gray-300 shadow-sm">
+                    </div>
+                    <div class="flex items-center gap-2 pb-2">
+                        <input type="checkbox" name="show_in_ajanvaraus_calendar" id="sync_new" value="1" class="rounded border-gray-300">
+                        <label for="sync_new" class="text-xs text-gray-600">Näytä tämä muistutustyyppi myös Sydänpolun kalenterissa</label>
                     </div>
                     <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-semibold">Lisää muistutustyyppi</button>
                 </form>

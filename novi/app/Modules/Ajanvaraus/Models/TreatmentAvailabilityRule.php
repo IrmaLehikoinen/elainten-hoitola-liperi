@@ -12,6 +12,8 @@ class TreatmentAvailabilityRule extends Model
         'weekday',
         'start_time',
         'end_time',
+        'reminder_note',
+        'reminder_date',
     ];
 
     public function treatment(): BelongsTo

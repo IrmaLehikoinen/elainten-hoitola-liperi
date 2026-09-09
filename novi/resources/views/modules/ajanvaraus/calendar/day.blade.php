@@ -9,6 +9,17 @@
         @endif
 
         <div class="mt-6 space-y-2">
+            @foreach ($blocks as $block)
+                <div class="rounded-md border-l-4 px-3 py-2 text-sm bg-green-50" style="border-color: {{ $blockColor }}">
+                    {{ $block->reason ?: 'Ei vapaita aikoja' }}
+                    @if ($block->start_time)
+                        klo {{ substr($block->start_time, 0, 5) }}–{{ substr($block->end_time, 0, 5) }}
+                    @else
+                        (koko päivä)
+                    @endif
+                </div>
+            @endforeach
+
             @foreach ($external as $entry)
                 <div class="rounded-md border-l-4 px-3 py-2 text-sm bg-gray-50" style="border-color: {{ $entry['color'] }}">
                     <span class="font-semibold">Kurssi:</span> {{ $entry['title'] }}
@@ -28,7 +39,7 @@
                 </a>
             @endforeach
 
-            @if ($appointments->isEmpty() && empty($external) && $recurring->isEmpty())
+            @if ($appointments->isEmpty() && empty($external) && $recurring->isEmpty() && $blocks->isEmpty())
                 <p class="text-sm text-gray-400">Ei varauksia tälle päivälle.</p>
             @endif
         </div>

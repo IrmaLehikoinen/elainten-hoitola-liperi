@@ -749,7 +749,7 @@
                     @if (! ($course->is_placeholder ?? false))
                         <div class="sp-course-meta-row">
                             @if ($course->starts_at)
-                                <span class="sp-course-meta">{!! $spCalendarIcon !!} {{ $course->starts_at->format('d.m.Y H:i') }}</span>
+                                <span class="sp-course-meta">{!! $spCalendarIcon !!} {{ $course->starts_at->format('d.m.Y H:i') }}@if ($course->ends_at)–{{ $course->ends_at->format('H:i') }}@endif</span>
                             @endif
                             <span class="sp-course-meta">{!! $spPinIcon !!} Liperi</span>
                         </div>

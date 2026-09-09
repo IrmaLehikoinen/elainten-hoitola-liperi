@@ -81,6 +81,14 @@
             </div>
         </div>
 
+        <div class="rounded-md border border-gray-200 p-4">
+            <label class="block text-sm font-medium">Muistutus tälle kurssiajalle (valinnainen)</label>
+            <p class="mt-1 text-xs text-gray-500">Näkyy Etusivulla valitsemanasi päivänä.</p>
+            <textarea name="reminder_note" rows="2" class="mt-2 w-full rounded-md border-gray-300 text-sm">{{ $old('reminder_note', $course->reminder_note) }}</textarea>
+            <label class="mt-2 block text-sm font-medium">Näytä muistutus Etusivulla tästä päivästä</label>
+            <input type="date" name="reminder_date" value="{{ $old('reminder_date', $course->reminder_date?->format('Y-m-d')) }}" class="mt-1 rounded-md border-gray-300 text-sm">
+        </div>
+
         <div>
             <label class="block text-sm font-medium">Tarkempi sisältö</label>
             <div class="mt-2 flex flex-wrap gap-4">

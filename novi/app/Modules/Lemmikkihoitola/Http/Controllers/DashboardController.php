@@ -21,12 +21,12 @@ class DashboardController extends Controller
 
         $newBookingsCount = \App\Modules\Lemmikkihoitola\Models\Booking::where('confirmation_channel', 'online')
             ->whereNull('acknowledged_at')
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'confirmed')
             ->count();
 
         $firstNewBookingDate = \App\Modules\Lemmikkihoitola\Models\Booking::where('confirmation_channel', 'online')
             ->whereNull('acknowledged_at')
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'confirmed')
             ->orderBy('start_date')
             ->value('start_date');
 
@@ -87,7 +87,7 @@ class DashboardController extends Controller
         }
 
         $leavingToday = BookingParticipant::with(['booking.customer', 'pet'])
-            ->whereHas('booking', fn ($q) => $q->where('status', '!=', 'cancelled'))
+            ->whereHas('booking', fn ($q) => $q->where('status', 'confirmed'))
             ->whereDate('end_date', $today)
             ->get();
 

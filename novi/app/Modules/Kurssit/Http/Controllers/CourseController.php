@@ -63,7 +63,75 @@ class CourseController extends Controller
             'calendarMonth' => $monthStart,
             'calendarDays' => $this->buildCalendarDays($monthStart),
             'reminders' => $reminders,
+            'upcomingReminders' => $this->buildUpcomingReminderNotes(),
         ]);
+    }
+
+    /**
+     * Hoitoaikojen ja kurssien omat "muistutus"-tekstikentät (eri asia kuin
+     * yllä oleva CourseReminder-lista) — nousee näkyviin Etusivun paneeliin
+     * viikkoa ennen sitä päivää kun aika/kurssi on.
+     */
+    private function buildUpcomingReminderNotes(): \Illuminate\Support\Collection
+    {
+        $today = Carbon::today();
+        $weekAhead = $today->copy()->addDays(7);
+        $entries = collect();
+
+        Course::whereNotNull('reminder_note')
+            ->where('reminder_note', '!=', '')
+            ->whereNotNull('reminder_date')
+            ->whereBetween('reminder_date', [$today, $weekAhead])
+            ->get()
+            ->each(function ($course) use ($entries) {
+                $entries->push([
+                    'label' => $course->name,
+                    'date' => $course->reminder_date,
+                    'note' => $course->reminder_note,
+                ]);
+            });
+
+        \App\Modules\Ajanvaraus\Models\Treatment::with(['availabilityRules', 'specialOpenings'])
+            ->get()
+            ->each(function ($treatment) use ($entries, $today, $weekAhead) {
+                foreach ($treatment->availabilityRules as $rule) {
+                    if (! $rule->reminder_note || ! $rule->reminder_date) {
+                        continue;
+                    }
+
+                    $date = \Illuminate\Support\Carbon::parse($rule->reminder_date);
+
+                    if ($date->lt($today) || $date->gt($weekAhead)) {
+                        continue;
+                    }
+
+                    $entries->push([
+                        'label' => $treatment->name,
+                        'date' => $date,
+                        'note' => $rule->reminder_note,
+                    ]);
+                }
+
+                foreach ($treatment->specialOpenings as $opening) {
+                    if (! $opening->reminder_note || ! $opening->reminder_date) {
+                        continue;
+                    }
+
+                    $date = \Illuminate\Support\Carbon::parse($opening->reminder_date);
+
+                    if ($date->lt($today) || $date->gt($weekAhead)) {
+                        continue;
+                    }
+
+                    $entries->push([
+                        'label' => $treatment->name,
+                        'date' => $date,
+                        'note' => $opening->reminder_note,
+                    ]);
+                }
+            });
+
+        return $entries->sortBy('date')->values();
     }
 
        private function buildCalendarDays(Carbon $monthStart)
@@ -78,20 +146,68 @@ class CourseController extends Controller
         $event = new CollectExternalCalendarEntries($start, $end->copy()->endOfDay(), 'kurssit');
         Event::dispatch($event);
 
+        $blocks = \App\Modules\Ajanvaraus\Models\CalendarBlock::whereBetween('date', [$start->toDateString(), $end->toDateString()])->get();
+
         $days = [];
 
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-            $dayCourses = $courses->filter(fn ($c) => $c->starts_at->isSameDay($date))->values()->map(fn ($course) => [
-                'title' => $course->name,
-                'color' => $course->color ?? app(\App\Core\Branding\BrandManager::class)->get('primary_color'),
-                'filled' => true,
-            ]);
+            $dayCourses = $courses->filter(fn ($c) => $c->starts_at->isSameDay($date))->values()->map(function ($course) {
+                $title = $course->name.' klo '.$course->starts_at->format('H:i');
+
+                if ($course->ends_at) {
+                    $title .= '–'.$course->ends_at->format('H:i');
+                }
+
+                return [
+                    'title' => $title,
+                    'color' => '#C98FA8',
+                    'filled' => true,
+                ];
+            });
 
             $external = collect($event->entries)->filter(fn ($e) => $e['date'] === $date->format('Y-m-d'))->values();
 
+            $dayEntries = $dayCourses->concat($external);
+
+            $blocks
+                ->filter(fn ($block) => $block->date->isSameDay($date))
+                ->groupBy(function ($block) {
+                    $label = preg_replace('/\s*\(varaus #\d+\)\s*$/', '', $block->reason ?: 'Ei vapaita aikoja');
+
+                    return $label.'|'.$block->start_time.'|'.$block->end_time;
+                })
+                ->each(function ($group) use ($dayEntries) {
+                    $first = $group->first();
+                    $title = preg_replace('/\s*\(varaus #\d+\)\s*$/', '', $first->reason ?: 'Ei vapaita aikoja');
+
+                    if ($first->start_time) {
+                        $title .= ' klo '.substr($first->start_time, 0, 5);
+
+                        if ($first->end_time && $first->end_time !== $first->start_time) {
+                            $title .= '–'.substr($first->end_time, 0, 5);
+                        }
+                    }
+
+                    if ($group->count() > 1) {
+                        $title .= ' ('.$group->count().')';
+                    }
+
+                    $dayEntries->push([
+                        'title' => $title,
+                        'color' => '#3F4F3A',
+                        'filled' => true,
+                    ]);
+                });
+
             $days[] = [
                 'date' => $date->copy(),
-                'entries' => $dayCourses->concat($external),
+                'entries' => $dayEntries->sortBy(function ($entry) {
+                    if (preg_match('/(\d{2}:\d{2})/', $entry['title'], $m)) {
+                        return $m[1];
+                    }
+
+                    return '99:99';
+                })->values(),
             ];
         }
 
@@ -242,9 +358,10 @@ class CourseController extends Controller
             'price' => ['nullable', 'numeric', 'min:0'],
             'max_participants' => ['required', 'integer', 'min:0'],
              'brochure' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'reminder_note' => ['nullable', 'string', 'max:2000'],
+            'reminder_date' => ['nullable', 'date'],
         ]);
-    }
-
+    } 
     /**
      * Kysyy Ajanvaraus-moduulilta (jos sillä yrityksellä on se käytössä)
      * osuuko tämä kurssin ajankohta jonkin viikoittain toistuvan hoidon

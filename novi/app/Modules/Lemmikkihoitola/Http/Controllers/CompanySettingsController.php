@@ -191,7 +191,10 @@ class CompanySettingsController extends Controller
             'slug' => ['required', 'string', 'max:255', 'alpha_dash'],
             'label' => ['required', 'string', 'max:255'],
             'sort_order' => ['nullable', 'integer'],
+            'show_in_ajanvaraus_calendar' => ['nullable', 'boolean'],
         ]);
+
+        $validated['show_in_ajanvaraus_calendar'] = $request->boolean('show_in_ajanvaraus_calendar');
 
         ReminderType::create($validated);
 
@@ -203,7 +206,10 @@ class CompanySettingsController extends Controller
         $validated = $request->validate([
             'label' => ['required', 'string', 'max:255'],
             'sort_order' => ['nullable', 'integer'],
+            'show_in_ajanvaraus_calendar' => ['nullable', 'boolean'],
         ]);
+
+        $validated['show_in_ajanvaraus_calendar'] = $request->boolean('show_in_ajanvaraus_calendar');
 
         $reminderType->update($validated);
 

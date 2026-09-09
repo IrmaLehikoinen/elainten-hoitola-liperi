@@ -16,6 +16,8 @@ class TreatmentSpecialOpeningController extends Controller
             'date' => ['required', 'date'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'reminder_note' => ['nullable', 'string', 'max:2000'],
+            'reminder_date' => ['nullable', 'date'],
         ]);
 
         $conflict = $this->findConflictingTreatment($treatment, $validated['date'], $validated['start_time'], $validated['end_time']);
@@ -37,6 +39,8 @@ class TreatmentSpecialOpeningController extends Controller
             'date' => ['required', 'date'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'reminder_note' => ['nullable', 'string', 'max:2000'],
+            'reminder_date' => ['nullable', 'date'],
         ]);
 
         $treatment = Treatment::findOrFail($validated['treatment_id']);
@@ -52,6 +56,8 @@ class TreatmentSpecialOpeningController extends Controller
             'date' => $validated['date'],
             'start_time' => $validated['start_time'],
             'end_time' => $validated['end_time'],
+            'reminder_note' => $validated['reminder_note'] ?? null,
+            'reminder_date' => $validated['reminder_date'] ?? null,
         ]);
 
         return back()->with('status', 'Yksittäinen avaus lisätty.');

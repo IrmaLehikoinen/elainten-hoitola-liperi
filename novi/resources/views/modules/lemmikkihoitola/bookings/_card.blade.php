@@ -10,7 +10,7 @@
 @endphp
 
     <div
-    onclick="window.location.href='{{ route('admin.customers.show', $booking->customer_id) }}'"
+    onclick="window.location.href='{{ route('admin.customers.show', $booking->customer_id) }}?from=bookings'"
     class="cursor-pointer rounded-lg border p-4 transition hover:shadow-md {{ $isPast ? 'opacity-75 hover:opacity-100' : '' }}"
     style="border-color: var(--brand-secondary);"
 >
@@ -65,6 +65,20 @@
             <span class="text-gray-400">Ei käytössä</span>
         @endif
     </div>
+
+    @if (!$booking->deposit_paid_at && $booking->status === 'pending')
+        <form method="POST" action="{{ route('admin.bookings.mark-deposit-paid', $booking) }}" class="mt-2">
+            @csrf
+            <button
+                type="submit"
+                class="text-xs font-medium underline"
+                style="color: var(--brand-primary);"
+                onclick="event.stopPropagation(); return confirm('Merkitäänkö ennakkomaksu maksetuksi (esim. käteinen tai tilisiirto)?');"
+            >
+                Merkitse maksetuksi
+            </button>
+        </form>
+    @endif
 
     @if ($booking->notes)
         <p class="mt-3 rounded-md bg-gray-50 p-3 text-sm text-gray-600">

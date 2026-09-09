@@ -57,7 +57,7 @@
 
         @if ($course->starts_at)
             <p style="font-family: var(--brand-heading-font); font-size:15px; font-weight:600; color: var(--brand-text); margin:0 0 4px;">
-                {{ $course->starts_at->format('d.m.Y H:i') }}
+                {{ $course->starts_at->format('d.m.Y H:i') }}@if ($course->ends_at)–{{ $course->ends_at->format('H:i') }}@endif
             </p>
         @endif
 

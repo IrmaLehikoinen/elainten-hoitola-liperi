@@ -37,7 +37,7 @@ class CalendarController extends Controller
         }
 
         $participants = BookingParticipant::with(['pet', 'booking'])
-            ->whereHas('booking', fn ($q) => $q->where('status', '!=', 'cancelled'))
+            ->whereHas('booking', fn ($q) => $q->where('status', 'confirmed'))
             ->whereDate('start_date', '<=', $periodEnd)
             ->whereDate('end_date', '>=', $periodStart)
             ->get();
@@ -64,14 +64,14 @@ class CalendarController extends Controller
             ];
         }
 
-                 $newBookingsCount = \App\Modules\Lemmikkihoitola\Models\Booking::where('confirmation_channel', 'online')
+            $newBookingsCount = \App\Modules\Lemmikkihoitola\Models\Booking::where('confirmation_channel', 'online')
             ->whereNull('acknowledged_at')
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'confirmed')
             ->count();
 
         $firstNewBookingDate = \App\Modules\Lemmikkihoitola\Models\Booking::where('confirmation_channel', 'online')
             ->whereNull('acknowledged_at')
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'confirmed')
             ->orderBy('start_date')
             ->value('start_date');
 
@@ -100,7 +100,7 @@ class CalendarController extends Controller
         $day = Carbon::createFromFormat('Y-m-d', $date)->startOfDay();
 
         $participants = BookingParticipant::with(['booking.customer', 'pet'])
-            ->whereHas('booking', fn ($q) => $q->where('status', '!=', 'cancelled'))
+            ->whereHas('booking', fn ($q) => $q->where('status', 'confirmed'))
             ->whereDate('start_date', '<=', $day)
             ->whereDate('end_date', '>=', $day)
             ->get()

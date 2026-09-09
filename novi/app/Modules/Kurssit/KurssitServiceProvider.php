@@ -142,9 +142,15 @@ class KurssitServiceProvider extends ServiceProvider
                 ->whereBetween('starts_at', [$event->start, $event->end])
                 ->get()
                 ->each(function ($course) use ($event) {
+                    $title = $course->name.' klo '.$course->starts_at->format('H:i');
+
+                    if ($course->ends_at) {
+                        $title .= '–'.$course->ends_at->format('H:i');
+                    }
+
                     $event->entries[] = [
                         'date' => $course->starts_at->format('Y-m-d'),
-                        'title' => $course->name,
+                        'title' => $title,
                         'color' => $course->color ?? app(\App\Core\Branding\BrandManager::class)->get('primary_color'),                            
                     ];
                 });

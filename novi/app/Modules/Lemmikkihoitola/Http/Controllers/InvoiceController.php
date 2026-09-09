@@ -14,7 +14,7 @@ class InvoiceController extends Controller
     public function index(Request $request)
     {
             $readyToInvoice = Booking::with(['customer', 'participants'])
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'confirmed')
             ->whereNotNull('end_date')
             ->where('end_date', '<', today())
             ->whereDoesntHave('invoice')

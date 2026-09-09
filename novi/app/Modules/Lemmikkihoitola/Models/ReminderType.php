@@ -9,7 +9,7 @@ class ReminderType extends Model
 {
     use BelongsToCompany;
 
-    protected $fillable = ['company_id', 'slug', 'label', 'sort_order'];
+    protected $fillable = ['company_id', 'slug', 'label', 'sort_order', 'show_in_ajanvaraus_calendar'];
 
     public function reminders()
     {

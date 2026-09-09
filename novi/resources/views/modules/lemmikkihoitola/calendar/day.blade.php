@@ -116,7 +116,7 @@
 
                             @if ($reminderPetId && Route::has('admin.pets.show'))
                                 <div
-                                    onclick="window.location.href='{{ route('admin.pets.show', $reminderPetId) }}'"
+                                    onclick="window.location.href='{{ route('admin.pets.show', $reminderPetId) }}?from=day&date={{ $day->format('Y-m-d') }}'"
                                     class="shrink-0 cursor-pointer text-sm font-medium"
                                     style="color: var(--brand-primary);"
                                 >

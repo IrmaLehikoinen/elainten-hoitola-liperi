@@ -8,6 +8,8 @@ use App\Events\CheckRecurringConflict;
 use App\Events\CollectExternalCalendarEntries;
 use App\Events\CompanyDateClosed;
 use App\Events\CompanyDateReopened;
+use App\Events\ExternalTimeBlocked;
+use App\Events\ExternalTimeUnblocked;
 use App\Events\SchedulingConflictDetected;
 use App\Events\StripeCheckoutCompleted;
 use App\Models\Company;
@@ -112,14 +114,43 @@ class AjanvarausServiceProvider extends ServiceProvider
 
         // Päivä avattiin uudelleen — poistetaan vain se sulku jonka
         // Lemmikkihoitola itse loi tänne, ei käsin tehtyjä sulkuja.
-                Event::listen(CompanyDateReopened::class, function (CompanyDateReopened $event) {
+        Event::listen(CompanyDateReopened::class, function (CompanyDateReopened $event) {
             CalendarBlock::where('company_id', $event->companyId)
                 ->where('date', $event->date->toDateString())
                 ->where('reason', 'Lemmikkihoitola: suljettu')
                 ->delete();
         });
 
-        // Kurssit kysyy tällä osuuko uusi kurssin ajankohta jonkin
+        // Yleiskäyttöinen "varaa aika kalenterista" -tapahtuma: Lemmikkihoitolan
+        // tuonti/hakuajat ja eläinlääkäri-muistutukset käyttävät tätä samaa
+        // tapahtumaparia, jotta molemmat näkyvät estettynä Sydänpolun kalenterissa.
+        Event::listen(ExternalTimeBlocked::class, function (ExternalTimeBlocked $event) {
+            $company = Company::find($event->companyId);
+
+            if (! $company || ! in_array('ajanvaraus', $company->active_modules ?? [], true)) {
+                return;
+            }
+
+            CalendarBlock::updateOrCreate(
+                [
+                    'company_id' => $company->id,
+                    'reason' => $event->reason,
+                ],
+                [
+                    'date' => $event->date->toDateString(),
+                    'start_time' => $event->startTime,
+                    'end_time' => $event->endTime,
+                ]
+            );
+        });
+
+        Event::listen(ExternalTimeUnblocked::class, function (ExternalTimeUnblocked $event) {
+            CalendarBlock::where('company_id', $event->companyId)
+                ->where('reason', $event->reason)
+                ->delete();
+        });
+
+        // Kurssit kysyy tällä osuuko uusi kurssin ajankohta jonkin        
         // viikoittain toistuvan hoidon (esim. "joka sunnuntai" jooga) päälle.
         Event::listen(CheckRecurringConflict::class, function (CheckRecurringConflict $event) {
             $company = Company::find($event->companyId);

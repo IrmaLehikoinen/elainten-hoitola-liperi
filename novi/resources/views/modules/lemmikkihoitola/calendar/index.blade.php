@@ -151,8 +151,8 @@
 
             <!-- Kalenteriruudukko -->
                 <div class="mt-6">
-                    @include('partials.calendar-grid', ['days' => $calendarDays, 'periodStart' => $periodStart])
-                </div>       
+                    @include('partials.calendar-grid', ['days' => $calendarDays, 'periodStart' => $periodStart, 'view' => $calendarView])
+                </div>      
             </section>
         </div>
 
@@ -602,6 +602,14 @@
                             : 'bg-red-50 text-red-700'"
                     ></p>
 
+                    <form x-show="conflictSwitchUrl" x-cloak method="POST" :action="conflictSwitchUrl" class="mt-1">
+                        <input type="hidden" name="_token" :value="csrfToken">
+                        <input type="hidden" name="redirect" :value="conflictRedirect">
+                        <button type="submit" class="btn-brand rounded-md px-3 py-1.5 text-sm font-semibold">
+                            Avaa Sydänpolun kalenteri tältä päivältä →
+                        </button>
+                    </form>
+
                     <div x-show="paymentUrl" x-cloak class="rounded-md border p-3" style="border-color: var(--brand-secondary);">
                         <p class="break-all text-sm" style="color: var(--brand-text);" x-text="paymentUrl"></p>
 
@@ -690,6 +698,8 @@
                 searchMessage: '',
                 saveMessage: '',
                 saveSucceeded: false,
+                conflictSwitchUrl: '',
+                conflictRedirect: '',
 
                 customerSearchUrl:
                     @json(route('admin.bookings.customer-search')),
@@ -1261,6 +1271,10 @@
                             this.saveMessage = data.email_sent
                                 ? 'Varaus tallennettu. Maksulinkki lähetettiin asiakkaalle sähköpostitse. Voit myös kopioida sen tästä varmuuden vuoksi:'
                                 : 'Varaus tallennettu. Asiakkaalla ei ole sähköpostia tallennettuna — kopioi maksulinkki ja lähetä se asiakkaalle itse:';
+                        } else if (data.conflict_warning) {
+                            this.saveMessage = 'Varaus tallennettu. ' + data.conflict_warning;
+                            this.conflictSwitchUrl = data.conflict_switch_url || '';
+                            this.conflictRedirect = data.conflict_redirect || '';
                         } else {
                             this.saveMessage = 'Varaus tallennettiin onnistuneesti.';
 

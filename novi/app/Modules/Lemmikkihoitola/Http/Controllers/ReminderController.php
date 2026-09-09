@@ -2,10 +2,13 @@
 
 namespace App\Modules\Lemmikkihoitola\Http\Controllers;
 
+use App\Events\ExternalTimeBlocked;
+use App\Events\ExternalTimeUnblocked;
 use App\Http\Controllers\Controller;
 use App\Modules\Lemmikkihoitola\Models\Reminder;
 use App\Modules\Lemmikkihoitola\Models\ReminderType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 
 class ReminderController extends Controller
 {
@@ -26,13 +29,27 @@ class ReminderController extends Controller
             'due_at' => ['required', 'date'],
         ]);
 
-        Reminder::create([
+        $reminder = Reminder::create([
             'pet_id' => $validated['pet_id'],
             'type' => $validated['type'],
             'title' => $validated['title'] ?? null,
             'due_at' => $validated['due_at'],
             'created_by' => $request->user()->id,
         ]);
+
+        $reminderType = ReminderType::where('slug', $validated['type'])->first();
+
+        if ($reminderType && $reminderType->show_in_ajanvaraus_calendar) {
+            $dueAt = \Carbon\Carbon::parse($validated['due_at']);
+
+            Event::dispatch(new ExternalTimeBlocked(
+                \App\Models\Company::where('industry', 'kurssit')->value('id'),
+                $dueAt->copy(),
+                $dueAt->format('H:i:s'),
+                $dueAt->copy()->addMinutes(30)->format('H:i:s'),
+                'Lemmikkihoitola: muistutus (#'.$reminder->id.')'
+            ));
+        }
 
         return redirect()
             ->route('admin.pets.show', $validated['pet_id'])
@@ -64,6 +81,8 @@ class ReminderController extends Controller
      */
     public function destroy(Reminder $reminder)
     {
+        Event::dispatch(new ExternalTimeUnblocked(\App\Models\Company::where('industry', 'kurssit')->value('id'), 'Lemmikkihoitola: muistutus (#'.$reminder->id.')'));
+
         $reminder->delete();
 
         return response()->json(['deleted' => true]);

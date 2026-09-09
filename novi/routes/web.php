@@ -22,9 +22,15 @@ Route::get('/tietosuoja/{company?}', function (?\App\Models\Company $company) {
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
 
-Route::post('/vaihda-yritys/{company}', function (\App\Models\Company $company) {
+Route::post('/vaihda-yritys/{company}', function (\App\Models\Company $company, \Illuminate\Http\Request $request) {
     if (! app(\App\Services\ActiveCompanyResolver::class)->switchTo($company)) {
         abort(403);
+    }
+
+    $redirect = $request->input('redirect', $request->query('redirect'));
+
+    if ($redirect && str_starts_with($redirect, '/')) {
+        return redirect($redirect);
     }
 
     $routeName = config("industries.{$company->industry}.home_route", 'dashboard');

@@ -23,6 +23,8 @@ class Course extends Model
         'max_participants',
         'registration_closed_at',
         'cancelled_at',
+        'reminder_note',
+        'reminder_date',
     ];
 
     protected $casts = [
@@ -32,6 +34,7 @@ class Course extends Model
         'content_blocks' => 'array',
         'registration_closed_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'reminder_date' => 'date',
     ];
 
     public function registrations()
