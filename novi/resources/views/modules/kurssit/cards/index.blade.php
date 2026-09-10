@@ -23,14 +23,16 @@
                 @csrf
                 <div>
                     <label class="block text-sm font-medium">Kurssi</label>
-                    <select name="course_id" required class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                    <select name="course_id" required class="mt-1 w-full rounded-md border-gray-300 text-sm"
+                        onchange="var d = this.options[this.selectedIndex].dataset.date; document.getElementById('course-calendar-link').href = d ? ('{{ route('ajanvaraus.dashboard') }}?view=day&date=' + d) : '{{ route('ajanvaraus.dashboard') }}';">
                         <option value="">Valitse kurssi</option>
                         @foreach ($upcoming as $course)
-                            <option value="{{ $course->id }}">
+                            <option value="{{ $course->id }}" data-date="{{ $course->starts_at?->format('Y-m-d') }}">
                                 {{ $course->name }}@if ($course->starts_at) · {{ $course->starts_at->format('d.m.Y H:i') }} @endif
                             </option>
                         @endforeach
                     </select>
+                    <a id="course-calendar-link" href="{{ route('ajanvaraus.dashboard') }}" target="_blank" class="mt-1 inline-block text-sm underline" style="color: var(--brand-text);">Näytä aika kalenterissa</a>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>

@@ -69,6 +69,7 @@
                         <p class="text-sm text-gray-500">
                             {{ $registration->email }}
                             @if ($registration->phone) · {{ $registration->phone }} @endif
+                            · {{ $registration->created_at->format('d.m.Y H:i') }}
                             ·
                                             @if ($registration->status === 'confirmed')
                                 <span class="text-green-700 font-medium">Maksettu / vahvistettu</span>

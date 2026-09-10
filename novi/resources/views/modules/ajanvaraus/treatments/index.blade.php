@@ -40,13 +40,15 @@
                         <input type="hidden" name="treatment_id" value="{{ $selectedTreatment->id }}">
                         <div>
                             <label class="block text-sm font-medium">Aika</label>
-                            <select name="starts_at" required class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                            <select name="starts_at" required class="mt-1 w-full rounded-md border-gray-300 text-sm"
+                                onchange="document.getElementById('appointment-calendar-link').href = '{{ route('ajanvaraus.dashboard') }}?view=day&date=' + this.value.slice(0, 10);">
                                 @foreach ($dateSlots as $date => $slots)
                                     @foreach ($slots as $slot)
                                         <option value="{{ $slot['iso'] }}">{{ $slot['label'] }}</option>
                                     @endforeach
                                 @endforeach
                             </select>
+                            <a id="appointment-calendar-link" href="{{ route('ajanvaraus.dashboard', ['view' => 'day', 'date' => array_key_first($dateSlots)]) }}" target="_blank" class="mt-1 inline-block text-sm underline" style="color: var(--brand-text);">Näytä aika kalenterissa</a>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>

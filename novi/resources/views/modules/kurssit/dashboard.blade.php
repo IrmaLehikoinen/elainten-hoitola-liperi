@@ -2,20 +2,27 @@
     <div class="p-6">
         <h1 class="text-xl font-semibold">Etusivu</h1>
 
-        <h2 class="mt-8 flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">
-            <span
-                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
-                style="background-color: var(--brand-primary);"
-            >
-                <svg viewBox="-1 -1 32 50" fill="none" stroke="white" stroke-width="1.1" class="h-5 w-5">
-                    <path stroke-linecap="round" d="M15 48V34" />
-                    <path stroke-linejoin="round" d="M15 34C10 34 0 29 0 20C8 20 15 27 15 34Z" />
-                    <path stroke-linejoin="round" d="M15 34C20 34 30 29 30 20C22 20 15 27 15 34Z" />
-                    <path stroke-linejoin="round" d="M15 28C8 23 5 11 15 0C25 11 22 23 15 28Z" />
-                </svg>
-            </span>
-            {{ ucfirst($calendarMonth->translatedFormat('F')) }} — tulevat kurssit
-        </h2>
+        <div class="mt-8 flex items-center justify-between gap-3">
+            <h2 class="flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                <span
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                    style="background-color: var(--brand-primary);"
+                >
+                    <svg viewBox="-1 -1 32 50" fill="none" stroke="white" stroke-width="1.1" class="h-5 w-5">
+                        <path stroke-linecap="round" d="M15 48V34" />
+                        <path stroke-linejoin="round" d="M15 34C10 34 0 29 0 20C8 20 15 27 15 34Z" />
+                        <path stroke-linejoin="round" d="M15 34C20 34 30 29 30 20C22 20 15 27 15 34Z" />
+                        <path stroke-linejoin="round" d="M15 28C8 23 5 11 15 0C25 11 22 23 15 28Z" />
+                    </svg>
+                </span>
+                {{ ucfirst($calendarMonth->translatedFormat('F')) }} — tulevat kurssit
+            </h2>
+
+            <div class="flex shrink-0 gap-2">
+                <a href="{{ route('kurssit.cards.index') }}" class="rounded-md border px-3 py-1 text-xs font-semibold" style="border-color: var(--brand-secondary); color: var(--brand-text);">+ Kurssivaraus</a>
+                <a href="{{ route('ajanvaraus.treatments.index') }}" class="rounded-md border px-3 py-1 text-xs font-semibold" style="border-color: var(--brand-secondary); color: var(--brand-text);">+ Palveluvaraus</a>
+            </div>
+        </div>
 
         <div class="mt-3 flex flex-wrap gap-3">
             @forelse ($thisMonthCourses as $course)

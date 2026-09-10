@@ -10,6 +10,15 @@ class TreatmentAppointment extends Model
 {
     use BelongsToCompany;
 
+    protected static function booted(): void
+    {
+        static::creating(function ($appointment) {
+            if (empty($appointment->payment_token)) {
+                $appointment->payment_token = \Illuminate\Support\Str::random(40);
+            }
+        });
+    }
+
     protected $fillable = [
         'company_id',
         'treatment_id',

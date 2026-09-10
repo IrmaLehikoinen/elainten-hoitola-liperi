@@ -13,7 +13,10 @@
                     @endif
                 </h1>
 
-                <div class="mt-1 h-5"></div>
+                <div class="mt-1 flex gap-2">
+                    <a href="{{ route('kurssit.cards.index') }}" class="rounded-md border px-3 py-1 text-xs font-semibold" style="border-color: var(--brand-secondary); color: var(--brand-text);">+ Kurssivaraus</a>
+                    <a href="{{ route('ajanvaraus.treatments.index') }}" class="rounded-md border px-3 py-1 text-xs font-semibold" style="border-color: var(--brand-secondary); color: var(--brand-text);">+ Palveluvaraus</a>
+                </div>
             </div>
             <div class="flex items-center gap-2">
                 @php
