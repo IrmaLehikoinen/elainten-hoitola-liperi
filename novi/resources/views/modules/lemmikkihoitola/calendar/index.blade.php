@@ -412,6 +412,64 @@
                 </div>
 
                 <div class="mt-6 space-y-5">
+                    <div class="rounded-md border p-3 text-sm" style="border-color: var(--brand-secondary);">
+                        <p class="font-semibold" style="color: var(--brand-text);">Täytä tässä järjestyksessä:</p>
+                        <p class="mt-1">1. Valitse hoitojakso (saapumis- ja noutopäivä sekä kellonajat).</p>
+                        <p class="mt-1">2. Hae tai luo asiakas.</p>
+                        <p class="mt-1">3. Lisää tai muokkaa lemmikkiä.</p>
+                        <p class="mt-1 text-amber-700">Älä enää muuta saapumis- tai noutoaikoja sen jälkeen, kun siirryt esim. täyttämään lemmikin muistutusta.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="block text-sm font-medium">
+                                Saapumispäivä
+                            </label>
+
+                            <input
+                                type="date"
+                                x-model="arrivalDate"
+                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">
+                                Saapumisaika
+                            </label>
+
+                            <input
+                                type="time"
+                                x-model="arrivalTime"
+                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">
+                                Noutopäivä
+                            </label>
+
+                            <input
+                                type="date"
+                                x-model="pickupDate"
+                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">
+                                Noutoaika
+                            </label>
+
+                            <input
+                                type="time"
+                                x-model="pickupTime"
+                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                            >
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium">
                             Puhelinnumero
@@ -497,7 +555,7 @@
                                 <div>
                                     <template x-if="!animal.isNew">
                                         <div
-                                            @click="window.open(petsUpdateUrlBase + '/' + animal.petId + '?fromBooking=1', '_blank')"
+                                            @click="window.open(petsUpdateUrlBase + '/' + animal.petId + '?fromBooking=1&arrivalDate=' + arrivalDate + '&arrivalTime=' + arrivalTime + '&pickupDate=' + pickupDate + '&pickupTime=' + pickupTime, '_blank')"
                                             class="cursor-pointer rounded-lg border p-4 transition hover:shadow-md"
                                             style="border-color: var(--brand-secondary);"
                                         >
@@ -530,56 +588,6 @@
                         </p>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                            <label class="block text-sm font-medium">
-                                Saapumispäivä
-                            </label>
-
-                            <input
-                                type="date"
-                                x-model="arrivalDate"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium">
-                                Saapumisaika
-                            </label>
-
-                            <input
-                                type="time"
-                                x-model="arrivalTime"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium">
-                                Noutopäivä
-                            </label>
-
-                            <input
-                                type="date"
-                                x-model="pickupDate"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium">
-                                Noutoaika
-                            </label>
-
-                            <input
-                                type="time"
-                                x-model="pickupTime"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                            >
-                        </div>
-                    </div>
-
                     <div>
                         <label class="block text-sm font-medium">
                             Lisätiedot ja huomioitavat asiat
@@ -602,7 +610,7 @@
                             : 'bg-red-50 text-red-700'"
                     ></p>
 
-                    <form x-show="conflictSwitchUrl" x-cloak method="POST" :action="conflictSwitchUrl" class="mt-1">
+                    <form x-show="conflictSwitchUrl" x-cloak method="POST" :action="conflictSwitchUrl" target="_blank" class="mt-1">
                         <input type="hidden" name="_token" :value="csrfToken">
                         <input type="hidden" name="redirect" :value="conflictRedirect">
                         <button type="submit" class="btn-brand rounded-md px-3 py-1.5 text-sm font-semibold">
@@ -640,15 +648,19 @@
                     <button
                         type="button"
                         class="btn-brand rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
-                        @click="saveBooking"
+                        @click="saveSucceeded ? (window.location.href = dashboardUrl) : saveBooking()"
                         :disabled="saving"
                     >
-                        <span x-show="!saving">
+                        <span x-show="!saving && !saveSucceeded">
                             Tallenna varaus
                         </span>
 
                         <span x-show="saving">
                             Tallennetaan…
+                        </span>
+
+                        <span x-show="saveSucceeded && !saving">
+                            Palaa kalenteriin
                         </span>
                     </button>
                 </div>
@@ -1093,7 +1105,7 @@
 
                      this.pets.push(createdPet);
 
-                        window.open(this.petsUpdateUrlBase + '/' + createdPet.id + '?fromBooking=1', '_blank');
+                        window.open(this.petsUpdateUrlBase + '/' + createdPet.id + '?fromBooking=1&arrivalDate=' + this.arrivalDate + '&arrivalTime=' + this.arrivalTime + '&pickupDate=' + this.pickupDate + '&pickupTime=' + this.pickupTime, '_blank');
                     } catch (error) {
                         this.saveMessage = 'Lemmikin luonti epäonnistui.';
                     }
@@ -1133,7 +1145,9 @@
 
                         window.open(
                             this.customersUpdateUrlBase + '/' + createdCustomer.id
-                                + '?fromBooking=1&species=' + encodeURIComponent(speciesParam),
+                                + '?fromBooking=1&species=' + encodeURIComponent(speciesParam)
+                                + '&arrivalDate=' + this.arrivalDate + '&arrivalTime=' + this.arrivalTime
+                                + '&pickupDate=' + this.pickupDate + '&pickupTime=' + this.pickupTime,
                             '_blank'
                         );
                     } catch (error) {
@@ -1271,16 +1285,20 @@
                             this.saveMessage = data.email_sent
                                 ? 'Varaus tallennettu. Maksulinkki lähetettiin asiakkaalle sähköpostitse. Voit myös kopioida sen tästä varmuuden vuoksi:'
                                 : 'Varaus tallennettu. Asiakkaalla ei ole sähköpostia tallennettuna — kopioi maksulinkki ja lähetä se asiakkaalle itse:';
-                        } else if (data.conflict_warning) {
-                            this.saveMessage = 'Varaus tallennettu. ' + data.conflict_warning;
-                            this.conflictSwitchUrl = data.conflict_switch_url || '';
-                            this.conflictRedirect = data.conflict_redirect || '';
                         } else {
                             this.saveMessage = 'Varaus tallennettiin onnistuneesti.';
 
-                            window.setTimeout(() => {
-                                window.location.href = this.dashboardUrl;
-                            }, 900);
+                            if (!data.conflict_warning) {
+                                window.setTimeout(() => {
+                                    window.location.href = this.dashboardUrl;
+                                }, 900);
+                            }
+                        }
+
+                        if (data.conflict_warning) {
+                            this.saveMessage += ' ' + data.conflict_warning;
+                            this.conflictSwitchUrl = data.conflict_switch_url || '';
+                            this.conflictRedirect = data.conflict_redirect || '';
                         }
                     } catch (error) {
                         this.saveMessage = error.message || 'Tallennus epäonnistui.';

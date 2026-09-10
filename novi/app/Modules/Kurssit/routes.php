@@ -50,6 +50,7 @@ Route::middleware('web')->group(function () {
     // Hallintapaneeli — vaatii kirjautumisen.
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/kurssit/hallinta', [CourseController::class, 'dashboard'])->name('kurssit.dashboard');
+        Route::post('/kurssit/hallinta/muistutukset/kuittaa', [CourseController::class, 'dismissReminder'])->name('kurssit.reminders.dismiss');
 
         Route::get('/kurssit/hallinta/kurssit', [CourseController::class, 'index'])->name('kurssit.courses.index');
         Route::get('/kurssit/hallinta/kurssit/uusi', [CourseController::class, 'create'])->name('kurssit.courses.create');
@@ -79,6 +80,7 @@ Route::middleware('web')->group(function () {
         Route::get('/kurssit/hallinta/kurssikortit', [CourseCardController::class, 'index'])->name('kurssit.cards.index');
         Route::get('/kurssit/hallinta/kurssikortit/{course}', [CourseCardController::class, 'show'])->name('kurssit.cards.show');
         Route::post('/kurssit/hallinta/kurssikortit/{course}/osallistuja', [CourseCardController::class, 'storeRegistration'])->name('kurssit.cards.store-registration');
+        Route::post('/kurssit/hallinta/kurssikortit/osallistuja', [CourseCardController::class, 'storeRegistrationManual'])->name('kurssit.cards.store-registration-manual');
 
                 Route::get('/kurssit/hallinta/osallistuja/{registration}', [RegistrationCardController::class, 'show'])->name('kurssit.registrations.show');
         Route::post('/kurssit/hallinta/osallistuja/{registration}/peru', [RegistrationCardController::class, 'cancel'])->name('kurssit.registrations.cancel');

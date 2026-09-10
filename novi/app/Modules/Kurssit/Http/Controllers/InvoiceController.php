@@ -11,30 +11,64 @@ use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $pendingPayment = CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
-            ->where('status', 'pending')
+        $search = trim((string) $request->get('q', ''));
+
+        $applySearch = function ($query) use ($search) {
+            if ($search === '') {
+                return;
+            }
+
+            $digitsOnly = preg_replace('/[\s\-]+/', '', $search);
+
+            $query->where(function ($builder) use ($search, $digitsOnly) {
+                $builder->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+
+                if ($digitsOnly !== '') {
+                    $builder->orWhereRaw(
+                        "REPLACE(REPLACE(phone, ' ', ''), '-', '') LIKE ?",
+                        ["%{$digitsOnly}%"]
+                    );
+                }
+            });
+        };
+
+        $pendingPayment = tap(
+            CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
+                ->where('status', 'pending'),
+            $applySearch
+        )
             ->with('course')
             ->orderByDesc('created_at')
             ->get();
 
-        $paidRegistrations = CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
-            ->where('status', 'confirmed')
-            ->whereNull('refunded_at')
+        $paidRegistrations = tap(
+            CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
+                ->where('status', 'confirmed')
+                ->whereNull('refunded_at'),
+            $applySearch
+        )
             ->with('course')
             ->orderByDesc('paid_at')
             ->get();
 
-        $overdueRegistrations = CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
-            ->where('status', 'cancelled')
-            ->where('cancellation_reason', 'payment_expired')
+        $overdueRegistrations = tap(
+            CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
+                ->where('status', 'cancelled')
+                ->where('cancellation_reason', 'payment_expired'),
+            $applySearch
+        )
             ->with('course')
             ->orderByDesc('updated_at')
             ->get();
 
-        $refundedRegistrations = CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
-            ->whereNotNull('refunded_at')
+        $refundedRegistrations = tap(
+            CourseRegistration::whereHas('course', fn ($q) => $q->where('price', '>', 0))
+                ->whereNotNull('refunded_at'),
+            $applySearch
+        )
             ->with('course')
             ->orderByDesc('refunded_at')
             ->get();
@@ -57,6 +91,7 @@ class InvoiceController extends Controller
             'refundedRegistrations' => $refundedRegistrations,
             'revenueThisMonth' => $revenueThisMonth,
             'revenueAllTime' => $revenueAllTime,
+            'search' => $search,
         ]);
     }
 

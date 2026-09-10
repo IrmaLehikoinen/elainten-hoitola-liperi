@@ -213,6 +213,7 @@ class CalendarController extends Controller
             'treatments' => $allTreatments,
             'blocks' => $blocks,
             'blockColor' => $blockColor,
+            'lemmikkihoitolaCompanyId' => \App\Models\Company::where('industry', 'lemmikkihoitola')->value('id'),
         ]);
     }
 }

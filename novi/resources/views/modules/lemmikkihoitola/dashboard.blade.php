@@ -234,6 +234,15 @@
                                 >
                                     Avaa →
                                 </span>
+
+                                <span
+                                    x-show="item.switch_url"
+                                    @click="openConflict(item.switch_url, item.switch_redirect)"
+                                    class="shrink-0 cursor-pointer text-sm font-medium"
+                                    style="color: var(--brand-primary);"
+                                >
+                                    Avaa →
+                                </span>
                             </div>
                         </template>
 
@@ -486,6 +495,18 @@
                     } catch (error) {
                         // Ei tehty mitään, rivi jää näkyviin jos pyyntö epäonnistui.
                     }
+                },
+
+                openConflict(url, redirect) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = url;
+                    form.target = '_blank';
+                    form.innerHTML = `<input type="hidden" name="_token" value="${@json(csrf_token())}">`
+                        + `<input type="hidden" name="redirect" value="${redirect || ''}">`;
+                    document.body.appendChild(form);
+                    form.submit();
+                    form.remove();
                 },
             }));
         });

@@ -116,6 +116,10 @@
                     @method('PATCH')
                     <input type="hidden" name="from_booking" value="{{ request('fromBooking') ? '1' : '' }}">
                     <input type="hidden" name="species" value="{{ request('species') }}">
+                    <input type="hidden" name="arrivalDate" value="{{ request('arrivalDate', '') }}">
+                    <input type="hidden" name="arrivalTime" value="{{ request('arrivalTime', '') }}">
+                    <input type="hidden" name="pickupDate" value="{{ request('pickupDate', '') }}">
+                    <input type="hidden" name="pickupTime" value="{{ request('pickupTime', '') }}">
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
@@ -158,6 +162,12 @@
                         Tallenna tiedot
                     </button>
                 </form>
+
+                @if (request('fromBooking'))
+                    <p class="mt-3 text-sm text-amber-600">
+                        Täytä seuraavaksi lemmikkitiedot.
+                    </p>
+                @endif
 
                                 <div class="mt-6 rounded-md border p-4" style="border-color: var(--brand-secondary);">
                                     <p class="text-sm font-semibold" style="color: var(--brand-text);">Tietopyyntö (GDPR)</p>
@@ -521,6 +531,10 @@
             var petsStoreUrl = @json(route('admin.pets.store'));
             var petsUpdateUrlBase = @json(url('/admin/pets'));
             var csrfToken = @json(csrf_token());
+            var bookingArrivalDate = @json(request('arrivalDate', ''));
+            var bookingArrivalTime = @json(request('arrivalTime', ''));
+            var bookingPickupDate = @json(request('pickupDate', ''));
+            var bookingPickupTime = @json(request('pickupTime', ''));
 
             if (form) {
                 form.addEventListener('input', function () {
@@ -559,7 +573,12 @@
                             return;
                         }
 
-                        window.open(petsUpdateUrlBase + '/' + createdPet.id + '?fromBooking=1', '_blank');
+                        window.open(
+                            petsUpdateUrlBase + '/' + createdPet.id
+                                + '?fromBooking=1&arrivalDate=' + bookingArrivalDate + '&arrivalTime=' + bookingArrivalTime
+                                + '&pickupDate=' + bookingPickupDate + '&pickupTime=' + bookingPickupTime,
+                            '_blank'
+                        );
                     })
                     .catch(function () {
                         alert('Lemmikin luonti epäonnistui.');
@@ -575,19 +594,28 @@
                 window.createAndOpenNewPetFor(species.trim());
             };
 
-            window.handleBackToBooking = function () {   
+         window.handleBackToBooking = function () {
                 if (formDirty) {
                     alert('Tallenna muutokset ensin ennen kuin palaat varaukseen.');
                     return;
                 }
 
-                if (pendingSpeciesCount > 0) {
-                    alert('Täytä ensin kaikki lemmikkikortit ennen kuin palaat varaukseen.');
-                    return;
+                var directOpener = window.opener;
+                var root = directOpener;
+
+                if (
+                    root && !root.closed && typeof root.refreshBookingCustomer !== 'function'
+                    && root.opener && !root.opener.closed && typeof root.opener.refreshBookingCustomer === 'function'
+                ) {
+                    root = root.opener;
                 }
 
-               if (window.opener && !window.opener.closed && typeof window.opener.refreshBookingCustomer === 'function') {
-                    window.opener.refreshBookingCustomer();
+                if (root && !root.closed && typeof root.refreshBookingCustomer === 'function') {
+                    root.refreshBookingCustomer();
+                }
+
+                if (directOpener && directOpener !== root && !directOpener.closed) {
+                    directOpener.close();
                 }
 
                 window.close();

@@ -218,12 +218,16 @@ class AdminBookingController extends Controller
 
         // Varaa tuonti- ja hakuajat myös Sydänpolun kalenterista (30 min per
         // ajankohta), jotta ne näkyvät estettynä siellä.
+        $firstPetId = $validated['animals'][0]['pet_id'] ?? null;
+        $bookingPetUrl = $firstPetId ? route('admin.pets.show', $firstPetId, false) : null;
+
         Event::dispatch(new ExternalTimeBlocked(
             \App\Models\Company::where('industry', 'kurssit')->value('id'),
             $arrivalAt->copy(),
             $arrivalAt->format('H:i:s'),
             $arrivalAt->copy()->addMinutes(30)->format('H:i:s'),
-            'Lemmikkihoitola: tuonti (varaus #'.$booking->id.')'
+            'Lemmikkihoitola: tuonti (varaus #'.$booking->id.')',
+            $bookingPetUrl
         ));
 
         Event::dispatch(new ExternalTimeBlocked(
@@ -231,27 +235,27 @@ class AdminBookingController extends Controller
             $pickupAt->copy(),
             $pickupAt->format('H:i:s'),
             $pickupAt->copy()->addMinutes(30)->format('H:i:s'),
-            'Lemmikkihoitola: hakuaika (varaus #'.$booking->id.')'
+            'Lemmikkihoitola: hakuaika (varaus #'.$booking->id.')',
+            $bookingPetUrl
         ));
 
         $conflictWarning = null;
         $conflictSwitchUrl = null;
         $conflictRedirect = null;
 
-        $allConflicts = array_merge(
-            $this->sydanpolkuConflicts($arrivalAt->copy(), $arrivalAt->copy()->addMinutes(30)),
-            $this->sydanpolkuConflicts($pickupAt->copy(), $pickupAt->copy()->addMinutes(30))
-        );
+        $allConflicts = $this->sydanpolkuConflicts($arrivalAt->copy(), $pickupAt->copy());
 
         if (count($allConflicts) > 0) {
-            $conflictWarning = 'Menee päällekkäin Sydänpolun kalenterissa: '.implode(', ', $allConflicts).'.';
+            $conflictWarning = 'Menee päällekkäin Sydänpolun kalenterissa: '.implode(', ', array_column($allConflicts, 'label')).'.';
             $conflictSwitchUrl = route('company.switch', \App\Models\Company::where('industry', 'kurssit')->value('id'));
-            $conflictRedirect = route('ajanvaraus.dashboard', ['date' => $arrivalAt->format('Y-m-d')], false);
+            $conflictRedirect = $allConflicts[0]['url'];
 
             Event::dispatch(new SchedulingConflictDetected(
                 $request->user()->company_id,
                 'Varaus #'.$booking->id.' menee päällekkäin Sydänpolun kanssa',
-                $conflictWarning
+                $conflictWarning,
+                $arrivalAt->copy(),
+                $conflictRedirect
             ));
         }
 
@@ -412,18 +416,25 @@ class AdminBookingController extends Controller
             ->with('treatment')
             ->get()
             ->each(function ($appointment) use (&$conflicts) {
-                $conflicts[] = ($appointment->treatment->name ?? 'Hoito').' klo '.$appointment->starts_at->format('H:i');
+                $conflicts[] = [
+                    'label' => ($appointment->treatment->name ?? 'Hoito').' '.$appointment->starts_at->format('d.m.').' klo '.$appointment->starts_at->format('H:i'),
+                    'url' => route('ajanvaraus.treatments.edit', $appointment->treatment_id, false),
+                ];
             });
 
         \App\Modules\Kurssit\Models\Course::withoutGlobalScope('company')
             ->where('company_id', $sydanpolkuId)
             ->whereNotNull('starts_at')
-            ->whereNotNull('ends_at')
             ->where('starts_at', '<', $end)
-            ->where('ends_at', '>', $start)
+            ->where(function ($query) use ($start) {
+                $query->where('ends_at', '>', $start)->orWhereNull('ends_at');
+            })
             ->get()
             ->each(function ($course) use (&$conflicts) {
-                $conflicts[] = $course->name.' klo '.$course->starts_at->format('H:i');
+                $conflicts[] = [
+                    'label' => $course->name.' '.$course->starts_at->format('d.m.').' klo '.$course->starts_at->format('H:i'),
+                    'url' => route('kurssit.courses.edit', $course->id, false),
+                ];
             });
 
         return $conflicts;

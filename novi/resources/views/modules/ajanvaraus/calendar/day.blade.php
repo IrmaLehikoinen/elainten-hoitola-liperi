@@ -10,20 +10,41 @@
 
         <div class="mt-6 space-y-2">
             @foreach ($blocks as $block)
-                <div class="rounded-md border-l-4 px-3 py-2 text-sm bg-green-50" style="border-color: {{ $blockColor }}">
-                    {{ $block->reason ?: 'Ei vapaita aikoja' }}
-                    @if ($block->start_time)
-                        klo {{ substr($block->start_time, 0, 5) }}–{{ substr($block->end_time, 0, 5) }}
-                    @else
-                        (koko päivä)
-                    @endif
-                </div>
+                @if ($block->url)
+                    <form method="POST" action="{{ route('company.switch', $lemmikkihoitolaCompanyId) }}" target="_blank">
+                        @csrf
+                        <input type="hidden" name="redirect" value="{{ $block->url }}">
+                        <button type="submit" class="block w-full text-left rounded-md border-l-4 px-3 py-2 text-sm bg-green-50 hover:bg-green-100" style="border-color: {{ $blockColor }}">
+                            {{ $block->reason ?: 'Ei vapaita aikoja' }}
+                            @if ($block->start_time)
+                                klo {{ substr($block->start_time, 0, 5) }}–{{ substr($block->end_time, 0, 5) }}
+                            @else
+                                (koko päivä)
+                            @endif
+                        </button>
+                    </form>
+                @else
+                    <div class="rounded-md border-l-4 px-3 py-2 text-sm bg-green-50" style="border-color: {{ $blockColor }}">
+                        {{ $block->reason ?: 'Ei vapaita aikoja' }}
+                        @if ($block->start_time)
+                            klo {{ substr($block->start_time, 0, 5) }}–{{ substr($block->end_time, 0, 5) }}
+                        @else
+                            (koko päivä)
+                        @endif
+                    </div>
+                @endif
             @endforeach
 
             @foreach ($external as $entry)
-                <div class="rounded-md border-l-4 px-3 py-2 text-sm bg-gray-50" style="border-color: {{ $entry['color'] }}">
-                    <span class="font-semibold">Kurssi:</span> {{ $entry['title'] }}
-                </div>
+                @if (isset($entry['id']))
+                    <a href="{{ route('kurssit.courses.edit', $entry['id']) }}" class="block rounded-md border-l-4 px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100" style="border-color: {{ $entry['color'] }}">
+                        <span class="font-semibold">Kurssi:</span> {{ $entry['title'] }}
+                    </a>
+                @else
+                    <div class="rounded-md border-l-4 px-3 py-2 text-sm bg-gray-50" style="border-color: {{ $entry['color'] }}">
+                        <span class="font-semibold">Kurssi:</span> {{ $entry['title'] }}
+                    </div>
+                @endif
             @endforeach
 
                         @foreach ($appointments as $appointment)

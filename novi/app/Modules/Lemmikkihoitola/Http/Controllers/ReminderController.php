@@ -47,7 +47,8 @@ class ReminderController extends Controller
                 $dueAt->copy(),
                 $dueAt->format('H:i:s'),
                 $dueAt->copy()->addMinutes(30)->format('H:i:s'),
-                'Lemmikkihoitola: muistutus (#'.$reminder->id.')'
+                'Lemmikkihoitola: muistutus (#'.$reminder->id.')',
+                route('admin.pets.show', $validated['pet_id'], false)
             ));
         }
 

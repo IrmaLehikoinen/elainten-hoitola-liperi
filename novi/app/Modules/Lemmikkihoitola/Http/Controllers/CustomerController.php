@@ -217,6 +217,10 @@ class CustomerController extends Controller
                 'customer' => $customer->id,
                 'fromBooking' => $request->boolean('from_booking') ? 1 : null,
                 'species' => $request->get('species') ?: null,
+                'arrivalDate' => $request->get('arrivalDate') ?: null,
+                'arrivalTime' => $request->get('arrivalTime') ?: null,
+                'pickupDate' => $request->get('pickupDate') ?: null,
+                'pickupTime' => $request->get('pickupTime') ?: null,
             ])
             ->with('status', 'Asiakastiedot tallennettu.');
     }

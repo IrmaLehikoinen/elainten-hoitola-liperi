@@ -9,6 +9,80 @@
             <div class="mt-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">{{ session('status') }}</div>
         @endif
 
+        @if (session('registration_error'))
+            <div class="mt-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">{{ session('registration_error') }}</div>
+        @endif
+
+        <div class="mt-4 rounded-lg border bg-white p-5">
+            <h2 class="text-sm font-semibold text-gray-700">Lisää puhelimitse tullut varaus</h2>
+            <p class="mt-1 text-xs text-gray-500">Valitse ensin palvelu hakeaksesi vapaat ajat.</p>
+
+            <form method="GET" action="{{ route('ajanvaraus.treatments.index') }}" class="mt-3 flex gap-2">
+                <select name="booking_treatment_id" class="w-full rounded-md border-gray-300 text-sm">
+                    <option value="">Valitse palvelu</option>
+                    @foreach ($treatments as $treatment)
+                        <option value="{{ $treatment->id }}" @selected($selectedTreatment && $selectedTreatment->id === $treatment->id)>
+                            {{ $treatment->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <button type="submit" class="shrink-0 rounded-md border px-4 py-2 text-sm font-semibold" style="border-color: var(--brand-secondary); color: var(--brand-text);">
+                    Hae vapaat ajat
+                </button>
+            </form>
+
+            @if ($selectedTreatment)
+                @if (empty($dateSlots))
+                    <p class="mt-3 text-sm text-gray-500">Ei vapaita aikoja lähimmän 30 päivän ajalta.</p>
+                @else
+                    <form method="POST" action="{{ route('ajanvaraus.appointments.store') }}" class="mt-4 space-y-3">
+                        @csrf
+                        <input type="hidden" name="treatment_id" value="{{ $selectedTreatment->id }}">
+                        <div>
+                            <label class="block text-sm font-medium">Aika</label>
+                            <select name="starts_at" required class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                                @foreach ($dateSlots as $date => $slots)
+                                    @foreach ($slots as $slot)
+                                        <option value="{{ $slot['iso'] }}">{{ $slot['label'] }}</option>
+                                    @endforeach
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium">Nimi</label>
+                                <input type="text" name="name" required class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Sähköposti</label>
+                                <input type="email" name="email" required class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium">Puhelin</label>
+                                <input type="text" name="phone" class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                            </div>
+                        </div>
+                        @if ($selectedTreatment->price > 0)
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Maksutapa</label>
+                                <div class="flex flex-col gap-2 text-sm">
+                                    <label class="flex items-center gap-2">
+                                        <input type="radio" name="payment_choice" value="send_link" checked>
+                                        Lähetä maksulinkki sähköpostiin
+                                    </label>
+                                    <label class="flex items-center gap-2">
+                                        <input type="radio" name="payment_choice" value="pay_on_site">
+                                        Maksaa paikan päällä
+                                    </label>
+                                </div>
+                            </div>
+                        @endif
+                        <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-medium">Lisää varaus</button>
+                    </form>
+                @endif
+            @endif
+        </div>
+
         <div class="mt-6">
             <h2 class="text-sm font-semibold text-gray-700">Palveluiden hallinta</h2>
             <p class="mt-1 text-xs text-gray-400">Lisää ja muokkaa palveluita, ryhmittele ne oikeiden otsikoiden alle ja kirjoita palveluille kuvaukset. Tallennetut tiedot päivittyvät automaattisesti julkiselle palvelusivulle.</p>

@@ -44,6 +44,7 @@ class AjanvarausServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \App\Modules\Ajanvaraus\Console\Commands\SendTreatmentGroupWarnings::class,
+                \App\Modules\Ajanvaraus\Console\Commands\CancelExpiredTreatmentAppointments::class,
             ]);
         }
 
@@ -53,7 +54,7 @@ class AjanvarausServiceProvider extends ServiceProvider
             Config::get('navigation.items', []),
             array_map(fn ($item) => $item + ['industry' => 'ajanvaraus'], [
                                 ['route' => 'ajanvaraus.dashboard', 'active_pattern' => 'ajanvaraus.dashboard|ajanvaraus.calendar.*', 'label' => 'Kalenteri', 'icon' => 'calendar', 'order' => 20],
-                            ['route' => 'ajanvaraus.treatments.index', 'active_pattern' => 'ajanvaraus.treatments.*', 'label' => 'Ajanvaraus', 'icon' => 'calendar', 'order' => 21],    
+                             ['route' => 'ajanvaraus.treatments.index', 'active_pattern' => 'ajanvaraus.treatments.*', 'label' => 'Palveluiden hallinta', 'icon' => 'calendar', 'order' => 21],  
             ])
         ));
 
@@ -140,6 +141,7 @@ class AjanvarausServiceProvider extends ServiceProvider
                     'date' => $event->date->toDateString(),
                     'start_time' => $event->startTime,
                     'end_time' => $event->endTime,
+                    'url' => $event->url,
                 ]
             );
         });

@@ -128,12 +128,31 @@
             <section class="rounded-xl border bg-white p-5">
                 <h2 class="text-base font-semibold">Muistutukset (viikon sisällä)</h2>
 
-                <div class="mt-3 space-y-2">
+                <div class="mt-3 space-y-2" x-data="{ removed: {} }">
                     @forelse ($upcomingReminders as $entry)
-                        <div class="rounded-md border p-2">
-                            <p class="text-sm font-medium">{{ $entry['label'] }}</p>
-                            <p class="text-xs text-gray-500">{{ $entry['date']->translatedFormat('d.m.Y') }}</p>
-                            <p class="mt-1 text-sm">{{ $entry['note'] }}</p>
+                        <div
+                            class="flex items-start gap-3 rounded-md border p-2"
+                            x-show="!removed['{{ $entry['type'] }}_{{ $entry['id'] }}']"
+                            x-cloak
+                        >
+                            <button
+                                type="button"
+                                class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-gray-300"
+                                aria-label="Merkitse tehdyksi"
+                                @click="
+                                    fetch('{{ route('kurssit.reminders.dismiss') }}', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                        body: JSON.stringify({ type: '{{ $entry['type'] }}', id: {{ $entry['id'] }} }),
+                                    }).then(() => { removed['{{ $entry['type'] }}_{{ $entry['id'] }}'] = true });
+                                "
+                            ></button>
+
+                            <a href="{{ $entry['edit_url'] }}" class="min-w-0 flex-1">
+                                <p class="text-sm font-medium">{{ $entry['label'] }}</p>
+                                <p class="text-xs text-gray-500">{{ $entry['date']->translatedFormat('d.m.Y') }}</p>
+                                <p class="mt-1 text-sm">{{ $entry['note'] }}</p>
+                            </a>
                         </div>
                     @empty
                         <p class="text-sm text-gray-500">Ei muistutuksia tulevalle viikolle.</p>

@@ -34,12 +34,18 @@ class BackfillAjanvarausCalendarBlocks extends Command
             $arrivalAt = Carbon::parse($booking->arrival_at);
             $pickupAt = Carbon::parse($booking->pickup_at);
 
+            $firstParticipant = $booking->participants()->first();
+            $bookingPetUrl = ($firstParticipant && $firstParticipant->pet_id)
+                ? route('admin.pets.show', $firstParticipant->pet_id, false)
+                : null;
+
             Event::dispatch(new ExternalTimeBlocked(
                 \App\Models\Company::where('industry', 'kurssit')->value('id'),
                 $arrivalAt->copy(),
                 $arrivalAt->format('H:i:s'),
                 $arrivalAt->copy()->addMinutes(30)->format('H:i:s'),
-                'Lemmikkihoitola: tuonti (varaus #'.$booking->id.')'
+                'Lemmikkihoitola: tuonti (varaus #'.$booking->id.')',
+                $bookingPetUrl
             ));
 
             Event::dispatch(new ExternalTimeBlocked(
@@ -47,7 +53,8 @@ class BackfillAjanvarausCalendarBlocks extends Command
                 $pickupAt->copy(),
                 $pickupAt->format('H:i:s'),
                 $pickupAt->copy()->addMinutes(30)->format('H:i:s'),
-                'Lemmikkihoitola: hakuaika (varaus #'.$booking->id.')'
+                'Lemmikkihoitola: hakuaika (varaus #'.$booking->id.')',
+                $bookingPetUrl
             ));
         }
 
@@ -65,7 +72,8 @@ class BackfillAjanvarausCalendarBlocks extends Command
                 $dueAt->copy(),
                 $dueAt->format('H:i:s'),
                 $dueAt->copy()->addMinutes(30)->format('H:i:s'),
-                'Lemmikkihoitola: muistutus (#'.$reminder->id.')'
+                'Lemmikkihoitola: muistutus (#'.$reminder->id.')',
+                route('admin.pets.show', $reminder->pet_id, false)
             ));
         }
 

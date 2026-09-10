@@ -18,6 +18,7 @@ class ExternalTimeBlocked
         public ?string $startTime,
         public ?string $endTime,
         public string $reason,
+        public ?string $url = null,
     ) {
     }
 }

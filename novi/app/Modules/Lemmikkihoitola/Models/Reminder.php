@@ -18,6 +18,8 @@ class Reminder extends Model
         'type',
         'title',
         'description',
+        'conflict_date',
+        'conflict_url',
         'due_at',
         'done_at',
         'created_by',
@@ -27,6 +29,7 @@ class Reminder extends Model
     protected $casts = [
         'due_at' => 'datetime',
         'done_at' => 'datetime',
+        'conflict_date' => 'date',
     ];
 
     public function bookingParticipant()

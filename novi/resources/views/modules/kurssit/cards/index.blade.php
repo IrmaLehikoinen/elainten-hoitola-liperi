@@ -9,6 +9,64 @@
             </div>
         @endif
 
+        @if (session('registration_error'))
+            <div class="mt-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
+                {{ session('registration_error') }}
+            </div>
+        @endif
+
+        <div class="mt-4 rounded-lg border bg-white p-5">
+            <h2 class="text-sm font-semibold text-gray-700">Lisää puhelimitse tullut varaus</h2>
+            <p class="mt-1 text-xs text-gray-500">Käytä tätä kun asiakas ilmoittautuu kurssille puhelimessa tai paikan päällä.</p>
+
+            <form method="POST" action="{{ route('kurssit.cards.store-registration-manual') }}" class="mt-3 space-y-3">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium">Kurssi</label>
+                    <select name="course_id" required class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                        <option value="">Valitse kurssi</option>
+                        @foreach ($upcoming as $course)
+                            <option value="{{ $course->id }}">
+                                {{ $course->name }}@if ($course->starts_at) · {{ $course->starts_at->format('d.m.Y H:i') }} @endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium">Nimi</label>
+                        <input type="text" name="name" required class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Sähköposti</label>
+                        <input type="email" name="email" required class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Puhelin</label>
+                        <input type="text" name="phone" class="mt-1 w-full rounded-md border-gray-300 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Maksutapa</label>
+                    <div class="flex flex-col gap-2 text-sm">
+                        <label class="flex items-center gap-2">
+                            <input type="radio" name="payment_choice" value="paid_now">
+                            Maksettu heti (raha jo kädessä)
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="radio" name="payment_choice" value="send_link" checked>
+                            Lähetä maksulinkki sähköpostiin
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="radio" name="payment_choice" value="pay_on_day">
+                            Maksaa kurssipäivänä
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn-brand rounded-md px-4 py-2 text-sm font-medium">Lisää varaus</button>
+            </form>
+        </div>
+
         <h2 class="mt-8 text-sm font-semibold text-gray-500 uppercase tracking-wide">Tulevat kurssit</h2>
         <div class="mt-3 space-y-3">
             @forelse ($upcoming as $course)

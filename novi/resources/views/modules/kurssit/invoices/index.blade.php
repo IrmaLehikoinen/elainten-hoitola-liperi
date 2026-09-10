@@ -1,24 +1,71 @@
 <x-app-layout>
-    <div class="p-6 max-w-3xl">
-        <h1 class="text-xl font-semibold">Laskutus</h1>
-        <p class="mt-1 text-sm text-gray-500">Ilmoittautumisten maksutilanne, paikan päällä maksaminen ja kuitit/laskut.</p>
+    <x-slot name="header">
+        <div>
+            <h1
+                class="text-2xl font-semibold"
+                style="color: var(--brand-text); font-family: var(--brand-heading-font);"
+            >
+                Laskutus
+            </h1>
 
-        @if (session('status'))
-            <div class="mt-4 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">{{ session('status') }}</div>
-        @endif
-
-        <div class="mt-6 rounded-lg border bg-white p-4 flex gap-8">
-            <div>
-                <p class="text-xs text-gray-500 uppercase tracking-wide">Tämä kuukausi</p>
-                <p class="mt-1 text-lg font-semibold">{{ number_format($revenueThisMonth, 2, ',', ' ') }} €</p>
-            </div>
-            <div>
-                <p class="text-xs text-gray-500 uppercase tracking-wide">Kaikki maksetut yhteensä</p>
-                <p class="mt-1 text-lg font-semibold">{{ number_format($revenueAllTime, 2, ',', ' ') }} €</p>
-            </div>
+            <p class="mt-1 text-sm text-gray-500">
+                Ilmoittautumisten maksutilanne, paikan päällä maksaminen ja kuitit/laskut.
+            </p>
         </div>
+    </x-slot>
 
-        <h2 class="mt-8 text-sm font-semibold text-gray-500 uppercase tracking-wide">Odottaa maksua</h2>
+    <div class="py-8">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+
+            @if (session('status'))
+                <div class="rounded-md bg-green-50 p-4 text-sm font-medium text-green-700">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            <section class="rounded-lg bg-white p-6 shadow-sm">
+                <div class="flex gap-8">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-wide">Tämä kuukausi</p>
+                        <p class="mt-1 text-lg font-semibold">{{ number_format($revenueThisMonth, 2, ',', ' ') }} €</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-wide">Kaikki maksetut yhteensä</p>
+                        <p class="mt-1 text-lg font-semibold">{{ number_format($revenueAllTime, 2, ',', ' ') }} €</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="rounded-lg bg-white p-6 shadow-sm">
+                <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                    Hae ilmoittautujaa
+                </h2>
+
+                <form method="GET" action="{{ route('kurssit.invoices.index') }}" class="mt-4 flex gap-2">
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ $search }}"
+                        placeholder="Nimi, puhelin tai sähköposti"
+                        class="w-full rounded-md border-gray-300 shadow-sm"
+                    >
+
+                    <button type="submit" class="btn-brand shrink-0 rounded-md px-4 py-2 text-sm font-semibold">
+                        Hae
+                    </button>
+
+                    @if ($search !== '')
+                        <a href="{{ route('kurssit.invoices.index') }}" class="shrink-0 rounded-md border px-4 py-2 text-sm font-semibold" style="border-color: var(--brand-secondary); color: var(--brand-text);">
+                            Tyhjennä
+                        </a>
+                    @endif
+                </form>
+            </section>
+
+            <section class="rounded-lg bg-white p-6 shadow-sm">
+                <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                    Odottaa maksua
+                </h2>
         <div class="mt-3 space-y-2">
             @forelse ($pendingPayment as $registration)
                 <div class="rounded-lg border bg-white p-4 flex items-center justify-between">
@@ -40,7 +87,13 @@
             @endforelse
         </div>
 
-        <h2 class="mt-8 text-sm font-semibold text-gray-500 uppercase tracking-wide">Maksetut</h2>
+            </section>
+
+            <section class="rounded-lg bg-white p-6 shadow-sm">
+                <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                    Maksetut
+                </h2>
+
         <div class="mt-3 space-y-2">
             @forelse ($paidRegistrations as $registration)
                 <div class="rounded-lg border bg-white p-4 flex items-center justify-between">
@@ -71,7 +124,13 @@
             @endforelse
         </div>
 
-        <h2 class="mt-8 text-sm font-semibold text-gray-500 uppercase tracking-wide">Erääntyneet (ei maksettu ajoissa)</h2>
+            </section>
+
+            <section class="rounded-lg bg-white p-6 shadow-sm">
+                <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                    Erääntyneet (ei maksettu ajoissa)
+                </h2>
+
         <div class="mt-3 space-y-2">
             @forelse ($overdueRegistrations as $registration)
                 <div class="rounded-lg border bg-white p-4 flex items-center justify-between">
@@ -88,7 +147,13 @@
             @endforelse
         </div>
 
-        <h2 class="mt-8 text-sm font-semibold text-gray-500 uppercase tracking-wide">Palautetut</h2>
+            </section>
+
+            <section class="rounded-lg bg-white p-6 shadow-sm">
+                <h2 class="text-xl font-semibold" style="font-family: var(--brand-heading-font); color: var(--brand-text);">
+                    Palautetut
+                </h2>
+
         <div class="mt-3 space-y-2">
             @forelse ($refundedRegistrations as $registration)
                 <div class="rounded-lg border bg-white p-4 flex items-center justify-between">
@@ -103,6 +168,9 @@
             @empty
                 <p class="text-sm text-gray-500">Ei palautuksia.</p>
             @endforelse
+        </div>
+            </section>
+
         </div>
     </div>
 </x-app-layout>

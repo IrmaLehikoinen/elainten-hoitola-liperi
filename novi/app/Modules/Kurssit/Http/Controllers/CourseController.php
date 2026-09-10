@@ -85,9 +85,12 @@ class CourseController extends Controller
             ->get()
             ->each(function ($course) use ($entries) {
                 $entries->push([
+                    'type' => 'course',
+                    'id' => $course->id,
                     'label' => $course->name,
                     'date' => $course->reminder_date,
                     'note' => $course->reminder_note,
+                    'edit_url' => route('kurssit.courses.edit', $course->id),
                 ]);
             });
 
@@ -106,9 +109,12 @@ class CourseController extends Controller
                     }
 
                     $entries->push([
+                        'type' => 'availability_rule',
+                        'id' => $rule->id,
                         'label' => $treatment->name,
                         'date' => $date,
                         'note' => $rule->reminder_note,
+                        'edit_url' => route('ajanvaraus.treatments.edit', $treatment->id),
                     ]);
                 }
 
@@ -124,14 +130,40 @@ class CourseController extends Controller
                     }
 
                     $entries->push([
+                        'type' => 'special_opening',
+                        'id' => $opening->id,
                         'label' => $treatment->name,
                         'date' => $date,
                         'note' => $opening->reminder_note,
+                        'edit_url' => route('ajanvaraus.treatments.edit', $treatment->id),
                     ]);
                 }
             });
 
         return $entries->sortBy('date')->values();
+    }
+
+    /**
+     * Kuittaa yhden viikkonäkymän muistutuksen tehdyksi — tyhjentää
+     * reminder_note/reminder_date kyseiseltä riviltä, jolloin se ei
+     * enää näy "Muistutukset (viikon sisällä)" -listalla.
+     */
+    public function dismissReminder(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => ['required', 'in:course,availability_rule,special_opening'],
+            'id' => ['required', 'integer'],
+        ]);
+
+        $clear = ['reminder_note' => null, 'reminder_date' => null];
+
+        match ($validated['type']) {
+            'course' => Course::where('id', $validated['id'])->update($clear),
+            'availability_rule' => \App\Modules\Ajanvaraus\Models\TreatmentAvailabilityRule::where('id', $validated['id'])->update($clear),
+            'special_opening' => \App\Modules\Ajanvaraus\Models\TreatmentSpecialOpening::where('id', $validated['id'])->update($clear),
+        };
+
+        return response()->json(['done' => true]);
     }
 
        private function buildCalendarDays(Carbon $monthStart)

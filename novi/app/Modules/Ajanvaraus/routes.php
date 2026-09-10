@@ -1,10 +1,12 @@
 <?php
 
 use App\Modules\Ajanvaraus\Http\Controllers\CalendarController;
+use App\Modules\Ajanvaraus\Http\Controllers\InvoiceController;
 use App\Modules\Ajanvaraus\Http\Controllers\PublicBookingController;
 use App\Modules\Ajanvaraus\Http\Controllers\TreatmentAvailabilityRuleController;
 use App\Modules\Ajanvaraus\Http\Controllers\TreatmentCategoryController;
 use App\Modules\Ajanvaraus\Http\Controllers\TreatmentController;
+use App\Modules\Ajanvaraus\Http\Controllers\TreatmentPaymentController;
 use App\Modules\Ajanvaraus\Http\Controllers\TreatmentSpecialOpeningController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +14,7 @@ Route::middleware('web')->group(function () {
         Route::get('/ajanvaraus/varaa', [PublicBookingController::class, 'index'])->name('ajanvaraus.public.book');
     Route::post('/ajanvaraus/varaa', [PublicBookingController::class, 'store'])->name('ajanvaraus.public.store');
     Route::get('/ajanvaraus/varaa/kiitos/{appointment}', [PublicBookingController::class, 'success'])->name('ajanvaraus.public.success');
+    Route::get('/ajanvaraus/maksu/{appointment:payment_token}', [TreatmentPaymentController::class, 'checkout'])->name('ajanvaraus.payment.checkout');
 });
 
 Route::middleware(['web', 'auth', 'verified'])->group(function () {
@@ -36,4 +39,12 @@ Route::middleware(['web', 'auth', 'verified'])->group(function () {
     Route::post('/ajanvaraus/hallinta/otsikot', [TreatmentCategoryController::class, 'store'])->name('ajanvaraus.categories.store');
     Route::patch('/ajanvaraus/hallinta/otsikot/{category}', [TreatmentCategoryController::class, 'update'])->name('ajanvaraus.categories.update');
     Route::delete('/ajanvaraus/hallinta/otsikot/{category}', [TreatmentCategoryController::class, 'destroy'])->name('ajanvaraus.categories.destroy');
+
+    Route::post('/ajanvaraus/hallinta/hoidot/varaus', [TreatmentController::class, 'storeAppointment'])->name('ajanvaraus.appointments.store');
+
+    Route::get('/ajanvaraus/hallinta/laskutus', [InvoiceController::class, 'index'])->name('ajanvaraus.invoices.index');
+    Route::post('/ajanvaraus/hallinta/laskutus/{appointment}/merkitse-maksetuksi', [InvoiceController::class, 'markPaid'])->name('ajanvaraus.invoices.mark-paid');
+    Route::post('/ajanvaraus/hallinta/laskutus/{appointment}/merkitse-palautetuksi', [InvoiceController::class, 'markRefunded'])->name('ajanvaraus.invoices.mark-refunded');
+    Route::get('/ajanvaraus/hallinta/laskutus/{appointment}/pdf', [InvoiceController::class, 'downloadPdf'])->name('ajanvaraus.invoices.pdf');
+    Route::get('/ajanvaraus/hallinta/laskutus/{appointment}/tulosta', [InvoiceController::class, 'printPdf'])->name('ajanvaraus.invoices.print');
 });

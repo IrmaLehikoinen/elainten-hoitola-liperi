@@ -50,11 +50,11 @@ class KurssitServiceProvider extends ServiceProvider
             Config::get('navigation.items', []),
             array_map(fn ($item) => $item + ['industry' => 'kurssit'], [
                             ['route' => 'kurssit.dashboard', 'active_pattern' => 'kurssit.dashboard', 'label' => 'Etusivu', 'icon' => 'home', 'order' => 10],
-                ['route' => 'kurssit.cards.index', 'active_pattern' => 'kurssit.cards.*|kurssit.registrations.*', 'label' => 'Kurssikortit', 'icon' => 'calendar', 'order' => 30],
-                ['route' => 'kurssit.courses.index', 'active_pattern' => 'kurssit.courses.*', 'label' => 'Syötä uudet kurssit', 'icon' => 'calendar', 'order' => 40],
+                ['route' => 'kurssit.cards.index', 'active_pattern' => 'kurssit.cards.*|kurssit.registrations.*', 'label' => 'Kurssien hallinta', 'icon' => 'calendar', 'order' => 30],
+                ['route' => 'kurssit.courses.index', 'active_pattern' => 'kurssit.courses.*', 'label' => 'Lisää uusi kurssi verkkosivuille', 'icon' => 'calendar', 'order' => 40],
                 ['route' => 'kurssit.reports.index', 'active_pattern' => 'kurssit.reports.*', 'label' => 'Raportti', 'icon' => 'chart', 'order' => 50],
                 ['route' => 'kurssit.invoices.index', 'active_pattern' => 'kurssit.invoices.*', 'label' => 'Laskutus', 'icon' => 'euro', 'order' => 60],
-                ['route' => 'kurssit.gift-cards.index', 'active_pattern' => 'kurssit.gift-cards.*', 'label' => 'Lahjakortit', 'icon' => 'gift', 'order' => 70],
+                ['route' => 'kurssit.gift-cards.index', 'active_pattern' => 'kurssit.gift-cards.*', 'label' => 'Lahjakorttien hallinta', 'icon' => 'gift', 'order' => 70],
                 ['route' => 'kurssit.settings.index', 'active_pattern' => 'kurssit.settings.*', 'label' => 'Asetukset', 'icon' => 'gear', 'order' => 80],
                 ['route' => 'kurssit.customer-data.index', 'active_pattern' => 'kurssit.customer-data.*', 'label' => 'Asiakastiedot', 'icon' => 'shield', 'order' => 90],    
             ])
@@ -149,6 +149,7 @@ class KurssitServiceProvider extends ServiceProvider
                     }
 
                     $event->entries[] = [
+                        'id' => $course->id,
                         'date' => $course->starts_at->format('Y-m-d'),
                         'title' => $title,
                         'color' => $course->color ?? app(\App\Core\Branding\BrandManager::class)->get('primary_color'),                            

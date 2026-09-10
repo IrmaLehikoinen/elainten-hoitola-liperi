@@ -57,6 +57,8 @@ class PetController extends Controller
         return view('pets.show', [
             'pet' => $pet,
             'reminderTypes' => \App\Modules\Lemmikkihoitola\Models\ReminderType::orderBy('sort_order')->get(),
+            'bookingArrival' => request('arrivalDate') && request('arrivalTime') ? request('arrivalDate').' '.request('arrivalTime') : null,
+            'bookingPickup' => request('pickupDate') && request('pickupTime') ? request('pickupDate').' '.request('pickupTime') : null,
         ]);
     }
 
@@ -71,7 +73,7 @@ class PetController extends Controller
         $this->authorizePetAccess($pet);
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'species' => ['required', 'string', 'max:255'],
             'breed' => ['nullable', 'string', 'max:255'],
             'birth_date' => ['nullable', 'date'],
@@ -89,13 +91,55 @@ class PetController extends Controller
             'internal_notes' => ['nullable', 'string'],
         ]);
 
+        $validated['name'] = $validated['name'] ?? '';
+
         $pet->update($validated);
 
+        if ($request->filled('due_date')) {
+            $allowedTypes = \App\Modules\Lemmikkihoitola\Models\ReminderType::pluck('slug')->all();
+
+            $reminderData = $request->validate([
+                'type' => ['required', 'string', 'in:' . implode(',', $allowedTypes)],
+                'title' => ['nullable', 'string', 'max:255'],
+                'due_date' => ['required', 'date'],
+                'due_time' => ['nullable', 'date_format:H:i'],
+            ]);
+
+            $dueAtCombined = $reminderData['due_date'].' '.($reminderData['due_time'] ?? '12:00');
+
+            $reminder = \App\Modules\Lemmikkihoitola\Models\Reminder::create([
+                'pet_id' => $pet->id,
+                'type' => $reminderData['type'],
+                'title' => $reminderData['title'] ?? null,
+                'due_at' => $dueAtCombined,
+                'created_by' => $request->user()->id,
+            ]);
+
+            $reminderType = \App\Modules\Lemmikkihoitola\Models\ReminderType::where('slug', $reminderData['type'])->first();
+
+            if ($reminderType && $reminderType->show_in_ajanvaraus_calendar) {
+                $dueAt = \Carbon\Carbon::parse($dueAtCombined);
+
+                \Illuminate\Support\Facades\Event::dispatch(new \App\Events\ExternalTimeBlocked(
+                    \App\Models\Company::where('industry', 'kurssit')->value('id'),
+                    $dueAt->copy(),
+                    $dueAt->format('H:i:s'),
+                    $dueAt->copy()->addMinutes(30)->format('H:i:s'),
+                    'Lemmikkihoitola: muistutus (#'.$reminder->id.')',
+                    route('admin.pets.show', $pet->id, false)
+                ));
+            }
+        }
+
         return redirect()
-            ->route('admin.pets.show', [
+            ->route('admin.pets.show', array_filter([
                 'pet' => $pet->id,
                 'fromBooking' => $request->boolean('from_booking') ? 1 : null,
-            ])
+                'arrivalDate' => $request->input('arrivalDate'),
+                'arrivalTime' => $request->input('arrivalTime'),
+                'pickupDate' => $request->input('pickupDate'),
+                'pickupTime' => $request->input('pickupTime'),
+            ]))
             ->with('status', 'Lemmikkikortti tallennettu.');
     }
 

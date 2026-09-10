@@ -128,6 +128,13 @@ class DashboardController extends Controller
                     ?? optional(optional(optional($reminder->bookingParticipant)->booking)->customer)->name,
                 'pet_id' => $reminder->pet_id
                     ?? optional($reminder->bookingParticipant)->pet_id,
+                'switch_url' => $reminder->conflict_date
+                    ? route('company.switch', \App\Models\Company::where('industry', 'kurssit')->value('id'))
+                    : null,
+                'switch_redirect' => $reminder->conflict_url
+                    ?: ($reminder->conflict_date
+                        ? route('ajanvaraus.dashboard', ['date' => $reminder->conflict_date->format('Y-m-d')], false)
+                        : null),
             ];
         })->sortBy('time')->values();
     }

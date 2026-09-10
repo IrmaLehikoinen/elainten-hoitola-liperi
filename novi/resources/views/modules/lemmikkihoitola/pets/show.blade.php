@@ -29,7 +29,7 @@
                         onclick="handleBackToBooking()"
                         class="btn-brand rounded-md px-4 py-2 text-sm font-semibold"
                     >
-                        ← Takaisin asiakaskorttiin (sulje tämä välilehti)
+                        ← Takaisin varaukseen (sulje tämä välilehti)
                     </button>  
                 </div>
             @elseif (request('from') === 'day' && request('date'))
@@ -79,6 +79,10 @@
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="from_booking" value="{{ request('fromBooking') ? '1' : '' }}">
+                <input type="hidden" name="arrivalDate" value="{{ request('arrivalDate') }}">
+                <input type="hidden" name="arrivalTime" value="{{ request('arrivalTime') }}">
+                <input type="hidden" name="pickupDate" value="{{ request('pickupDate') }}">
+                <input type="hidden" name="pickupTime" value="{{ request('pickupTime') }}">
 
                 {{-- Perustiedot --}}
                 <section class="bg-white p-6 shadow-sm rounded-lg">
@@ -237,6 +241,19 @@
                     Hoitojakson muistutukset
                 </h2>
 
+                @if ($bookingArrival || $bookingPickup)
+                    <p class="mt-1 text-sm text-gray-500">
+                        Varattu hoitojakso:
+                        {{ $bookingArrival ? \Illuminate\Support\Carbon::parse($bookingArrival)->format('d.m.Y H:i') : '?' }}
+                        –
+                        {{ $bookingPickup ? \Illuminate\Support\Carbon::parse($bookingPickup)->format('d.m.Y H:i') : '?' }}
+                    </p>
+                @elseif (request('fromBooking'))
+                    <p class="mt-1 text-sm text-amber-600">
+                        Saapumis- ja noutopäivää ei ollut vielä valittu varauslomakkeella kun avasit tämän kortin.
+                    </p>
+                @endif
+
                 <div class="mt-4 divide-y">
                     @forelse ($pet->reminders as $reminder)
                         <div class="flex items-center gap-4 py-3" x-show="!removedState[{{ $reminder->id }}]" x-cloak>
@@ -270,14 +287,11 @@
                     @endforelse
                 </div>
 
-                <form method="POST" action="{{ route('admin.reminders.store') }}" class="mt-6 border-t pt-6">
-                    @csrf
-                    <input type="hidden" name="pet_id" value="{{ $pet->id }}">
-
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                <div class="mt-6 border-t pt-6">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
                         <div>
                             <label class="block text-sm font-medium">Tyyppi</label>
-                            <select name="type" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                            <select name="type" form="pet-update-form" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
                                 @foreach ($reminderTypes as $reminderType)
                                     <option value="{{ $reminderType->slug }}">{{ $reminderType->label }}</option>
                                 @endforeach
@@ -289,27 +303,39 @@
                             <input
                                 type="text"
                                 name="title"
+                                form="pet-update-form"
                                 class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
                                 placeholder="Esim. Aamulääke 2 tablettia"
                             >
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium">Ajankohta</label>
+                            <label class="block text-sm font-medium">Päivä</label>
                             <input
-                                type="datetime-local"
-                                name="due_at"
-                                required
+                                type="date"
+                                name="due_date"
+                                form="pet-update-form"
+                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">Klo</label>
+                            <input
+                                type="time"
+                                name="due_time"
+                                form="pet-update-form"
+                                value="12:00"
                                 class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
                             >
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-brand mt-4 rounded-md px-4 py-2 text-sm font-semibold">
-                        Lisää muistutus
-                    </button>
-                </form>
+                    <p class="mt-2 text-xs text-gray-500">Muistutus tallentuu, kun painat "Tallenna lemmikkikortti".</p>
+                </div>
             </section>
+
+            <div style="height: 260px;" aria-hidden="true"></div>
 
         </div>
     </div>
@@ -388,12 +414,42 @@
                     return;
                 }
 
-                if (window.opener && !window.opener.closed) {
-                    window.opener.location.reload();
+                var directOpener = window.opener;
+                var root = directOpener;
+
+                if (
+                    root && !root.closed && typeof root.refreshBookingCustomer !== 'function'
+                    && root.opener && !root.opener.closed && typeof root.opener.refreshBookingCustomer === 'function'
+                ) {
+                    root = root.opener;
+                }
+
+                if (root && !root.closed && typeof root.refreshBookingCustomer === 'function') {
+                    root.refreshBookingCustomer();
+                }
+
+                if (directOpener && directOpener !== root && !directOpener.closed) {
+                    directOpener.close();
                 }
 
                 window.close();
-            };   
+            };
+
+            var dueDateInput = document.querySelector('input[name="due_date"]');
+            if (dueDateInput) {
+                dueDateInput.addEventListener('mousedown', function (event) {
+                    if (typeof dueDateInput.showPicker === 'function') {
+                        event.preventDefault();
+                        dueDateInput.focus();
+                        dueDateInput.scrollIntoView({ block: 'start', behavior: 'auto' });
+                        try { dueDateInput.showPicker(); } catch (e) {}
+                    }
+                });
+
+                dueDateInput.addEventListener('focus', function () {
+                    dueDateInput.scrollIntoView({ block: 'start', behavior: 'auto' });
+                });
+            }
         })();
     </script>
 </x-app-layout>

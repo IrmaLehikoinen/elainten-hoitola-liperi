@@ -8,6 +8,8 @@ class SchedulingConflictDetected
         public int $companyId,
         public string $title,
         public ?string $description = null,
+        public ?\Carbon\Carbon $date = null,
+        public ?string $url = null,
     ) {
     }
 }

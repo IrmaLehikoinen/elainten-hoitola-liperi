@@ -129,6 +129,8 @@ class LemmikkihoitolaServiceProvider extends ServiceProvider
                 'type' => 'ajanvaraus_konflikti',
                 'title' => $event->title,
                 'description' => $event->description,
+                'conflict_date' => $event->date?->format('Y-m-d'),
+                'conflict_url' => $event->url,
                 'due_at' => now(),
             ]);
         });

@@ -15,6 +15,7 @@ class CalendarBlock extends Model
         'start_time',
         'end_time',
         'reason',
+        'url',
     ];
 
     protected $casts = [
