@@ -5,8 +5,8 @@
 // jos vain yhtä moduulia päivitetään, muut numerot pysyvät ennallaan.
 
 return [
-    'pohja' => '1.0.2',
-    'lemmikkihoitola_moduuli' => '1.1.0',
+    'pohja' => '1.0.3',
+    'lemmikkihoitola_moduuli' => '1.1.1',
     'kurssit_moduuli' => '1.1.0',
     'ajanvaraus_moduuli' => '1.1.0',
 ];
