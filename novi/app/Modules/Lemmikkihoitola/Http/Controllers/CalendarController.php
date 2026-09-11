@@ -84,6 +84,7 @@ class CalendarController extends Controller
             'periodLabel' => $periodLabel,
             'calendarDays' => $days,
             'careTypes' => \App\Modules\Lemmikkihoitola\Models\CareType::orderBy('sort_order')->get(),
+            'reminderTypes' => \App\Modules\Lemmikkihoitola\Models\ReminderType::orderBy('sort_order')->get(),
             'newBookingsCount' => $newBookingsCount,
             'firstNewBookingDate' => $firstNewBookingDate,
         ]);

@@ -601,3 +601,25 @@ Irma pyysi committaamaan illan työn ennen lopettamista. Commit-komennot annettu
 2. Tarkista `git status` / kysy Irmalta onko Raportti- ja Laskutus-koodi jo liitetty tiedostoihin ja migraatio ajettu — Read-varmista aina ennen kuin oletetaan tehdyksi.
 3. Jatka lahjakortti-ominaisuudesta yllä olevan suunnitelman mukaisesti.
 4. Tehtävä #77 "Kolmiosainen loppytestaus" on edelleen auki koko Kurssit-moduulille.
+
+## 19. Muistiinpanot 10.9.2026 – Puhelinvaraukset, maksulinkkikorjaus, pohjaan vienti
+
+### Tehty ja vahvistettu tänään (10.9.) — Kurssit + Ajanvaraus
+- Puhelimitse tulevien varausten käsin syöttö sekä Kurssit- että Palvelut-puolelle (maksuvalinnat: Kurssit paid_now/send_link/pay_on_day, Palvelut vain send_link/pay_on_site). Vahvistettu koodista ja testattu.
+- Korjattu kriittinen bugi: `TreatmentAppointment`-mallilta puuttui `payment_token`-automaattigenerointi, aiheutti UrlGenerationExceptionin "Lähetä maksulinkki" -toiminnossa Palvelut-puolella. Korjattu ja vahvistettu.
+- "Näytä aika kalenterissa" -linkit lisätty molempiin puhelinvarauslomakkeisiin.
+- Varauspäivä näkyy nyt kurssikortin osallistujarivillä.
+- Etusivun pikanapit (+ Kurssivaraus / + Palveluvaraus) lisätty Kurssit-etusivulle ja Ajanvaraus-kalenterinäkymään.
+- Versionumerot nostettu (`config/versions.php`): lemmikkihoitola_moduuli, kurssit_moduuli, ajanvaraus_moduuli kaikki 1.1.0.
+- Kaikki yllä committoitu liperiin (`c725fec`, `fc2a311`, `d1ff7e8`) JA viety `novi-pohja-1.0.0`:aan (`d63f32d`, `3cd46ce` — jälkimmäinen lisäsi pohjaan puuttuneen `lang/fi/validation.php`:n). Kumpaakaan ei ole vielä pushattu GitHubiin.
+- Varmuuskopiot otettu Herd-kansioon: `herd_backup_20260910.zip`, `novi_varausjarjestelma_20260910.sql`, `novi_pohja_20260910.sql`.
+
+### AVOIN — tee tämä HETI kun tätä kansiota seuraavan kerran avataan
+**OSA C — Laskutus-välilehden Palvelut-puoli (Ajanvaraus) puuttuu vielä kokonaan.** Kurssit-puoli Laskutuksessa toimii; Palvelut-puoli (Ajanvaraus) ei — sivuvalikon "Laskutus" pitää lopulta näyttää molemmat saman kohdan alla omana välilehtenään (ei kahta erillistä sivuvalikon kohtaa). Puuttuu:
+1. `app/Modules/Ajanvaraus/Http/Controllers/InvoiceController.php` (uusi tiedosto)
+2. `resources/views/modules/ajanvaraus/invoices/index.blade.php` (uusi tiedosto)
+3. `resources/views/modules/ajanvaraus/invoices/pdf.blade.php` (uusi tiedosto)
+4. `resources/views/modules/kurssit/invoices/index.blade.php` — lisää Kurssit/Palvelut-välilehtiyhdistin
+5. `app/Modules/Kurssit/KurssitServiceProvider.php` — laajenna nav `active_pattern` kattamaan myös `ajanvaraus.invoices.*`
+
+Reitit (`ajanvaraus.invoices.*`) ovat jo `routes.php`:ssä — vain controller ja näkymät puuttuvat.

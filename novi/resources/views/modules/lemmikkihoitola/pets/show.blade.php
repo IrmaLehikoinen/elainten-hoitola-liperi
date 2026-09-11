@@ -287,52 +287,6 @@
                     @endforelse
                 </div>
 
-                <div class="mt-6 border-t pt-6">
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
-                        <div>
-                            <label class="block text-sm font-medium">Tyyppi</label>
-                            <select name="type" form="pet-update-form" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                                @foreach ($reminderTypes as $reminderType)
-                                    <option value="{{ $reminderType->slug }}">{{ $reminderType->label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="sm:col-span-2">
-                            <label class="block text-sm font-medium">Kuvaus (valinnainen)</label>
-                            <input
-                                type="text"
-                                name="title"
-                                form="pet-update-form"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="Esim. Aamulääke 2 tablettia"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium">Päivä</label>
-                            <input
-                                type="date"
-                                name="due_date"
-                                form="pet-update-form"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium">Klo</label>
-                            <input
-                                type="time"
-                                name="due_time"
-                                form="pet-update-form"
-                                value="12:00"
-                                class="mt-1 w-full rounded-md border-gray-300 shadow-sm"
-                            >
-                        </div>
-                    </div>
-
-                    <p class="mt-2 text-xs text-gray-500">Muistutus tallentuu, kun painat "Tallenna lemmikkikortti".</p>
-                </div>
             </section>
 
             <div style="height: 260px;" aria-hidden="true"></div>

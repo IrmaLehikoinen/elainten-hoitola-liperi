@@ -588,6 +588,60 @@
                         </p>
                     </div>
 
+                    <div class="mt-6" x-show="bookingAnimals.filter(a => a.petId).length > 0">
+                        <label class="block text-sm font-medium">
+                            Muistutus
+                        </label>
+
+                        <div class="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-5">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500">Kenelle</label>
+                                <select x-model="reminderPetId" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">Valitse…</option>
+                                    <template x-for="animal in bookingAnimals.filter(a => a.petId)" :key="animal.petId">
+                                        <option :value="animal.petId" x-text="(animal.name || animal.species)"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500">Tyyppi</label>
+                                <select x-model="reminderType" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                    @foreach ($reminderTypes as $reminderType)
+                                        <option value="{{ $reminderType->slug }}">{{ $reminderType->label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-medium text-gray-500">Kuvaus (valinnainen)</label>
+                                <input type="text" x-model="reminderTitle" class="mt-1 w-full rounded-md border-gray-300 shadow-sm" placeholder="Esim. Aamulääke 2 tablettia">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500">Päivä</label>
+                                <input type="date" x-model="reminderDueDate" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500">Klo</label>
+                                <input type="time" x-model="reminderDueTime" class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn-brand mt-3 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50"
+                            @click="addReminder()"
+                            :disabled="savingReminder || !reminderPetId || !reminderDueDate"
+                        >
+                            <span x-show="!savingReminder">Lisää muistutus</span>
+                            <span x-show="savingReminder">Lisätään…</span>
+                        </button>
+
+                        <p x-show="reminderMessage" x-text="reminderMessage" class="mt-2 text-sm" :class="reminderMessageIsError ? 'text-red-600' : 'text-green-700'"></p>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium">
                             Lisätiedot ja huomioitavat asiat
@@ -705,6 +759,15 @@
                 bookingAnimals: [],
                 activeHoldIds: [],
 
+                reminderPetId: '',
+                reminderType: '',
+                reminderTitle: '',
+                reminderDueDate: '',
+                reminderDueTime: '12:00',
+                savingReminder: false,
+                reminderMessage: '',
+                reminderMessageIsError: false,
+
                 searching: false,
                 saving: false,
                 searchMessage: '',
@@ -730,6 +793,9 @@
 
                 petsUpdateUrlBase:
                     @json(url('/admin/pets')),
+
+                remindersStoreUrl:
+                    @json(route('admin.reminders.store')),
 
                 customersStoreUrl:
                     @json(route('admin.customers.store')),
@@ -1108,6 +1174,49 @@
                         window.open(this.petsUpdateUrlBase + '/' + createdPet.id + '?fromBooking=1&arrivalDate=' + this.arrivalDate + '&arrivalTime=' + this.arrivalTime + '&pickupDate=' + this.pickupDate + '&pickupTime=' + this.pickupTime, '_blank');
                     } catch (error) {
                         this.saveMessage = 'Lemmikin luonti epäonnistui.';
+                    }
+                },
+
+                async addReminder() {
+                    if (!this.reminderPetId || !this.reminderDueDate) {
+                        return;
+                    }
+
+                    this.savingReminder = true;
+                    this.reminderMessage = '';
+
+                    try {
+                        const response = await fetch(this.remindersStoreUrl, {
+                            method: 'POST',
+                            headers: {
+                                Accept: 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                            },
+                            body: JSON.stringify({
+                                pet_id: this.reminderPetId,
+                                type: this.reminderType,
+                                title: this.reminderTitle || null,
+                                due_at: this.reminderDueDate + ' ' + (this.reminderDueTime || '12:00'),
+                            }),
+                        });
+
+                        if (!response.ok) {
+                            this.reminderMessage = 'Muistutuksen lisäys epäonnistui.';
+                            this.reminderMessageIsError = true;
+                            return;
+                        }
+
+                        this.reminderMessage = 'Muistutus lisätty.';
+                        this.reminderMessageIsError = false;
+                        this.reminderTitle = '';
+                        this.reminderDueDate = '';
+                        this.reminderDueTime = '12:00';
+                    } catch (error) {
+                        this.reminderMessage = 'Muistutuksen lisäys epäonnistui.';
+                        this.reminderMessageIsError = true;
+                    } finally {
+                        this.savingReminder = false;
                     }
                 },
 

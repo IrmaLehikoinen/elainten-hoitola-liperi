@@ -52,6 +52,10 @@ class ReminderController extends Controller
             ));
         }
 
+        if ($request->wantsJson()) {
+            return response()->json($reminder, 201);
+        }
+
         return redirect()
             ->route('admin.pets.show', $validated['pet_id'])
             ->with('status', 'Muistutus lisätty.');
